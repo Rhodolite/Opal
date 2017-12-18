@@ -2,7 +2,7 @@
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
 //  Beryl: Boot Engine, Reliable Yet Limber
 //
-"use strict"                                                //  Strict mode helps catch JavaScript errors, very useful!
+'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
 //
@@ -12,7 +12,7 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        beryl_boot_path : 'Gem/Beryl/Boot.js',              //  Module to load the rest of Gem modules
+        beryl_boot_path : 'Gem/Beryl/Xoot.js',              //  Module to load the rest of Gem modules
         clarity         : true,                             //  Set Gem clarity mode to true
         debug           : true,                             //  Set Gem debug mode to true
         sources         : {},                               //  Sources to "hold onto" for Developer Tools -- see below
@@ -20,7 +20,7 @@ window.Gem = {
 
         //
         //  execute:
-        //      Temporary function to execute code inside a function (to allow local variables)
+        //      Temporary bootstrap function to execute code inside a function (to allow local variables)
         //
         //      If a function is returned then it is "codified" under it's name, ignoring it's first 5 characters
         //      (i.e.:  ignoring the 'Gem__' prefix).
@@ -111,10 +111,10 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
 
 
 //
-//  Gem.beryl_boot_error
+//  Gem.produce_handle_load_error
 //
 //  NOTE:
-//      We only define `Gem.beryl_boot_error` (and thus bring up an alert) if four conditions are met:
+//      We only define `Gem.produce_handle_load_error` (and thus bring up an alert) if four conditions are met:
 //
 //          1)  This is running in Gem debug mode;
 //          2)  This is running in RPG Maker MV "test" mode;
@@ -139,21 +139,15 @@ if (
     //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
     //
     Gem.execute(
-        function codify__Gem__beryl_boot_error() {
-            var alert__failed_to_load = window.alert.bind(
-                    window,
-                    (
-                          'Failed to load'
-                        + ' ' + Gem.beryl_boot_path
-                        + ': please see Developer Tools for full error'
-                    )//,
-                )
-
+        function codify__Gem__produce_handle_load_error() {
+            var alert = window.alert
             var show_developer_tools = Gem.show_developer_tools
 
-            return function Gem__beryl_boot_error() {
-                alert__failed_to_load()
-                show_developer_tools()
+            return function Gem__produce_handle_load_error(path) {
+                return function handle_load_error() {
+                    alert('Failed to load ' + path + ': please see Developer Tools for full error')
+                    show_developer_tools()
+                }
             }
         }
     )
@@ -165,20 +159,33 @@ if (
 //
 Gem.execute(
     function execute__load__beryl_boot_path() {
+        //
+        //  Imports
+        //
+        var produce_handle_load_error = Gem.produce_handle_load_error
+        var path                      = Gem.beryl_boot_path
+
+        //
+        //  Local variables
+        //
         var script = Gem.beryl_script = document.createElement('script')  //  Create an element: `<script></script>`
 
-        script.src = Gem.beryl_boot_path                    //  Modify to `<script src='Gem/Beryl/Boot.js></script>`
+        script.src = path                                   //  Modify to `<script src='Gem/Beryl/Boot.js></script>`
 
-        if (Gem.beryl_boot_error) {                         //  *IF* four conditions above met, then:
-            if (script.addEventListener) {
-                script.addEventListener('error', Gem.beryl_boot_error)    //  Alert user if any error happens
-            }
+        //
+        //  *IF* four conditions above met, then:
+        //      Alert user if any error happens
+        //
+        if (produce_handle_load_error) {
+            var beryl_handle_load_error = Gem.beryl_handle_load_error = produce_handle_load_error(path)
 
             //
             //  Note, we could do:
             //
+            //      if ('AddEventListener' in script) {
+            //          script.addEventListener('error', beryl_handle_load_error)
             //      else {
-            //          script.onerror = Gem.beryl_boot_error   //  Alert user if any error happens (alternate method)
+            //          script.onerror = beryl_handle_load_error //  Alert user if any error happens (alternate method)
             //      }
             //      
             //  However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with
@@ -186,6 +193,7 @@ Gem.execute(
             //
             //  More importantly, we can't test this code -- untested code should not be inplemented.
             //
+            script.addEventListener('error', beryl_handle_load_error)
         }
 
         document.head.appendChild(script)                       //  Attempt to load 'Gem/Beryl/Boot.js' as a module
@@ -202,37 +210,35 @@ Gem.execute(
 //      In debug mode, `Gem.sources` is used to make sure that there is least once such function from each JavaScript
 //      file that has been loaded in.
 //
-//  NOTE:
-//      This code is commented out, as 'Gem.show_developer_tools' is function that does not get garbage collected.
-//
 if (Gem.debug) {
-    //  Gem.sources.js_plugins_Gem = function() {}          //  Not needed due to `Gem.show_develoer_tools` above
+    Gem.execute(
+        function execute__reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
+            Gem.sources.js_plugins_Beryl = Gem.show_developer_tools
+        }
+    )
 }
-
-
-//
-//  Cleanup
-//
-Gem.execute(
-    function execute__cleanup() {
-        delete Gem.execute
-    }
-)
 
 
 //
 //  At this point, as part of the boot process, the following is defined in `Gem`:
 //
-//      .beryl_boot_error  : function                           Temporary - will be deleted in Gem/Beryl.boot.js
-//      .beryl_boot_path   : 'Gem/Beryl/Boot.js'                Temporary - will be deleted in Gem/Beryl.boot.js
-//      .beryl_boot_script : <script src='Gem/Beryl/Boot.js'>   Temporary - will be deleted in Gem/Beryl.boot.js
-//
 //      .clarity                      : true                    Clarity mode
 //      .debug                        : true                    Debug mode
 //      .is_node_webkit_12_or_lower   : true or false           True if using nw.js & it's version 0.12 or lower
 //      .is_node_webkit_13_or_greater : true or false           True if using nw.js & it's version 0.13 or greater
+//      .produce_handle_load_error    : function                Produce code to handle load errors of `<script>` tags
 //      .show_developer_tools         : function                Show developer tools window
-//      .sources                      : {}                      Sources to "hold onto" for Developer Tools
+//
+//      .sources : {                                            Sources to "hold onto" for Developer Tools
+//          .js_plugins_Beryl : function                        Avoid garbage collection of 'js/plugins/Beryl.js'
+//      }
+//
+//  Also the following temporary members of `Gem` exist, which will be deleted in Gem/Beryl/boot.js:
+//
+//      .beryl_boot_path         : 'Gem/Beryl/Boot.js'                Next file to load
+//      .beryl_boot_script       : <script src='Gem/Beryl/Boot.js'>   `<script>` tag to load next file
+//      .beryl_handle_load_error : function                           Handle any load errors from 'Gem/Beryl/boot.js'
+//      .execute                 : function                           Bootstrap function to execute code
 //
 
 
