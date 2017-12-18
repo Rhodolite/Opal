@@ -9,12 +9,12 @@
 //  Create global variable `Gem`
 //
 //  NOTE:
-//      Later `Gem` will be replaced with a proper instance of class `Gem.module.Gem.Global`
+//      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
+        beryl_boot_path : 'Gem/Beryl/Boot.js',              //  Module to load the rest of Gem modules
         clarity         : true,                             //  Set Gem clarity mode to true
         debug           : true,                             //  Set Gem debug mode to true
-        beryl_boot_path : 'Gem/Beryl/Boot.js',              //  Module to load the rest of Gem modules
         sources         : {},                               //  Sources to "hold onto" for Developer Tools -- see below
 
 
@@ -23,9 +23,9 @@ window.Gem = {
         //      Temporary function to execute code inside a function (to allow local variables)
         //
         //      If a function is returned then it is "codified" under it's name, ignoring it's first 5 characters
-        //      (i.e.:  Ignoring the 'Gem__' prefix).
+        //      (i.e.:  ignoring the 'Gem__' prefix).
         //
-        execute : function Gem__codify(codifier) {
+        execute : function Gem__execute(codifier) {
             var code = codifier()
 
             if (code) {
@@ -35,6 +35,14 @@ window.Gem = {
     }
 
 
+//
+//  Gem.is_node_webkit_12_or_lower          - True if using nw.js & it's version 0.12 or lower
+//  Gem.is_node_webkit_13_or_greater        - True if using nw.js & it's version 0.13 or greater
+//
+//  NOTE:
+//      If not using nw.js, then both `Gem.is_node_webkit_12_or_lower` & `Gem.is_node_webkit_13_or_higher` will be
+//      `false`.
+//
 Gem.execute(
     function extract__node_webkit__version() {
         //
@@ -44,15 +52,16 @@ Gem.execute(
 
 
         //
-        //  Node_WebKit version
+        //  Calculate Node WebKit version
         //
-        //  NOTE:
-        //      If not using nw.js, then both `is_node_webkit_12_or_lower` & `is_node_webkit_13_or_higher` will be
-        //      `false`.
-        //
-        var node_webkit__major   = NaN
-        var node_webkit__minor   = NaN
-        var node_webkit__version = (window.process && process.versions && process.versions['node-webkit'])
+        var node_webkit__major = NaN
+        var node_webkit__minor = NaN
+
+        var node_webkit__version = (
+                   ('process'  in window)
+                && ('versions' in process)
+                && process.versions['node-webkit']
+            )
 
         if (typeof node_webkit__version == 'string') {
             var version_list = node_webkit__version.split('.')
@@ -68,7 +77,7 @@ Gem.execute(
 
 
 //
-//  show_developer_tools
+//  Gem.show_developer_tools
 //
 if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer tools (nw.js 0.12 or lower)
     Gem.execute(
@@ -102,12 +111,15 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
 
 
 //
-//  We only bring up an alert if four conditions are met:
+//  Gem.beryl_boot_error
 //
-//      1)  This is running in Gem debug mode;
-//      2)  This is running in RPG Maker MV "test" mode;
-//      3)  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.); AND
-//      4)  The browser has a `.addEventListener` method (all modern browsers do).
+//  NOTE:
+//      We only define `Gem.beryl_boot_error` (and thus bring up an alert) if four conditions are met:
+//
+//          1)  This is running in Gem debug mode;
+//          2)  This is running in RPG Maker MV "test" mode;
+//          3)  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.); AND
+//          4)  The browser has a `.addEventListener` method (all modern browsers do).
 //
 if (
        Gem.debug
@@ -128,17 +140,29 @@ if (
     //
     Gem.execute(
         function codify__Gem__beryl_boot_error() {
-            var alert                = window.alert
+            var alert__failed_to_load = window.alert.bind(
+                    window,
+                    (
+                          'Failed to load'
+                        + ' ' + Gem.beryl_boot_path
+                        + ': please see Developer Tools for full error'
+                    )//,
+                )
+
             var show_developer_tools = Gem.show_developer_tools
 
             return function Gem__beryl_boot_error() {
-                alert('Failed to load ' + Gem.beryl_boot_path + ': please see Developer Tools for full error')
-                Gem.show_developer_tools()
+                alert__failed_to_load()
+                show_developer_tools()
             }
         }
     )
 }
 
+
+//
+//  Append `<script src='Gem/Beryl/Boot.js'>` to `document.head`
+//
 Gem.execute(
     function execute__load__beryl_boot_path() {
         var script = Gem.beryl_script = document.createElement('script')  //  Create an element: `<script></script>`
@@ -184,6 +208,32 @@ Gem.execute(
 if (Gem.debug) {
     //  Gem.sources.js_plugins_Gem = function() {}          //  Not needed due to `Gem.show_develoer_tools` above
 }
+
+
+//
+//  Cleanup
+//
+Gem.execute(
+    function execute__cleanup() {
+        delete Gem.execute
+    }
+)
+
+
+//
+//  At this point, as part of the boot process, the following is defined in `Gem`:
+//
+//      .beryl_boot_error  : function                           Temporary - will be deleted in Gem/Beryl.boot.js
+//      .beryl_boot_path   : 'Gem/Beryl/Boot.js'                Temporary - will be deleted in Gem/Beryl.boot.js
+//      .beryl_boot_script : <script src='Gem/Beryl/Boot.js'>   Temporary - will be deleted in Gem/Beryl.boot.js
+//
+//      .clarity                      : true                    Clarity mode
+//      .debug                        : true                    Debug mode
+//      .is_node_webkit_12_or_lower   : true or false           True if using nw.js & it's version 0.12 or lower
+//      .is_node_webkit_13_or_greater : true or false           True if using nw.js & it's version 0.13 or greater
+//      .show_developer_tools         : function                Show developer tools window
+//      .sources                      : {}                      Sources to "hold onto" for Developer Tools
+//
 
 
 //--------------------------------------------------------+

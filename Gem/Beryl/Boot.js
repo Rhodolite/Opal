@@ -92,7 +92,7 @@
             delete $.beryl_boot_error
             delete $.beryl_boot_path
             delete $.beryl_script
-            delete $.show_developer_tools
+            //delete $.show_developer_tools
 
             delete beryl_boot_error
         }
