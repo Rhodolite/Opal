@@ -12,7 +12,7 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        beryl_boot_path   : 'Gem/Beryl/boot.js',            //  Module to load the rest of Gem modules
+        beryl_boot_path   : 'Gem/Beryl/Xoot.js',            //  Module to load the rest of Gem modules
         clarity           : true,                           //  Set Gem clarity mode to true
         debug             : true,                           //  Set Gem debug mode to true
         scripts           : {},                             //  Map of all the scripts loaded (or loading)
@@ -127,25 +127,85 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
 //  Gem.handle_script_event
 //
 Gem.execute(
-    function codify__Gem__handle_script_event() {
+    function execute__set__handle_script_errors() {
         //
         //  NOTE:
-        //      We only define `Gem.handle_script_event` (and thus bring up an alert) if six conditions are met:
+        //      We only handle script events (and thus bring up an alert) if six conditions are met:
         //
-        //          1)  This is running in Gem debug mode;
-        //          2)  This is running in RPG Maker MV "test" mode;
-        //          3)  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
-        //          4)  The browser has a `.addEventListener`   method (all modern browsers do);
-        //          5)  The browser has a `.createElement.bind` method (all modern browsers do); AND
-        //          6)  The browser has a `.setAttribute`       method (all modern browsers do).
-        if (
-               Gem.debug
-            && ('Utils' in window) && Utils.isNwjs()
-            && Utils.isOptionValid('test')
-            && ('addEventListener' in document)
-            && ('bind'             in document.createElement)
-            && ('setAttribute'     in document.head)
-        ) {
+        //          1.  This is running in Gem debug mode;
+        //          2.  This is running in RPG Maker MV "test" mode;
+        //          3.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
+        //          4.  The browser has a `.addEventListener`   method (all modern browsers do);
+        //          5.  The browser has a `.createElement.bind` method (all modern browsers do); AND
+        //          6.  The browser has a `.setAttribute`       method (all modern browsers do).
+        //
+        Gem.handle_script_errors = (
+                   Gem.debug
+                && ('Utils' in window) && Utils.isNwjs()
+                && Utils.isOptionValid('test')
+                && ('addEventListener' in document)
+                && ('bind'             in document.createElement)
+                && ('setAttribute'     in document.head)
+            )
+
+        if (Gem.handle_script_errors) {
+            Gem.script_event_list = ['abort', 'error', 'load']
+        }
+    }
+)
+
+
+//
+//  Gem.handle_error
+//
+if (Gem.handle_script_errors) {
+    Gem.execute(
+        function codify__Gem__handle_global_error() {
+            var alert                = window.alert
+            var document             = window.document
+            var origin_slash         = location.origin + '/'
+            var origin_slash__total  = origin_slash.length
+            var show_developer_tools = Gem.show_developer_tools
+
+
+            function Gem__handle_global_error(e) {
+                if ( ! ('currentScript' in document))  {
+                    return
+                }
+
+                var tag  = document.currentScript
+                var path = tag.src
+
+                if (typeof path === 'string' && path.startsWith(origin_slash)) {
+                    path = path.substring(origin_slash__total)
+                }
+
+                alert(
+                      path + '#' + e.lineno
+                    + ': ' + e.error
+                    + '\n' + 'Please see Developer Tools for full error'
+                )
+
+                show_developer_tools()
+            }
+
+
+            window.addEventListener('error', Gem__handle_global_error)
+
+
+            return Gem__handle_global_error
+        }
+    )
+}
+
+
+//
+//
+//  Gem.handle_script_event
+//
+if (Gem.handle_script_errors) {
+    Gem.execute(
+        function codify__Gem__handle_script_event() {
             //
             //  NOTE:
             //      There is no way to get the error message, if there is one, when attempting to load
@@ -161,7 +221,7 @@ Gem.execute(
             var show_developer_tools     = Gem.show_developer_tools
             var origin_slash             = location.origin + '/'
             var origin_slash__total      = origin_slash.length
-            var script_event_list        = ['abort', 'error', 'load']
+            var script_event_list        = Gem.script_event_list
             var script_event_list__total = script_event_list.length
 
 
@@ -177,34 +237,26 @@ Gem.execute(
                 if (e.type === 'abort' || e.type === 'error') {
                     var path = tag.src
 
-                    if (path.startsWith(origin_slash)) {
+                    if (typeof path === 'string' && path.startsWith(origin_slash)) {
                         path = path.substring(origin_slash__total)
                     }
 
-                    alert('Failed to load ' + path + ': please see Developer Tools for full error')
+                    alert(path + ': Failed to load.  Please see Developer Tools for full error')
                     show_developer_tools()
                 }
             }
 
 
-            Gem.script_event_list = script_event_list   //  Make copy of this for Gem.load_scriptk
-
             return handle_script_event
         }
-
-        //
-        //  Otherwise:
-        //      We set `script_event_list` to `false`, to indicate we can't handle script events
-        //
-        Gem.handle_script_event = false
-    }
-)
+    )
+}
 
 
 //
 //  Gem.load_script
 //
-if (Gem.handle_script_event) {
+if (Gem.handle_script_errors) {
     //
     //  NOTE:
     //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` &
@@ -257,7 +309,8 @@ if (Gem.handle_script_event) {
     //      More importantly, we can't test this code -- untested code should not be inplemented.
     //
     //  NOTE #2:
-    
+    //      We don't know if this browser supports `.bind`         or not, so just in case ... test for it.
+    //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
     //
     Gem.execute(
         function codify__Gem__load_script() {
