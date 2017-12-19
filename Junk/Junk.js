@@ -59,3 +59,17 @@
 //                  __lookupSetter__ : { value : Object.prototype.__lookupSetter__ },
                 }
             )
+            if (path in script_map) {
+                var script = script_map[path]
+                var tag    = script.tag
+
+                if ('handle_load_error' in script) {
+                    tag.removeEventListener('event', script.handle_load_error)
+
+                    delete script.handle_load_error
+                }
+
+                tag.remove()
+
+                delete script.tag
+            } else {

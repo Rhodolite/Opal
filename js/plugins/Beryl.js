@@ -12,9 +12,10 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        beryl_boot_path : 'Gem/Beryl/Xoot.js',              //  Module to load the rest of Gem modules
+        beryl_boot_path : 'Gem/Beryl/Boot.js',              //  Module to load the rest of Gem modules
         clarity         : true,                             //  Set Gem clarity mode to true
         debug           : true,                             //  Set Gem debug mode to true
+        scripts         : {},                               //  Map of all the scripts loaded (or loading)
         sources         : {},                               //  Sources to "hold onto" for Developer Tools -- see below
 
 
@@ -113,34 +114,38 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
 //
 //  Gem.produce_handle_load_error
 //
-//  NOTE:
-//      We only define `Gem.produce_handle_load_error` (and thus bring up an alert) if four conditions are met:
-//
-//          1)  This is running in Gem debug mode;
-//          2)  This is running in RPG Maker MV "test" mode;
-//          3)  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.); AND
-//          4)  The browser has a `.addEventListener` method (all modern browsers do).
-//
-if (
-       Gem.debug
-    && ('Utils' in window) && Utils.isNwjs()
-    && Utils.isOptionValid('test')
-    && ('addEventListener' in document)
-) {
-    //
-    //  NOTE:
-    //      There is no way to get the error message, if there is one, when attempting to load Gem/Boot.Beryl.js
-    //      (You can't use try/catch on a <script></script> tag that is inserted into the DOM).
-    //
-    //      Hence in case of an error, the following is done:
-    //
-    //          1)  Alert the user with an alert message which says to see Developer Tools for full error;
-    //          2)  Force the user to acknowledge the alert box by hitting 'OK';
-    //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
-    //
-    Gem.execute(
-        function codify__Gem__produce_handle_load_error() {
-            var alert = window.alert
+Gem.execute(
+    function codify__Gem__produce_handle_load_error() {
+        //
+        //  NOTE:
+        //      We only define `Gem.produce_handle_load_error` (and thus bring up an alert) if six conditions are met:
+        //
+        //          1)  This is running in Gem debug mode;
+        //          2)  This is running in RPG Maker MV "test" mode;
+        //          3)  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
+        //          4)  The browser has a `.addEventListener` method    (all modern browsers do);
+        //          5)  The browser has a `.createElement.bind` method  (all modern browsers do); AND
+        //          6)  The browser has a `.setAttribute` method        (all modern browsers do).
+        if (
+               Gem.debug
+            && ('Utils' in window) && Utils.isNwjs()
+            && Utils.isOptionValid('test')
+            && ('addEventListener' in document)
+            && ('bind'             in document.createElement)
+            && ('setAttribute'     in document.head)
+        ) {
+            //
+            //  NOTE:
+            //      There is no way to get the error message, if there is one, when attempting to load Gem/Boot.Beryl.js
+            //      (You can't use try/catch on a <script></script> tag that is inserted into the DOM).
+            //
+            //      Hence in case of an error, the following is done:
+            //
+            //          1)  Alert the user with an alert message which says to see Developer Tools for full error;
+            //          2)  Force the user to acknowledge the alert box by hitting 'OK';
+            //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
+            //
+            var alert                = window.alert
             var show_developer_tools = Gem.show_developer_tools
 
             return function Gem__produce_handle_load_error(path) {
@@ -150,53 +155,103 @@ if (
                 }
             }
         }
+
+        //
+        //  Otherwise:
+        //      We set `produce_handle_load_error` to `false`, to indicate we can't handle load errors
+        //
+        Gem.produce_handle_load_error = false
+    }
+)
+
+
+//
+//  Gem.load_script
+//
+if (Gem.produce_handle_load_error) {
+    //
+    //  NOTE:
+    //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` & `.addEventListener`.
+    //
+    Gem.execute(
+        function codify__Gem__load_script() {
+            //
+            //  Imports
+            //
+            var create_script_tag         = document.createElement.bind(document, 'script')     //  Creates a `<script>` tag
+            var produce_handle_load_error = Gem.produce_handle_load_error
+            var scripts                   = Gem.scripts
+
+
+            return function Gem__load_script(container, path) {
+                var script_data       = scripts[path]                 = {}
+                var tag               = script_data.tag               = create_script_tag()
+                var handle_load_error = script_data.handle_load_error = produce_handle_load_error(path)
+
+                tag.setAttribute('src', path)                   //  Modify to `<script src='path`></script>`
+                tag.addEventListener('error', handle_load_error)//  Handle any load errors
+
+                container.appendChild(tag)                      //  Attempt to load 'path' via the `<script>` tag.
+            }
+        }
+    )
+} else {
+    //
+    //  NOTE:
+    //      If there is no 'AddEventListener' we could do:
+    //
+    //          tag.onerror = handle_load_error                     //  Alert user if any error happens (alternate method)
+    //
+    //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with super super old browsers.
+    //
+    //      More importantly, we can't test this code -- untested code should not be inplemented.
+    //
+    //  NOTE #2:
+    //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
+    //
+    Gem.execute(
+        function codify__Gem__load_script() {
+            debugger;
+            //
+            //  Imports
+            //
+            if ('bind' in document.createElement) {
+                var create_script_tag = document.createElement.bind(document, 'script')     //  Creates a `<script>` tag
+            } else {
+                var create_script_tag = function OLD_WAY__create_script_tag() {
+                    return document.createElement('script')                                 //  Old way: Creates a `<script>` tag
+                }
+            }
+
+            var scripts = Gem.scripts
+
+
+            return function Gem__load_script(container, path) {
+                var script_data = scripts[path]   = {}
+                var tag         = script_data.tag = create_script_tag()
+
+                if ('setAttribute' in tag) {                    //  Is this a modern browser?
+                    tag.setAttribute('src', path)               //      New way: Modify to `<script src='path`></script>`
+                } else {                                        //  Ancient Browser:
+                    tag.src = path                              //      Old way: Modify to `<script src='path'></script>`
+                }
+
+                container.appendChild(tag)                      //  Attempt to load 'path' via the `<script>` tag.
+            }
+        }
     )
 }
 
 
 //
-//  Append `<script src='Gem/Beryl/Boot.js'>` to `document.head`
+//  Load Gem/Beryl/Boot.js
+//
+//  NOTE:
+//      Temporarily inserted into `document.head` -- will be moved later.
 //
 Gem.execute(
-    function execute__load__beryl_boot_path() {
-        //
-        //  Imports
-        //
-        var produce_handle_load_error = Gem.produce_handle_load_error
-        var path                      = Gem.beryl_boot_path
-
-        //
-        //  Local variables
-        //
-        var script = Gem.beryl_script = document.createElement('script')  //  Create an element: `<script></script>`
-
-        script.src = path                                   //  Modify to `<script src='Gem/Beryl/Boot.js></script>`
-
-        //
-        //  *IF* four conditions above met, then:
-        //      Alert user if any error happens
-        //
-        if (produce_handle_load_error) {
-            var beryl_handle_load_error = Gem.beryl_handle_load_error = produce_handle_load_error(path)
-
-            //
-            //  Note, we could do:
-            //
-            //      if ('AddEventListener' in script) {
-            //          script.addEventListener('error', beryl_handle_load_error)
-            //      else {
-            //          script.onerror = beryl_handle_load_error //  Alert user if any error happens (alternate method)
-            //      }
-            //      
-            //  However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with
-            //  super super old browsers.
-            //
-            //  More importantly, we can't test this code -- untested code should not be inplemented.
-            //
-            script.addEventListener('error', beryl_handle_load_error)
-        }
-
-        document.head.appendChild(script)                       //  Attempt to load 'Gem/Beryl/Boot.js' as a module
+    function execute__load_next_script() {
+        Gem.load_script(document.head, Gem.beryl_boot_path)
     }
 )
 
@@ -226,19 +281,26 @@ if (Gem.debug) {
 //      .debug                        : true                    Debug mode
 //      .is_node_webkit_12_or_lower   : true or false           True if using nw.js & it's version 0.12 or lower
 //      .is_node_webkit_13_or_greater : true or false           True if using nw.js & it's version 0.13 or greater
+//      .load_script                  : function                Load a script using `<script>` tag.
 //      .produce_handle_load_error    : function                Produce code to handle load errors of `<script>` tags
-//      .show_developer_tools         : function                Show developer tools window
+//
+//      .scripts : {                                            Map of all the scripts loaded (or loading)
+//          ['Gem/Beryl/Boot.js'] : {                                   Currently loading "Gem/Beryl/Boot.js"
+//              tag               : <script src='Gem/Beryl/Boot.js'>        `<script>` tag to load "Gem/Beryl/Boot.js".
+//              handle_load_error : function                                Handle any load errors from 'Gem/Beryl/boot.js"
+//          }
+//      }
+//
+//      .show_developer_tools : function                        Show developer tools window
 //
 //      .sources : {                                            Sources to "hold onto" for Developer Tools
-//          .js_plugins_Beryl : function                        Avoid garbage collection of 'js/plugins/Beryl.js'
+//          js_plugins_Beryl : function                             Avoid garbage collection of 'js/plugins/Beryl.js'
 //      }
 //
 //  Also the following temporary members of `Gem` exist, which will be deleted in Gem/Beryl/boot.js:
 //
-//      .beryl_boot_path         : 'Gem/Beryl/Boot.js'                Next file to load
-//      .beryl_boot_script       : <script src='Gem/Beryl/Boot.js'>   `<script>` tag to load next file
-//      .beryl_handle_load_error : function                           Handle any load errors from 'Gem/Beryl/boot.js'
-//      .execute                 : function                           Bootstrap function to execute code
+//      .beryl_boot_path         : 'Gem/Beryl/Boot.js'          Next file to load
+//      .execute                 : function                     Bootstrap function to execute code
 //
 
 
