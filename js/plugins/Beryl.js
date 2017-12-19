@@ -23,8 +23,14 @@ window.Gem = {
         //  execute:
         //      Temporary bootstrap function to execute code inside a function (to allow local variables)
         //
+        //  codify: (alternative usage)
         //      If a function is returned then it is "codified" under it's name, ignoring it's first 5 characters
         //      (i.e.:  ignoring the 'Gem__' prefix).
+        //
+        //  NOTE:
+        //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
+        //      up in stack traces as the full name `Gem__execute` instead of shorter name `execute`
+        //      (this is really really helpful when reading stack traces).
         //
         execute : function Gem__execute(codifier) {
             var code = codifier()
@@ -45,7 +51,7 @@ window.Gem = {
 //      `false`.
 //
 Gem.execute(
-    function extract__node_webkit__version() {
+    function execute__extract__node_webkit__version() {
         //
         //  Imports
         //
@@ -96,6 +102,12 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
             var game_window = nw.Window.get()
 
             return function Gem__show_developer_tools() {
+                //
+                //  NOTE:
+                //      You *MUST* past `false` to `game_window.showDevTools` in version 0.13, or nw.js will
+                //      simply exit your program -- which is like really really really annoying -- espeically
+                //      the first time, when you don't know what is happening.
+                //
                 game_window.showDevTools(false)
             }
         }
@@ -123,9 +135,9 @@ Gem.execute(
         //          1)  This is running in Gem debug mode;
         //          2)  This is running in RPG Maker MV "test" mode;
         //          3)  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
-        //          4)  The browser has a `.addEventListener` method    (all modern browsers do);
-        //          5)  The browser has a `.createElement.bind` method  (all modern browsers do); AND
-        //          6)  The browser has a `.setAttribute` method        (all modern browsers do).
+        //          4)  The browser has a `.addEventListener`   method (all modern browsers do);
+        //          5)  The browser has a `.createElement.bind` method (all modern browsers do); AND
+        //          6)  The browser has a `.setAttribute`       method (all modern browsers do).
         if (
                Gem.debug
             && ('Utils' in window) && Utils.isNwjs()
@@ -136,8 +148,8 @@ Gem.execute(
         ) {
             //
             //  NOTE:
-            //      There is no way to get the error message, if there is one, when attempting to load Gem/Boot.Beryl.js
-            //      (You can't use try/catch on a <script></script> tag that is inserted into the DOM).
+            //      There is no way to get the error message, if there is one, when attempting to load
+            //      Gem/Boot/Beryl.js (You can't use try/catch on a `<script>` tag that is inserted into the DOM).
             //
             //      Hence in case of an error, the following is done:
             //
@@ -171,14 +183,15 @@ Gem.execute(
 if (Gem.produce_handle_load_error) {
     //
     //  NOTE:
-    //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` & `.addEventListener`.
+    //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` &
+    //      `.addEventListener`.
     //
     Gem.execute(
         function codify__Gem__load_script() {
             //
             //  Imports
             //
-            var create_script_tag         = document.createElement.bind(document, 'script')     //  Creates a `<script>` tag
+            var create_script_tag         = document.createElement.bind(document, 'script')//  Creates a `<script>` tag
             var produce_handle_load_error = Gem.produce_handle_load_error
             var scripts                   = Gem.scripts
 
@@ -200,9 +213,10 @@ if (Gem.produce_handle_load_error) {
     //  NOTE:
     //      If there is no 'AddEventListener' we could do:
     //
-    //          tag.onerror = handle_load_error                     //  Alert user if any error happens (alternate method)
+    //          tag.onerror = handle_load_error                 //  Alert user if any error happens (alternate method)
     //
-    //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with super super old browsers.
+    //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with super
+    //      super old browsers.
     //
     //      More importantly, we can't test this code -- untested code should not be inplemented.
     //
@@ -211,15 +225,14 @@ if (Gem.produce_handle_load_error) {
     //
     Gem.execute(
         function codify__Gem__load_script() {
-            debugger;
             //
             //  Imports
             //
             if ('bind' in document.createElement) {
-                var create_script_tag = document.createElement.bind(document, 'script')     //  Creates a `<script>` tag
+                var create_script_tag = document.createElement.bind(document, 'script') //  Creates a `<script>` tag
             } else {
                 var create_script_tag = function OLD_WAY__create_script_tag() {
-                    return document.createElement('script')                                 //  Old way: Creates a `<script>` tag
+                    return document.createElement('script')                    //  Old way: Creates a `<script>` tag
                 }
             }
 
@@ -230,13 +243,13 @@ if (Gem.produce_handle_load_error) {
                 var script_data = scripts[path]   = {}
                 var tag         = script_data.tag = create_script_tag()
 
-                if ('setAttribute' in tag) {                    //  Is this a modern browser?
-                    tag.setAttribute('src', path)               //      New way: Modify to `<script src='path`></script>`
-                } else {                                        //  Ancient Browser:
-                    tag.src = path                              //      Old way: Modify to `<script src='path'></script>`
+                if ('setAttribute' in tag) {                //  Is this a modern browser?
+                    tag.setAttribute('src', path)           //      New way: Modify to `<script src='path`></script>`
+                } else {                                    //  Ancient Browser:
+                    tag.src = path                          //      Old way: Modify to `<script src='path'></script>`
                 }
 
-                container.appendChild(tag)                      //  Attempt to load 'path' via the `<script>` tag.
+                container.appendChild(tag)                  //  Attempt to load 'path' via the `<script>` tag.
             }
         }
     )
@@ -285,9 +298,9 @@ if (Gem.debug) {
 //      .produce_handle_load_error    : function                Produce code to handle load errors of `<script>` tags
 //
 //      .scripts : {                                            Map of all the scripts loaded (or loading)
-//          ['Gem/Beryl/Boot.js'] : {                                   Currently loading "Gem/Beryl/Boot.js"
-//              tag               : <script src='Gem/Beryl/Boot.js'>        `<script>` tag to load "Gem/Beryl/Boot.js".
-//              handle_load_error : function                                Handle any load errors from 'Gem/Beryl/boot.js"
+//          ['Gem/Beryl/Boot.js'] : {                               Currently loading "Gem/Beryl/Boot.js"
+//              tag               : <script src='Gem/Beryl/Boot.js'>    `<script>` tag to load "Gem/Beryl/Boot.js".
+//              handle_load_error : function                            Handle any load errors from 'Gem/Beryl/boot.js"
 //          }
 //      }
 //

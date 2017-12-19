@@ -72,9 +72,6 @@ if (Gem.clarity) {
 //
 //  Bootstrap `Gem.codify`
 //
-//      The reason the function is named `Beryl__codify` (meaning `Beryl.codify`) is so that it shows
-//      up in stack traces as the full name `Beryl__codify` instead of shorter name `codify`
-//      (this is really really helpful when reading stack traces).
 //
 Gem.execute(
     function execute__Beryl__bootstrap_codify() {
@@ -107,8 +104,8 @@ Gem.Beryl.codify(
             var $who    = '<closure for Gem.$.ModuleName.produce_codify>'
             var $what = (
                       'The closure for `Gem.$.ModuleName.produce_codify`'
-                    + '.  Contains all closure variables *EXCEPT* `module` & `$`'
-                    + ' (`module` & `$` ared created in a different closure)'
+                    + '.  Contains all closure variables *EXCEPT* `exports` & `$`'
+                    + ' (`exports` & `$` are created in a different closure)'
                     + '.'
                 )
 
@@ -261,12 +258,12 @@ Gem.Beryl.codify(
                 )
         }
 
-        return function Beryl__produce_codify(module, $) {
+        return function Beryl__produce_codify(exports, $) {
             if (Gem.clarity) {
                 var $who    = '<closure Gem.$.ModuleName.codify>'
                 var $what = (
                           'The closure for `Gem.$.ModuleName.codify`'
-                        + '.  Contains `module` which is the module this codify function is specifically for'
+                        + '.  Contains `exports` which is where the code is exported to'
                         + ' (Also contains `$` which is the introspection for the module this codify function'
                         + ' is specificaly for)'
                         + '.'
@@ -280,7 +277,7 @@ Gem.Beryl.codify(
                 //  Create the code for a function or procedure, typically as a closure to avoid the use of any global
                 //  variables.
                 //
-                var $code = module[name] = codifier()
+                var $code = exports[name] = codifier()
 
                 property_$who .value = name
                 property_$what.value = $what
@@ -292,7 +289,7 @@ Gem.Beryl.codify(
                 //  Delete these unused attributes, for two reasons:
                 //
                 //      1.  So they do not appear when introspecting in Developer Tools; AND
-                //      2.  So the can be properly garbage collected if `Gem.$.Beryl[name]` is deleted.
+                //      2.  So the can be properly garbage collected if `exports[name]` is deleted.
                 //
                 delete property_$who .value
                 delete property_$what.value
@@ -307,21 +304,25 @@ Gem.Beryl.codify(
 //  Now run `Gem.Beryl.codify` on `Gem.Beryl.produce_codify` & `Gem.Beryl.codify`
 //  (so it uses it's newly defined itself on itself).
 //
-Gem.Beryl.codify(
-    Gem.$.Beryl.produce_codify.$who,
-    Gem.$.Beryl.produce_codify.$what,
-    function codifier__Beryl__produce_codify() {
-        return Gem.$.Beryl.produce_codify.$code
-    }
-)
+if (Gem.clarity) {
+    Gem.Beryl.codify(
+        Gem.$.Beryl.produce_codify.$who,
+        Gem.$.Beryl.produce_codify.$what,
+        function codifier__Beryl__produce_codify() {
+            return Gem.$.Beryl.produce_codify.$code
+        }
+    )
+}
 
 
-//  BUG is here
 Gem.Beryl.codify(
-    Gem.$.Beryl.codify.$who,
-    Gem.$.Beryl.codify.$what,
+    'codify',
+    (
+          'Create the code for a function or procedure'
+        + ', typically as a closure to avoid the use of any global variables.'
+    ),
     function codifier__Beryl__codify() {
-        return Gem.$.Beryl.codify.$code
+        return Gem.Beryl.produce_codify(Gem.Beryl, Gem.$.Beryl)
     }
 )
 
