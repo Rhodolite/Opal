@@ -12,11 +12,11 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        beryl_boot_path : 'Gem/Beryl/Boot.js',              //  Module to load the rest of Gem modules
-        clarity         : true,                             //  Set Gem clarity mode to true
-        debug           : true,                             //  Set Gem debug mode to true
-        scripts         : {},                               //  Map of all the scripts loaded (or loading)
-        sources         : {},                               //  Sources to "hold onto" for Developer Tools -- see below
+        beryl_boot_path   : 'Gem/Beryl/boot.js',            //  Module to load the rest of Gem modules
+        clarity           : true,                           //  Set Gem clarity mode to true
+        debug             : true,                           //  Set Gem debug mode to true
+        scripts           : {},                             //  Map of all the scripts loaded (or loading)
+        sources           : {},                             //  Sources to "hold onto" for Developer Tools -- see below
 
 
         //
@@ -124,13 +124,13 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
 
 
 //
-//  Gem.produce_handle_load_error
+//  Gem.handle_script_event
 //
 Gem.execute(
-    function codify__Gem__produce_handle_load_error() {
+    function codify__Gem__handle_script_event() {
         //
         //  NOTE:
-        //      We only define `Gem.produce_handle_load_error` (and thus bring up an alert) if six conditions are met:
+        //      We only define `Gem.handle_script_event` (and thus bring up an alert) if six conditions are met:
         //
         //          1)  This is running in Gem debug mode;
         //          2)  This is running in RPG Maker MV "test" mode;
@@ -157,22 +157,46 @@ Gem.execute(
             //          2)  Force the user to acknowledge the alert box by hitting 'OK';
             //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
             //
-            var alert                = window.alert
-            var show_developer_tools = Gem.show_developer_tools
+            var alert                    = window.alert
+            var show_developer_tools     = Gem.show_developer_tools
+            var origin_slash             = location.origin + '/'
+            var origin_slash__total      = origin_slash.length
+            var script_event_list        = ['abort', 'error', 'load']
+            var script_event_list__total = script_event_list.length
 
-            return function Gem__produce_handle_load_error(path) {
-                return function handle_load_error() {
+
+            var handle_script_event = function Gem__handle_script_event(e) {
+                var tag = e.target
+
+                for (var i = 0; i < script_event_list__total; i ++) {
+                    var type = script_event_list[i]
+
+                    tag.removeEventListener(type, handle_script_event)
+                }
+
+                if (e.type === 'abort' || e.type === 'error') {
+                    var path = tag.src
+
+                    if (path.startsWith(origin_slash)) {
+                        path = path.substring(origin_slash__total)
+                    }
+
                     alert('Failed to load ' + path + ': please see Developer Tools for full error')
                     show_developer_tools()
                 }
             }
+
+
+            Gem.script_event_list = script_event_list   //  Make copy of this for Gem.load_scriptk
+
+            return handle_script_event
         }
 
         //
         //  Otherwise:
-        //      We set `produce_handle_load_error` to `false`, to indicate we can't handle load errors
+        //      We set `script_event_list` to `false`, to indicate we can't handle script events
         //
-        Gem.produce_handle_load_error = false
+        Gem.handle_script_event = false
     }
 )
 
@@ -180,7 +204,7 @@ Gem.execute(
 //
 //  Gem.load_script
 //
-if (Gem.produce_handle_load_error) {
+if (Gem.handle_script_event) {
     //
     //  NOTE:
     //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` &
@@ -191,18 +215,28 @@ if (Gem.produce_handle_load_error) {
             //
             //  Imports
             //
-            var create_script_tag         = document.createElement.bind(document, 'script')//  Creates a `<script>` tag
-            var produce_handle_load_error = Gem.produce_handle_load_error
-            var scripts                   = Gem.scripts
+            var create_script_tag   = document.createElement.bind(document, 'script')   //  Creates a `<script>` tag
+            var handle_script_event = Gem.handle_script_event
+            var scripts             = Gem.scripts
+
+            var script_event_list        = Gem.script_event_list
+            var script_event_list__total = script_event_list.length
 
 
             return function Gem__load_script(container, path) {
-                var script_data       = scripts[path]                 = {}
-                var tag               = script_data.tag               = create_script_tag()
-                var handle_load_error = script_data.handle_load_error = produce_handle_load_error(path)
+                var script_data = scripts[path]   = {}
+                var tag         = script_data.tag = create_script_tag()
 
-                tag.setAttribute('src', path)                   //  Modify to `<script src='path`></script>`
-                tag.addEventListener('error', handle_load_error)//  Handle any load errors
+                tag.setAttribute('src', path)                   //  Modify to `<script src='path'></script>`
+
+                //
+                //  Handle script events 'abort', 'error', & 'load'
+                //
+                for (var i = 0; i < script_event_list__total; i ++) {
+                    var type = script_event_list[i]
+
+                    tag.addEventListener(type, handle_script_event)
+                }
 
                 container.appendChild(tag)                      //  Attempt to load 'path' via the `<script>` tag.
             }
@@ -213,7 +247,9 @@ if (Gem.produce_handle_load_error) {
     //  NOTE:
     //      If there is no 'AddEventListener' we could do:
     //
-    //          tag.onerror = handle_load_error                 //  Alert user if any error happens (alternate method)
+    //          tag.onabort = handle_script_event
+    //          tag.onerror = handle_script_event                 //  Alert user if any error happens (alternate method)
+    //          tag.onload  = handle_script_event
     //
     //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with super
     //      super old browsers.
@@ -221,7 +257,7 @@ if (Gem.produce_handle_load_error) {
     //      More importantly, we can't test this code -- untested code should not be inplemented.
     //
     //  NOTE #2:
-    //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
+    
     //
     Gem.execute(
         function codify__Gem__load_script() {
@@ -254,6 +290,16 @@ if (Gem.produce_handle_load_error) {
         }
     )
 }
+
+
+//
+//  Cleanup
+//
+Gem.execute(
+    function execute__remove__Gem__script_event_list() {
+        delete Gem.script_event_list
+    }
+)
 
 
 //
@@ -295,12 +341,12 @@ if (Gem.debug) {
 //      .is_node_webkit_12_or_lower   : true or false           True if using nw.js & it's version 0.12 or lower
 //      .is_node_webkit_13_or_greater : true or false           True if using nw.js & it's version 0.13 or greater
 //      .load_script                  : function                Load a script using `<script>` tag.
-//      .produce_handle_load_error    : function                Produce code to handle load errors of `<script>` tags
+//      .handle_script_event          : false or function       Handle events of `<script>` tags
 //
 //      .scripts : {                                            Map of all the scripts loaded (or loading)
 //          ['Gem/Beryl/Boot.js'] : {                               Currently loading "Gem/Beryl/Boot.js"
-//              tag               : <script src='Gem/Beryl/Boot.js'>    `<script>` tag to load "Gem/Beryl/Boot.js".
-//              handle_load_error : function                            Handle any load errors from 'Gem/Beryl/boot.js"
+//              tag                 : <script src='Gem/Beryl/Boot.js'>  `<script>` tag to load "Gem/Beryl/Boot.js".
+//              handle_script_event : function                          Handle script events from 'Gem/Beryl/boot.js"
 //          }
 //      }
 //
