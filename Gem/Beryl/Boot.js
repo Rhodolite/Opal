@@ -99,9 +99,6 @@ Gem.codify(
 )
 
 
-debugger
-
-
 //
 //  Properly define `Gem.codify` like all other functions will be defined:
 //

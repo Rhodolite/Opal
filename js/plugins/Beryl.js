@@ -12,46 +12,63 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        Configuration : {                                   //  Gem configuration values
-            clarity : true,                                 //      Set Gem clarity mode to true
-            debug   : true,                                 //      Set Gem debug mode to true
-        },
+    Configuration : {                                       //  Gem configuration values
+        clarity : true,                                     //      Set Gem clarity mode to true
+        debug   : true,                                     //      Set Gem debug mode to true
+    },
 
-        NodeWebKit: {                                       //  Node WebKit members & methods
-        },
+    NodeWebKit: {                                           //  Node WebKit members & methods
+        //  is_version_012_or_lower   : false               //      True if using nw.js & it's version 0.12 or lower
+        //  is_version_013_or_greater : false               //      True if using nw.js & it's version 0.13 or greater
+        //  show_developer_tools      : Function            //      Show developer tools window
+    },
 
-        Script : {                                          //  `<script>` handling
-            beryl_boot_path : 'Gem/Beryl/Boot.js',          //      Module to load the rest of Gem modules
-            event_list      : ['abort', 'error', 'load'],   //      List of `<script>` events to listen for.
-            handle_errors   : false,                        //      Changed to `true` if handling `<script>` errors
-            script_map      : {}//,                         //      Map of all the scripts loaded (or loading)
+    Script : {                                              //  `<script>` handling
+        beryl_boot_path : 'Gem/Beryl/Boot.js',              //      [Temporary] Module to load the rest of Gem modules
+        event_list      : ['abort', 'error', 'load'],       //      List of `<script>` events to listen for.
+        handle_errors   : false,                            //      Changed to `true` if handling `<script>` errors
+        //  load        : Function                          //      Load a script using `<script>` tag.
+        script_map      : {                                 //      Map of all the scripts loaded (or loading)
+            //  ['Gem/Beryl/Boot.js'] : `<script>` tag      //          `<script>` tag to load "Gem/Beryl/Boot.js".
+        }//,
 
-        //  handle_global_error : undefined                 //      Changed to a function if handling `<script>` errors
-        //  handle_script_event : undefined                 //      Changed to a function if handling `<script>` errors
-        //  source_attribute    : undefined                 //      Changed to a function if handling `<script>` errors
-        },                 
-
-        Source : {},                                        //  Sources to "hold onto" for Developer Tools -- see below
-
-        //
-        //  execute:
-        //      Temporary bootstrap function to execute code inside a function (to allow local variables)
         //
         //  NOTE:
-        //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
-        //      up in stack traces as the full name `Gem__execute` instead of shorter name `execute`
-        //      (this is really really helpful when reading stack traces).
-        //
-        execute : function Gem__execute(code) {
-            code()
-        }//,
-    }
+        //      The rest of attributes are only used if `Gem.Script.handle_errors` is `true`.
+        //    
+        //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag
+        //  handle_event        : Function                  //      Handle events of `<script>` tags
+        //  source_attribute    : Function                  //      Get unmodified `.src` attribute.
+    },
+
+    Source : {                                              //  Functions to "hold onto" for Developer Tools
+        //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'
+    },
+
+    //
+    //  Gem.codify : Function                               //  [Temporary] bootstrap function ... (defined below)
+    //
+
+    //
+    //  Gem.execute:
+    //      Execute code inside a function (to allow local variables)
+    //
+    //  NOTE:
+    //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
+    //      up in stack traces as the full name `Gem__execute` instead of shorter name `execute`
+    //      (this is really really helpful when reading stack traces).
+    //
+    execute : function Gem__execute(code) {
+        code()
+    }//,
+}
 
 
 //
-//  codify:
+//  Gem.codify:
 //      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
 //      avoid the use of any global variables.'
+//
 Gem.execute(
     function codifier__Gem__codify() {
         //
@@ -71,7 +88,7 @@ Gem.execute(
                 return name_pattern.exec(s)
             }
         }
-        
+
 
         Gem.codify = function Gem__codify(codifier) {
             var code = codifier()
@@ -248,11 +265,11 @@ if (Gem.Script.handle_errors) {
         )
     }
 }
-    
+
 
 //
 //  Gem.Script.handle_global_error
-//      Handle global errors when executing a `<script>` tag
+//      Handle errors when executing a `<script>` tag
 //
 if (Gem.Script.handle_errors) {
     Gem.codify(
@@ -264,13 +281,13 @@ if (Gem.Script.handle_errors) {
 
 
             function Gem__Script__handle_global_error(e) {
-                //  Handle global errors when executing a `<script>` tag
+                //  Handle errors when executing a `<script>` tag
 
                 if ( ! ('currentScript' in document))  {
                     return
                 }
 
-                var tag  = document.currentScript
+                var tag = document.currentScript
 
                 if ( ! tag) {
                     return
@@ -290,7 +307,6 @@ if (Gem.Script.handle_errors) {
 
             window.addEventListener('error', Gem__Script__handle_global_error)
 
-
             return Gem__Script__handle_global_error
         }
     )
@@ -298,8 +314,8 @@ if (Gem.Script.handle_errors) {
 
 
 //
-//
 //  Gem.Script.handle_event
+//      Handle events of `<script>` tags
 //
 if (Gem.Script.handle_errors) {
     Gem.codify(
@@ -315,6 +331,13 @@ if (Gem.Script.handle_errors) {
             //          2)  Force the user to acknowledge the alert box by hitting 'OK';
             //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
             //
+            //  NOTE #2:
+            //      The previous note means there is no way to get the loading error messge (i.e.: if the file
+            //      does not exist, or there is an error while transferring it HTTP).
+            //
+            //      Any syntax error (on successful load) can be caught & is caught by `Gem.Script.handle_global_error`
+            //      above.
+            //
             var alert                = window.alert
             var source_attribute     = Gem.Script.source_attribute
             var show_developer_tools = Gem.NodeWebKit.show_developer_tools
@@ -322,6 +345,8 @@ if (Gem.Script.handle_errors) {
 
 
             var script_handle_event = function Gem__Script__handle_event(e) {
+                //  Handle events of `<script>` tags
+
                 var tag = e.target
 
                 for (var i = 0; i < script_event_list.length; i ++) {
@@ -388,9 +413,9 @@ if (Gem.Script.handle_errors) {
     //  NOTE:
     //      If there is no 'AddEventListener' we could do:
     //
-    //          tag.onabort = handle_script_event
-    //          tag.onerror = handle_script_event                 //  Alert user if any error happens (alternate method)
-    //          tag.onload  = handle_script_event
+    //          tag.onabort = handle_event           
+    //          tag.onerror = handle_event                        //  Alert user if any error happens (alternate method)
+    //          tag.onload  = handle_event           
     //
     //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with super
     //      super old browsers.
@@ -475,44 +500,11 @@ if (Gem.Configuration.debug) {
 
 
 //
-//  At this point, as part of the boot process, the following is defined in `Gem`:
+//  At this point, as part of the boot process, `Gem` is now defined as in the original comment above:
 //
-//      .Configuration : {                                      Gem configuration values
-//              clarity : true,                                     Set Gem clarity mode to true
-//              debug   : true,                                     Set Gem debug mode to true
-//          }
+//      With the exception of Gem.Script.event_list (which has been deleted).
 //
-//      .NodeWebKit : {                                         Node WebKit members & methods:
-//              is_version_012_or_lower   : Boolean                 True if using nw.js & it's version 0.12 or lower
-//              is_version_013_or_greater : Boolean                 True if using nw.js & it's version 0.13 or greater
-//              show_developer_tools      : function                Show developer tools window
-//          }
-//
-//      .Script : {                                             Handling of `<script>` tags
-//              beryl_boot_path      : 'Gem/Beryl/Boot.js'          [Temporary] Next file to load
-//              handle_script_errors : Boolean                      True if handling script errors
-//              load                 : function                     Load a script using `<script>` tag.
-//
-//              script_map : {                                      Map of all the scripts loaded (or loading)
-//                  ['Gem/Beryl/Boot.js'] : `<script>` tag              `<script>` tag to load "Gem/Beryl/Boot.js".
-//              }   
-//              
-//              #
-//              #   The rest of attributes are only used if
-//              #   `Gem.Script.handle_script_errors` is `true`.
-//              #
-//              handle_global_error : undefined or Function         Handle global errors from `<script>` tags
-//              handle_script_event : undefined or Function         Handle events of `<script>` tags
-//              source_attribute    : undefined or Function         Extract umodified `.src` attribute
-//          }
-//
-//      .Source : {                                             Sources to "hold onto" for Developer Tools
-//              js_plugins_Beryl : function                         Avoid garbage collection of 'js/plugins/Beryl.js'
-//          }
-//
-//      .execute                      : function                [Temporary] Bootstrap function to execute code
-//
-//  The two attributes marked [Temporary] are deleted in later code.
+//  The two attributes marked [Temporary] are deleted in later code
 //
 
 
