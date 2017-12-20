@@ -24,7 +24,7 @@ window.Gem = {
     },
 
     Script : {                                              //  `<script>` handling
-        beryl_boot_path : 'Gem/Beryl/Xoot.js',              //      [Temporary] Module to load the rest of Gem modules
+        beryl_boot_path : 'Gem/Beryl/Boot.js',              //      [Temporary] Module to load the rest of Gem modules
         event_list      : ['abort', 'error', 'load'],       //      List of `<script>` events to listen for.
         handle_errors   : false,                            //      Changed to `true` if handling `<script>` errors
         //  load        : Function                          //      Load a script using `<script>` tag.
@@ -137,6 +137,10 @@ Gem.execute(
             if (version_list.length > 1) { minor = parse_integer__or__NaN(version_list[1]) }
         }
 
+
+        //
+        //  Exports
+        //
         Gem.NodeWebKit.is_version_012_or_lower  = (major === 0 && minor <= 12)
         Gem.NodeWebKit.is_version_013_or_higher = (major >   0 || minor >= 13)
     }
@@ -195,14 +199,15 @@ Gem.execute(
     function execute__set__Gem__Script__handle_errors() {
         //
         //  NOTE:
-        //      We only handle script events (and thus bring up an alert) if six conditions are met:
+        //      We only handle script events (and thus bring up an alert) if seven conditions are met:
         //
         //          1.  This is running in Gem debug mode;
         //          2.  This is running in RPG Maker MV "test" mode;
         //          3.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
         //          4.  The browser has a `.addEventListener`   method (all modern browsers do);
-        //          5.  The browser has a `.createElement.bind` method (all modern browsers do); AND
-        //          6.  The browser has a `.setAttribute`       method (all modern browsers do).
+        //          6.  The browser has a `.appendChild.bind`   method (all modern browsers do); AND
+        //          5.  The browser has a `.createElement.bind` method (all modern browsers do);
+        //          7.  The browser has a `.setAttribute`       method (all modern browsers do).
         //
         if (
                    Gem.Configuration.debug
@@ -210,8 +215,12 @@ Gem.execute(
                 && Utils.isOptionValid('test')
                 && ('addEventListener' in window)
                 && ('bind'             in document.createElement)
+                && ('bind'             in document.head.appendChild)
                 && ('setAttribute'     in document.head)
         ) {
+            //
+            //  Exports
+            //
             Gem.Script.handle_errors = true
         }
     }
@@ -386,7 +395,17 @@ Gem.execute(
             } else {
                 gem_scripts.id = id
             }
+
         }
+
+
+        document.head.appendChild(gem_scripts)
+
+
+        //
+        //  Export
+        //
+        Gem.Script.gem_scripts = gem_scripts
     }
 )
 
@@ -416,12 +435,16 @@ if (Gem.Script.handle_errors) {
             //  Imports
             //
             var create_script_tag   = document.createElement.bind(document, 'script')   //  Creates a `<script>` tag
+            var gem_scripts         = Gem.Script.gem_scripts
             var script_event_list   = Gem.Script.event_list
             var script_handle_event = Gem.Script.handle_event
             var script_map          = Gem.Script.script_map
 
 
-            return function Gem__Script__load(container, path) {
+            var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
+
+
+            return function Gem__Script__load(path) {
                 var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
 
                 tag.setAttribute('src', path)                       //  Modify to `<script src='path'></script>`
@@ -435,7 +458,7 @@ if (Gem.Script.handle_errors) {
                     tag.addEventListener(type, script_handle_event)
                 }
 
-                container.appendChild(tag)                      //  Attempt to load 'path' via the `<script>` tag.
+                append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
             }
         }
     )
@@ -470,10 +493,20 @@ if (Gem.Script.handle_errors) {
                 }
             }
 
-            var script_map = Gem.Script.script_map
+            var gem_scripts = Gem.Script.gem_scripts
+            var script_map  = Gem.Script.script_map
 
 
-            return function Gem__Script__load(container, path) {
+            if ('bind' in gem_scripts.appendChild) {
+                var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
+            } else {
+                var append_child = function OLD_WAY__append_child(tag) {
+                    gem_scripts.appendChild(tag)            //  Old way: Append to `gem_scripts`
+                }
+            }
+
+
+            return function Gem__Script__load(path) {
                 var tag = script_map[path] = create_script_tag()
 
                 if ('setAttribute' in tag) {                //  Is this a modern browser?
@@ -482,7 +515,7 @@ if (Gem.Script.handle_errors) {
                     tag.src = path                          //      Old way: Modify to `<script src='path'></script>`
                 }
 
-                container.appendChild(tag)                  //  Attempt to load 'path' via the `<script>` tag.
+                append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
             }
         }
     )

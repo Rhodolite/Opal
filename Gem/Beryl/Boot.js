@@ -340,6 +340,64 @@ Gem.Beryl.codify(
 )
 
 
+Gem.Beryl.codify(
+    'deep_copy_without_object_prototypes',
+    (
+          "Create a deep copy of an object -- removing all it's prototypes that are Object.prototype"
+        + '; This makes it easier to examine the object in Developer Tools with less "junk"'
+    ),
+    function codifier__Gem__Beryl__deep_copy_without_object_prototypes() {
+        //  Create a deep copy of an object -- removing all it's prototypes that are Object.prototype;
+        //  This makes it easier to examine the object in Developer Tools with less "junk"'
+        //
+        //  NOTE:
+        //      Prototype's other than Object.prototype are not removed, as they are meaningful & neccessary.
+        //
+        //      For example `Gem.Script.script_map['Gem/Beryl/Boot.js']` has a prototype of `HTMLScriptELement`,
+        //      this prototype is meaningful & necessary, and therefore is not removed.
+
+        var object__prototype        = Object.prototype
+        var create_Object            = Object.create
+        var enumerable_keys          = Object.keys
+        var get_property_descriptors = Object.getOwnPropertyDescriptors
+        var get_prototype_of         = Object.getPrototypeOf
+
+
+        var deep_copy_without_object_prototypes = function Gem__Beryl__deep_copy_without_object_prototypes(instance) {
+            var properties = get_property_descriptors(instance)
+            var keys       = enumerable_keys(properties).sort()     //  `sort` makes the deep copy deterministic
+
+            for (var i = 0; i < keys.length; i ++) {
+                var k = keys[i]
+                var v = properties[k]
+
+                if ('value' in v) {
+                    var value = v.value
+
+                    if (typeof value === 'object' && get_prototype_of(value) === object__prototype) {
+                        v.value = deep_copy_without_object_prototypes(value)
+                    }
+                }
+            }
+
+            return create_Object(null, properties)
+        }
+
+
+        return deep_copy_without_object_prototypes
+    }
+)
+
+
+if (Gem.Configuration.clarity) {
+    Gem.execute(
+        function execute__deep_copy__Gem__without_object_prototypes() {
+            window.Gem = Gem.Beryl.deep_copy_without_object_prototypes(Gem)
+        }
+    )
+}
+
+
 Gem.execute(
     function execute__Gem__clear__and__log_Gem() {
         console.clear()
