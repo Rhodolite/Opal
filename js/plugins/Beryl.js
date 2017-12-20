@@ -12,17 +12,23 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        beryl_boot_path   : 'Gem/Beryl/Boot.js',            //  Module to load the rest of Gem modules
-        clarity           : true,                           //  Set Gem clarity mode to true
-        debug             : true,                           //  Set Gem debug mode to true
+        Configuration : {                                   //  Gem configuration
+            clarity : true,                                 //      Set Gem clarity mode to true
+            debug   : true,                                 //      Set Gem debug mode to true
+        },
 
-        Script : {
-            event_list    : ['abort', 'error', 'load'],     //  List of `<script>` events to listen for.
-            handle_errors : false,                          //  Changed to `true`    if handling `<script>` errors
-            script_map    : {}//,                           //  Map of all the scripts loaded (or loading)
+        NodeWebKit: {
+        },
 
-        //  handle_global_error : undefined                 //  Changed to a function if handling `<script>` errors
-        //  handle_event : undefined                        //  Changed to a function if handling `<script>` errors
+        Script : {                                          //  `<script>` handling
+            beryl_boot_path : 'Gem/Beryl/Boot.js',          //      Module to load the rest of Gem modules
+            event_list      : ['abort', 'error', 'load'],   //      List of `<script>` events to listen for.
+            handle_errors   : false,                        //      Changed to `true` if handling `<script>` errors
+            script_map      : {}//,                         //      Map of all the scripts loaded (or loading)
+
+        //  handle_global_error : undefined                 //      Changed to a function if handling `<script>` errors
+        //  handle_script_event : undefined                 //      Changed to a function if handling `<script>` errors
+        //  source_attribute    : undefined                 //      Changed to a function if handling `<script>` errors
         },                 
 
         Source : {},                                        //  Sources to "hold onto" for Developer Tools -- see below
@@ -32,9 +38,9 @@ window.Gem = {
         //      Temporary bootstrap function to execute code inside a function (to allow local variables)
         //
         //  codify: (alternative usage)
-        //      If a function is returned then it is "codified" under it's name, ignoring it's first 13 characters
-        //      (i.e.:  ignoring the 'Gem__Script__' prefix) or its first 5 characters
-        //      (i.e.:  ignoring the 'Gem__'         prefix).
+        //      If a function is returned then it is "codified" under it's name, ignoring it's first 17 characters
+        //      (i.e.:  ignoring the 'Gem__NodeWebKit__' prefix) or its first 13 characters
+        //      (i.e.:  ignoring the 'Gem__Script__'     prefix).
         //
         //  NOTE:
         //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
@@ -45,10 +51,12 @@ window.Gem = {
             var code = codifier()
 
             if (code) {
-                if (code.name.startsWith('Gem__Script__')) {
-                    Gem.Script[code.name.substring(13)] = code
+                if (code.name.startsWith('Gem__NodeWebKit__')) {
+                    Gem.NodeWebKit[code.name.substring(17)] = code
+                } else if (code.name.startsWith('Gem__Script__')) {
+                    Gem.Script    [code.name.substring(13)] = code
                 } else {
-                    Gem[code.name.substring(5)] = code
+                    throw Error('Unknown name to codify: ' + code.name)
                 }
             }
         }//,
@@ -56,15 +64,14 @@ window.Gem = {
 
 
 //
-//  Gem.is_node_webkit_12_or_lower          - True if using nw.js & it's version 0.12 or lower
-//  Gem.is_node_webkit_13_or_greater        - True if using nw.js & it's version 0.13 or greater
+//  Gem.NodeWebKit.is_version_12_or_lower                   - True if using nw.js & it's version 0.12 or lower
+//  Gem.NodeWebKit.is_version_13_or_greater                 - True if using nw.js & it's version 0.13 or greater
 //
 //  NOTE:
-//      If not using nw.js, then both `Gem.is_node_webkit_12_or_lower` & `Gem.is_node_webkit_13_or_higher` will be
-//      `false`.
+//      If not using nw.js, then both `Gem.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
 //
 Gem.execute(
-    function execute__extract__node_webkit__version() {
+    function execute__extract__Gem__NodeWebKit__version() {
         //
         //  Imports
         //
@@ -74,49 +81,46 @@ Gem.execute(
         //
         //  Calculate Node WebKit version
         //
-        var node_webkit__major = NaN
-        var node_webkit__minor = NaN
+        var major = NaN
+        var minor = NaN
 
-        var node_webkit__version = (
-                   ('process'  in window)
-                && ('versions' in process)
-                && process.versions['node-webkit']
-            )
+        var version = (('process'  in window) && ('versions' in process) && (process.versions['node-webkit']))
 
-        if (typeof node_webkit__version == 'string') {
-            var version_list = node_webkit__version.split('.')
+        if (typeof version == 'string') {
+            var version_list = version.split('.')
 
-            if (version_list.length > 0) { node_webkit__major = parse_integer__or__NaN(version_list[0]) }
-            if (version_list.length > 1) { node_webkit__minor = parse_integer__or__NaN(version_list[1]) }
+            if (version_list.length > 0) { major = parse_integer__or__NaN(version_list[0]) }
+            if (version_list.length > 1) { minor = parse_integer__or__NaN(version_list[1]) }
         }
 
-        Gem.is_node_webkit_12_or_lower  = (node_webkit__major === 0 && node_webkit__minor <= 12)
-        Gem.is_node_webkit_13_or_higher = (node_webkit__major >   0 || node_webkit__minor >= 13)
+        Gem.NodeWebKit.is_version_012_or_lower  = (major === 0 && minor <= 12)
+        Gem.NodeWebKit.is_version_013_or_higher = (major >   0 || minor >= 13)
     }
 )
 
 
 //
-//  Gem.show_developer_tools
+//  Gem.NodeWebKit.show_developer_tools
+//      Show developer tools
 //
-if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer tools (nw.js 0.12 or lower)
+if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
     Gem.execute(
-        function codify__Gem__show_developer_tools() {
+        function codify__Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
 
-            return function Gem__show_developer_tools() {
+            return function Gem__NodeWebKit__show_developer_tools() {
                 //  Show developer tools (nw.js 0.12 or lower)
 
                 game_window.showDevTools()
             }
         }
     )
-} else if (Gem.is_node_webkit_13_or_higher) {               //  Show developer tools (nw.js 0.13 or higher)
+} else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
     Gem.execute(
-        function codify__Gem__show_developer_tools() {
+        function codify__Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
 
-            return function Gem__show_developer_tools() {
+            return function Gem__NodeWebKit__show_developer_tools() {
                 //  Show developer tools (nw.js 0.13 or higher)
 
                 //
@@ -131,8 +135,8 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
     Gem.execute(
-        function codify__Gem__show_developer_tools() {
-            return function Gem__show_developer_tools() {
+        function codify__Gem__NodeWebKit__show_developer_tools() {
+            return function Gem__NodeWebKit__show_developer_tools() {
                 //  Not using nw.js: Don't show developer tools
             }
         }
@@ -157,7 +161,7 @@ Gem.execute(
         //          6.  The browser has a `.setAttribute`       method (all modern browsers do).
         //
         if (
-                   Gem.debug
+                   Gem.Configuration.debug
                 && ('Utils' in window) && Utils.isNwjs()
                 && Utils.isOptionValid('test')
                 && ('addEventListener' in window)
@@ -228,8 +232,8 @@ if (Gem.Script.handle_errors) {
         function codify__Gem__Script__handle_global_error() {
             var alert                = window.alert
             var document             = window.document
-            var source_attribute       = Gem.Script.source_attribute
-            var show_developer_tools = Gem.show_developer_tools
+            var source_attribute     = Gem.Script.source_attribute
+            var show_developer_tools = Gem.NodeWebKit.show_developer_tools
 
 
             function Gem__Script__handle_global_error(e) {
@@ -285,8 +289,8 @@ if (Gem.Script.handle_errors) {
             //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
             //
             var alert                = window.alert
-            var source_attribute       = Gem.Script.source_attribute
-            var show_developer_tools = Gem.show_developer_tools
+            var source_attribute     = Gem.Script.source_attribute
+            var show_developer_tools = Gem.NodeWebKit.show_developer_tools
             var script_event_list    = Gem.Script.event_list
 
 
@@ -315,7 +319,7 @@ if (Gem.Script.handle_errors) {
 
 
 //
-//  Gem.load_script
+//  Gem.Script.load
 //
 if (Gem.Script.handle_errors) {
     //
@@ -324,7 +328,7 @@ if (Gem.Script.handle_errors) {
     //      `.addEventListener`.
     //
     Gem.execute(
-        function codify__Gem__load_script() {
+        function codify__Gem__Script__load() {
             //
             //  Imports
             //
@@ -334,11 +338,10 @@ if (Gem.Script.handle_errors) {
             var script_map          = Gem.Script.script_map
 
 
-            return function Gem__load_script(container, path) {
-                var script_data = script_map[path] = {}
-                var tag         = script_data.tag  = create_script_tag()
+            return function Gem__Script__load(container, path) {
+                var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
 
-                tag.setAttribute('src', path)                   //  Modify to `<script src='path'></script>`
+                tag.setAttribute('src', path)                       //  Modify to `<script src='path'></script>`
 
                 //
                 //  Handle script events 'abort', 'error', & 'load'
@@ -372,7 +375,7 @@ if (Gem.Script.handle_errors) {
     //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
     //
     Gem.execute(
-        function codify__Gem__load_script() {
+        function codify__Gem__Script__load() {
             //
             //  Imports
             //
@@ -387,9 +390,8 @@ if (Gem.Script.handle_errors) {
             var script_map = Gem.Script.script_map
 
 
-            return function Gem__load_script(container, path) {
-                var script_data = script_map[path] = {}
-                var tag         = script_data.tag  = create_script_tag()
+            return function Gem__Script__load(container, path) {
+                var tag = script_map[path] = create_script_tag()
 
                 if ('setAttribute' in tag) {                //  Is this a modern browser?
                     tag.setAttribute('src', path)           //      New way: Modify to `<script src='path`></script>`
@@ -422,7 +424,7 @@ Gem.execute(
 //
 Gem.execute(
     function execute__load_next_script() {
-        Gem.load_script(document.head, Gem.beryl_boot_path)
+        Gem.Script.load(document.head, Gem.Script.beryl_boot_path)
     }
 )
 
@@ -436,33 +438,44 @@ Gem.execute(
 //      In debug mode, `Gem.sources` is used to make sure that there is least once such function from each JavaScript
 //      file that has been loaded in.
 //
-if (Gem.debug) {
+if (Gem.Configuration.debug) {
     Gem.execute(
         function execute__reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
-            Gem.Source.js_plugins_Beryl = Gem.show_developer_tools
+            Gem.Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
         }
     )
 }
 
 
-debugger
-
-
 //
 //  At this point, as part of the boot process, the following is defined in `Gem`:
 //
+//      .Configuration : {                                      Gem configuration
+//              clarity : true,                                     Set Gem clarity mode to true
+//              debug   : true,                                     Set Gem debug mode to true
+//          }
+//
+//      .NodeWebKit : {                                         Node WebKit members & methods:
+//              is_version_012_or_lower   : Boolean                 True if using nw.js & it's version 0.12 or lower
+//              is_version_013_or_greater : Boolean                 True if using nw.js & it's version 0.13 or greater
+//              show_developer_tools      : function                Show developer tools window
+//          }
+//
 //      .Script : {                                             Handling of `<script>` tags
+//              beryl_boot_path      : 'Gem/Beryl/Boot.js'          [Temporary] Next file to load
 //              handle_script_errors : Boolean                      True if handling script errors
+//              load                 : function                     Load a script using `<script>` tag.
 //
 //              script_map : {                                      Map of all the scripts loaded (or loading)
-//                  ['Gem/Beryl/Boot.js'] : `<script>` tag          `<script>` tag to load "Gem/Beryl/Boot.js".
+//                  ['Gem/Beryl/Boot.js'] : `<script>` tag              `<script>` tag to load "Gem/Beryl/Boot.js".
 //              }   
 //              
 //              #
-//              #   The rest of attributes are only used if `Gem.Script.handle_script_errors` is `true`.
+//              #   The rest of attributes are only used if
+//              #   `Gem.Script.handle_script_errors` is `true`.
 //              #
-//              handle_script_event : undefined or Function         Handle events of `<script>` tags
 //              handle_global_error : undefined or Function         Handle global errors from `<script>` tags
+//              handle_script_event : undefined or Function         Handle events of `<script>` tags
 //              source_attribute    : undefined or Function         Extract umodified `.src` attribute
 //          }
 //
@@ -470,17 +483,9 @@ debugger
 //              js_plugins_Beryl : function                         Avoid garbage collection of 'js/plugins/Beryl.js'
 //          }
 //
-//      .clarity                      : true                    Clarity mode
-//      .debug                        : true                    Debug mode
-//      .is_node_webkit_12_or_lower   : Boolean                 True if using nw.js & it's version 0.12 or lower
-//      .is_node_webkit_13_or_greater : Boolean                 True if using nw.js & it's version 0.13 or greater
-//      .load_script                  : function                Load a script using `<script>` tag.
-//      .show_developer_tools         : function                Show developer tools window
+//      .execute                      : function                [Temporary] Bootstrap function to execute code
 //
-//  Also the following temporary members of `Gem` exist, which will be deleted in Gem/Beryl/boot.js:
-//
-//      .beryl_boot_path         : 'Gem/Beryl/Boot.js'          Next file to load
-//      .execute                 : function                     Bootstrap function to execute code
+//  The two attributes marked [Temporary] are deleted in later code.
 //
 
 
