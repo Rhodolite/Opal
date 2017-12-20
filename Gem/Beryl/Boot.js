@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.show_developer_tools()
+Gem.NodeWebKit.show_developer_tools()
 
 
 Gem.execute(
@@ -38,7 +38,7 @@ Gem.execute(
 //      When an object uses `.$who` or `.$what` members for it's own purposes, then the extra members created
 //      are named `.$__who__` and `.$__what__` to avoid conflicts.
 //
-if (Gem.clarity) {
+if (Gem.Configuration.clarity) {
     Gem.execute(
         function execute__Gem__add_clarity() {
             Gem.$who  = 'Gem'                                       //  Name of this variable.
@@ -53,17 +53,31 @@ if (Gem.clarity) {
                 }//,
             }
 
+            Gem.Beryl.$who  = 'Gem.Beryl'
+            Gem.Beryl.$what = 'Exports of the Beryl module.'
+
+            Gem.Configuration.$who  = 'Gem.Configuration'
+            Gem.Configuration.$what = 'Gem Configuration values'
+
+            Gem.NodeWebKit.$who  = 'Gem.NodeWebKit'
+            Gem.NodeWebKit.$what = 'Node WebKit members & methods'
+
+            Gem.Script.$who  = 'Gem.Script'
+            Gem.Script.$what = '`<script>` handling'
+
+            Gem.Script.script_map.$who  = 'Gem.Script.script_map'
+            Gem.Script.script_map.$what = 'Map of all the scripts loaded (or loading).'
+
+            Gem.Source.$who  = 'Gem.Source'
+            Gem.Source.$what = 'A map, for each `<script>` tag, a function from the source file to "hold onto"'
+                             + ' to avoid garbage collection of all functions from that source file,'
+                             + ' which causes the source file to disappear from the "Sources" tab of Developer Tools'
+
             Gem._.$who  = 'Gem._'
             Gem._.$what = 'Private members & methods of all Gem modules.'
 
             Gem._.Beryl.$who  = 'Gem._.Beryl'
             Gem._.Beryl.$what = 'Private members & methods of the Beryl module.'
-
-            Gem.Beryl.$who  = 'Gem.Beryl'
-            Gem.Beryl.$what = 'Exports of the Beryl module.'
-
-            Gem.scripts.$who  = 'Gem.scripts'
-            Gem.scripts.$what = 'Map of all the scripts loaded (or loading).'
         }
     )
 }
@@ -72,18 +86,20 @@ if (Gem.clarity) {
 //
 //  Bootstrap `Gem.codify`
 //
-//
-Gem.execute(
-    function execute__Beryl__bootstrap_codify() {
-        Gem.Beryl.codify = function Beryl__codify(name, $what, codifier) {
+Gem.codify(
+    function codifier__Gem__Beryl__codify() {
+        return function Gem__Beryl__codify(name, $what, codifier) {
             Gem.Beryl[name] = codifier()
 
-            if (Gem.clarity) {
+            if (Gem.Configuration.clarity) {
                 Gem.$.Beryl[name] = { $who : name, $what : $what, $code : Gem.Beryl[name] }
             }
         }
     }
 )
+
+
+debugger
 
 
 //
@@ -100,7 +116,7 @@ Gem.Beryl.codify(
         + '.'
     ),
     function codifier__Beryl__produce_codify() {
-        if (Gem.clarity) {
+        if (Gem.Configuration.clarity) {
             var $who    = '<closure for Gem.$.ModuleName.produce_codify>'
             var $what = (
                       'The closure for `Gem.$.ModuleName.produce_codify`'
@@ -183,7 +199,7 @@ Gem.Beryl.codify(
         //
         //           (Actually since the nested value of `.invisible.enumerable` defaults to false, we would
         //           just omit it & not set it to true).
-        //               
+        //
         //  Finally in comments below, #1 or #2 refers to the same #1 & #2 as in this comment; i.e.:
         //
         //      #1.  Means create an attribute; and
@@ -201,7 +217,7 @@ Gem.Beryl.codify(
                     }//,
                 )
 
-            if (Gem.clarity) {
+            if (Gem.Configuration.clarity) {
                 Object.defineProperties(
                         r,
                         {
@@ -238,7 +254,7 @@ Gem.Beryl.codify(
                 }//,
             )
 
-        if (Gem.clarity) {
+        if (Gem.Configuration.clarity) {
             Object.defineProperties(
                     properties,
                     {
@@ -259,7 +275,7 @@ Gem.Beryl.codify(
         }
 
         return function Beryl__produce_codify(exports, $) {
-            if (Gem.clarity) {
+            if (Gem.Configuration.clarity) {
                 var $who    = '<closure Gem.$.ModuleName.codify>'
                 var $what = (
                           'The closure for `Gem.$.ModuleName.codify`'
@@ -304,7 +320,7 @@ Gem.Beryl.codify(
 //  Now run `Gem.Beryl.codify` on `Gem.Beryl.produce_codify` & `Gem.Beryl.codify`
 //  (so it uses it's newly defined itself on itself).
 //
-if (Gem.clarity) {
+if (Gem.Configuration.clarity) {
     Gem.Beryl.codify(
         Gem.$.Beryl.produce_codify.$who,
         Gem.$.Beryl.produce_codify.$what,

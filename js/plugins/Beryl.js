@@ -12,12 +12,12 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        Configuration : {                                   //  Gem configuration
+        Configuration : {                                   //  Gem configuration values
             clarity : true,                                 //      Set Gem clarity mode to true
             debug   : true,                                 //      Set Gem debug mode to true
         },
 
-        NodeWebKit: {
+        NodeWebKit: {                                       //  Node WebKit members & methods
         },
 
         Script : {                                          //  `<script>` handling
@@ -37,30 +37,57 @@ window.Gem = {
         //  execute:
         //      Temporary bootstrap function to execute code inside a function (to allow local variables)
         //
-        //  codify: (alternative usage)
-        //      If a function is returned then it is "codified" under it's name, ignoring it's first 17 characters
-        //      (i.e.:  ignoring the 'Gem__NodeWebKit__' prefix) or its first 13 characters
-        //      (i.e.:  ignoring the 'Gem__Script__'     prefix).
-        //
         //  NOTE:
         //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
         //      up in stack traces as the full name `Gem__execute` instead of shorter name `execute`
         //      (this is really really helpful when reading stack traces).
         //
-        execute : function Gem__execute(codifier) {
-            var code = codifier()
-
-            if (code) {
-                if (code.name.startsWith('Gem__NodeWebKit__')) {
-                    Gem.NodeWebKit[code.name.substring(17)] = code
-                } else if (code.name.startsWith('Gem__Script__')) {
-                    Gem.Script    [code.name.substring(13)] = code
-                } else {
-                    throw Error('Unknown name to codify: ' + code.name)
-                }
-            }
+        execute : function Gem__execute(code) {
+            code()
         }//,
     }
+
+
+//
+//  codify:
+//      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
+//      avoid the use of any global variables.'
+Gem.execute(
+    function codifier__Gem__codify() {
+        //
+        //  Imports
+        //
+        var create_pattern = RegExp
+
+        //
+        //  Closures
+        //
+        var name_pattern = new RegExp(/^Gem__([A-Z][A-Za-z_]*)__([a-z][0-9A-Za-z_]*)$/)
+
+        if ('bind' in name_pattern.exec) {
+            var name_match = name_pattern.exec.bind(name_pattern)
+        } else {
+            var name_match = function name_match(s) {
+                return name_pattern.exec(s)
+            }
+        }
+        
+
+        Gem.codify = function Gem__codify(codifier) {
+            var code = codifier()
+            var m    = name_match(code.name)
+
+            if ( ! m) {
+                throw Error('Unknown name to codify: ' + code.name)
+            }
+
+            var module = m[1]
+            var name   = m[2]
+
+            Gem[module][name] = code
+        }
+    }
+)
 
 
 //
@@ -104,8 +131,8 @@ Gem.execute(
 //      Show developer tools
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
-    Gem.execute(
-        function codify__Gem__NodeWebKit__show_developer_tools() {
+    Gem.codify(
+        function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
 
             return function Gem__NodeWebKit__show_developer_tools() {
@@ -116,8 +143,8 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
-    Gem.execute(
-        function codify__Gem__NodeWebKit__show_developer_tools() {
+    Gem.codify(
+        function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
 
             return function Gem__NodeWebKit__show_developer_tools() {
@@ -134,8 +161,8 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
-    Gem.execute(
-        function codify__Gem__NodeWebKit__show_developer_tools() {
+    Gem.codify(
+        function codifier__Gem__NodeWebKit__show_developer_tools() {
             return function Gem__NodeWebKit__show_developer_tools() {
                 //  Not using nw.js: Don't show developer tools
             }
@@ -191,8 +218,8 @@ Gem.execute(
 //
 if (Gem.Script.handle_errors) {
     if ('getAttribute' in document.head) {
-        Gem.execute(
-            function codify__Gem__Script__source_attribute(tag) {
+        Gem.codify(
+            function codifier__Gem__Script__source_attribute(tag) {
                 return function Gem__Script__source_attribute(tag) {
                     //  Get unmodified `.src` attribute
 
@@ -201,8 +228,8 @@ if (Gem.Script.handle_errors) {
             }
         )
     } else {
-        Gem.execute(
-            function codify__Gem__Script__source_attribute(tag) {
+        Gem.codify(
+            function codifier__Gem__Script__source_attribute(tag) {
                 var origin_slash = location.origin + '/'
 
 
@@ -228,8 +255,8 @@ if (Gem.Script.handle_errors) {
 //      Handle global errors when executing a `<script>` tag
 //
 if (Gem.Script.handle_errors) {
-    Gem.execute(
-        function codify__Gem__Script__handle_global_error() {
+    Gem.codify(
+        function codifier__Gem__Script__handle_global_error() {
             var alert                = window.alert
             var document             = window.document
             var source_attribute     = Gem.Script.source_attribute
@@ -275,8 +302,8 @@ if (Gem.Script.handle_errors) {
 //  Gem.Script.handle_event
 //
 if (Gem.Script.handle_errors) {
-    Gem.execute(
-        function codify__Gem__Script__handle_event() {
+    Gem.codify(
+        function codifier__Gem__Script__handle_event() {
             //
             //  NOTE:
             //      There is no way to get the error message, if there is one, when attempting to load
@@ -327,8 +354,8 @@ if (Gem.Script.handle_errors) {
     //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` &
     //      `.addEventListener`.
     //
-    Gem.execute(
-        function codify__Gem__Script__load() {
+    Gem.codify(
+        function codifier__Gem__Script__load() {
             //
             //  Imports
             //
@@ -374,8 +401,8 @@ if (Gem.Script.handle_errors) {
     //      We don't know if this browser supports `.bind`         or not, so just in case ... test for it.
     //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
     //
-    Gem.execute(
-        function codify__Gem__Script__load() {
+    Gem.codify(
+        function codifier__Gem__Script__load() {
             //
             //  Imports
             //
@@ -450,7 +477,7 @@ if (Gem.Configuration.debug) {
 //
 //  At this point, as part of the boot process, the following is defined in `Gem`:
 //
-//      .Configuration : {                                      Gem configuration
+//      .Configuration : {                                      Gem configuration values
 //              clarity : true,                                     Set Gem clarity mode to true
 //              debug   : true,                                     Set Gem debug mode to true
 //          }
