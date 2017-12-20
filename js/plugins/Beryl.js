@@ -24,7 +24,7 @@ window.Gem = {
     },
 
     Script : {                                              //  `<script>` handling
-        beryl_boot_path : 'Gem/Beryl/Boot.js',              //      [Temporary] Module to load the rest of Gem modules
+        beryl_boot_path : 'Gem/Beryl/Xoot.js',              //      [Temporary] Module to load the rest of Gem modules
         event_list      : ['abort', 'error', 'load'],       //      List of `<script>` events to listen for.
         handle_errors   : false,                            //      Changed to `true` if handling `<script>` errors
         //  load        : Function                          //      Load a script using `<script>` tag.
@@ -371,7 +371,38 @@ if (Gem.Script.handle_errors) {
 
 
 //
+//  Gem.Script.gem_scripts
+//
+Gem.execute(
+    function execute__Gem__Script__gem_scripts() {
+        var id          = 'gem_scripts'
+        var gem_scripts = document.getElementById(id)
+
+        if (gem_scripts === null) {
+            gem_scripts = document.createElement('div')
+
+            if ('setAttribute' in gem_scripts) {
+                gem_scripts.setAttribute('id', id)
+            } else {
+                gem_scripts.id = id
+            }
+        }
+    }
+)
+
+
+//
 //  Gem.Script.load
+//
+//  NOTE:
+//      Annoyingly enough events on `<script>` tags do not bubble on purpose.
+//
+//      `<script>` tags fire "simple events" which according to section 7.1.5.3 of
+//      https://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event means:
+//
+//          "Firing a simple event named e means that a trusted event with the name e, which does not bubble"
+//
+//      Hence we have to set the 'abort', 'error', & 'load' events on each individual `<script>` tag.
 //
 if (Gem.Script.handle_errors) {
     //
@@ -471,12 +502,9 @@ Gem.execute(
 //
 //  Load Gem/Beryl/Boot.js
 //
-//  NOTE:
-//      Temporarily inserted into `document.head` -- will be moved later.
-//
 Gem.execute(
     function execute__load_next_script() {
-        Gem.Script.load(document.head, Gem.Script.beryl_boot_path)
+        Gem.Script.load(Gem.Script.beryl_boot_path)
     }
 )
 
