@@ -12,20 +12,29 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
-        beryl_boot_path   : 'Gem/Beryl/Xoot.js',            //  Module to load the rest of Gem modules
+        beryl_boot_path   : 'Gem/Beryl/Boot.js',            //  Module to load the rest of Gem modules
         clarity           : true,                           //  Set Gem clarity mode to true
         debug             : true,                           //  Set Gem debug mode to true
-        scripts           : {},                             //  Map of all the scripts loaded (or loading)
-        sources           : {},                             //  Sources to "hold onto" for Developer Tools -- see below
 
+        Script : {
+            event_list    : ['abort', 'error', 'load'],     //  List of `<script>` events to listen for.
+            handle_errors : false,                          //  Changed to `true`    if handling `<script>` errors
+            script_map    : {}//,                           //  Map of all the scripts loaded (or loading)
+
+        //  handle_global_error : undefined                 //  Changed to a function if handling `<script>` errors
+        //  handle_event : undefined                        //  Changed to a function if handling `<script>` errors
+        },                 
+
+        Source : {},                                        //  Sources to "hold onto" for Developer Tools -- see below
 
         //
         //  execute:
         //      Temporary bootstrap function to execute code inside a function (to allow local variables)
         //
         //  codify: (alternative usage)
-        //      If a function is returned then it is "codified" under it's name, ignoring it's first 5 characters
-        //      (i.e.:  ignoring the 'Gem__' prefix).
+        //      If a function is returned then it is "codified" under it's name, ignoring it's first 13 characters
+        //      (i.e.:  ignoring the 'Gem__Script__' prefix) or its first 5 characters
+        //      (i.e.:  ignoring the 'Gem__'         prefix).
         //
         //  NOTE:
         //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
@@ -36,7 +45,11 @@ window.Gem = {
             var code = codifier()
 
             if (code) {
-                Gem[code.name.substring(5)] = code
+                if (code.name.startsWith('Gem__Script__')) {
+                    Gem.Script[code.name.substring(13)] = code
+                } else {
+                    Gem[code.name.substring(5)] = code
+                }
             }
         }//,
     }
@@ -92,6 +105,8 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
             var game_window = require('nw.gui').Window.get()
 
             return function Gem__show_developer_tools() {
+                //  Show developer tools (nw.js 0.12 or lower)
+
                 game_window.showDevTools()
             }
         }
@@ -102,11 +117,13 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
             var game_window = nw.Window.get()
 
             return function Gem__show_developer_tools() {
+                //  Show developer tools (nw.js 0.13 or higher)
+
                 //
                 //  NOTE:
-                //      You *MUST* past `false` to `game_window.showDevTools` in version 0.13, or nw.js will
-                //      simply exit your program -- which is like really really really annoying -- espeically
-                //      the first time, when you don't know what is happening.
+                //      You *MUST* pass `false` to `game_window.showDevTools` in version 0.13, or nw.js will simply
+                //      exit your program -- which is really really really annoying -- especially the first time,
+                //      when you don't know what is happening & it takes you half an hour to find out ...
                 //
                 game_window.showDevTools(false)
             }
@@ -124,10 +141,10 @@ if (Gem.is_node_webkit_12_or_lower) {                       //  Show developer t
 
 
 //
-//  Gem.handle_script_event
+//  Gem.Script.handle_errors
 //
 Gem.execute(
-    function execute__set__handle_script_errors() {
+    function execute__set__Gem__Script__handle_errors() {
         //
         //  NOTE:
         //      We only handle script events (and thus bring up an alert) if six conditions are met:
@@ -139,46 +156,96 @@ Gem.execute(
         //          5.  The browser has a `.createElement.bind` method (all modern browsers do); AND
         //          6.  The browser has a `.setAttribute`       method (all modern browsers do).
         //
-        Gem.handle_script_errors = (
+        if (
                    Gem.debug
                 && ('Utils' in window) && Utils.isNwjs()
                 && Utils.isOptionValid('test')
-                && ('addEventListener' in document)
+                && ('addEventListener' in window)
                 && ('bind'             in document.createElement)
                 && ('setAttribute'     in document.head)
-            )
-
-        if (Gem.handle_script_errors) {
-            Gem.script_event_list = ['abort', 'error', 'load']
+        ) {
+            Gem.Script.handle_errors = true
         }
     }
 )
 
 
 //
-//  Gem.handle_error
+//  Gem.Script.source_attribute
+//      Get unmodified `.src` attribute.
 //
-if (Gem.handle_script_errors) {
+//  NOTE:
+//      On nw.js:
+//          Doing `tag.getAttribute('src')` returns the unmodified `.src` attribute
+//
+//          However `tag.src` returns the modified `.src` attribute, prefixed with the "origin".
+//
+//          Yes, its CRAZY, that these two [theoretically identical] ways of accessing `.src` return different values.
+//
+//      Anyway, if we can use `.getAttribute('src')` we do so; otherwise we do it the crazy backwards compatiable
+//      way.
+//
+if (Gem.Script.handle_errors) {
+    if ('getAttribute' in document.head) {
+        Gem.execute(
+            function codify__Gem__Script__source_attribute(tag) {
+                return function Gem__Script__source_attribute(tag) {
+                    //  Get unmodified `.src` attribute
+
+                    return tag.getAttribute('src')          //  Get unmodified `.src` attribute
+                }
+            }
+        )
+    } else {
+        Gem.execute(
+            function codify__Gem__Script__source_attribute(tag) {
+                var origin_slash = location.origin + '/'
+
+
+                return function Gem__Script__source_attribute(tag) {
+                    //  Get unmodified `.src` attribute
+
+                    var source = tag.src                    //  OLD WAY: get [possibly modified] `.src` attribute
+
+                    if (typeof source === 'string' && source.startsWith(origin_slash)) {
+                        return source.substring(origin_slash.length)    //  Restore `.src` attribute to original value
+                    }
+
+                    return source                           //  Return [ummodified] `.src` attribute
+                }
+            }
+        )
+    }
+}
+    
+
+//
+//  Gem.Script.handle_global_error
+//      Handle global errors when executing a `<script>` tag
+//
+if (Gem.Script.handle_errors) {
     Gem.execute(
-        function codify__Gem__handle_global_error() {
+        function codify__Gem__Script__handle_global_error() {
             var alert                = window.alert
             var document             = window.document
-            var origin_slash         = location.origin + '/'
-            var origin_slash__total  = origin_slash.length
+            var source_attribute       = Gem.Script.source_attribute
             var show_developer_tools = Gem.show_developer_tools
 
 
-            function Gem__handle_global_error(e) {
+            function Gem__Script__handle_global_error(e) {
+                //  Handle global errors when executing a `<script>` tag
+
                 if ( ! ('currentScript' in document))  {
                     return
                 }
 
                 var tag  = document.currentScript
-                var path = tag.src
 
-                if (typeof path === 'string' && path.startsWith(origin_slash)) {
-                    path = path.substring(origin_slash__total)
+                if ( ! tag) {
+                    return
                 }
+
+                var path = source_attribute(tag)
 
                 alert(
                       path + '#' + e.lineno
@@ -190,10 +257,10 @@ if (Gem.handle_script_errors) {
             }
 
 
-            window.addEventListener('error', Gem__handle_global_error)
+            window.addEventListener('error', Gem__Script__handle_global_error)
 
 
-            return Gem__handle_global_error
+            return Gem__Script__handle_global_error
         }
     )
 }
@@ -201,11 +268,11 @@ if (Gem.handle_script_errors) {
 
 //
 //
-//  Gem.handle_script_event
+//  Gem.Script.handle_event
 //
-if (Gem.handle_script_errors) {
+if (Gem.Script.handle_errors) {
     Gem.execute(
-        function codify__Gem__handle_script_event() {
+        function codify__Gem__Script__handle_event() {
             //
             //  NOTE:
             //      There is no way to get the error message, if there is one, when attempting to load
@@ -217,29 +284,23 @@ if (Gem.handle_script_errors) {
             //          2)  Force the user to acknowledge the alert box by hitting 'OK';
             //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
             //
-            var alert                    = window.alert
-            var show_developer_tools     = Gem.show_developer_tools
-            var origin_slash             = location.origin + '/'
-            var origin_slash__total      = origin_slash.length
-            var script_event_list        = Gem.script_event_list
-            var script_event_list__total = script_event_list.length
+            var alert                = window.alert
+            var source_attribute       = Gem.Script.source_attribute
+            var show_developer_tools = Gem.show_developer_tools
+            var script_event_list    = Gem.Script.event_list
 
 
-            var handle_script_event = function Gem__handle_script_event(e) {
+            var script_handle_event = function Gem__Script__handle_event(e) {
                 var tag = e.target
 
-                for (var i = 0; i < script_event_list__total; i ++) {
+                for (var i = 0; i < script_event_list.length; i ++) {
                     var type = script_event_list[i]
 
-                    tag.removeEventListener(type, handle_script_event)
+                    tag.removeEventListener(type, script_handle_event)
                 }
 
                 if (e.type === 'abort' || e.type === 'error') {
-                    var path = tag.src
-
-                    if (typeof path === 'string' && path.startsWith(origin_slash)) {
-                        path = path.substring(origin_slash__total)
-                    }
+                    var path = source_attribute(tag)
 
                     alert(path + ': Failed to load.  Please see Developer Tools for full error')
                     show_developer_tools()
@@ -247,7 +308,7 @@ if (Gem.handle_script_errors) {
             }
 
 
-            return handle_script_event
+            return script_handle_event
         }
     )
 }
@@ -256,7 +317,7 @@ if (Gem.handle_script_errors) {
 //
 //  Gem.load_script
 //
-if (Gem.handle_script_errors) {
+if (Gem.Script.handle_errors) {
     //
     //  NOTE:
     //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` &
@@ -268,26 +329,24 @@ if (Gem.handle_script_errors) {
             //  Imports
             //
             var create_script_tag   = document.createElement.bind(document, 'script')   //  Creates a `<script>` tag
-            var handle_script_event = Gem.handle_script_event
-            var scripts             = Gem.scripts
-
-            var script_event_list        = Gem.script_event_list
-            var script_event_list__total = script_event_list.length
+            var script_event_list   = Gem.Script.event_list
+            var script_handle_event = Gem.Script.handle_event
+            var script_map          = Gem.Script.script_map
 
 
             return function Gem__load_script(container, path) {
-                var script_data = scripts[path]   = {}
-                var tag         = script_data.tag = create_script_tag()
+                var script_data = script_map[path] = {}
+                var tag         = script_data.tag  = create_script_tag()
 
                 tag.setAttribute('src', path)                   //  Modify to `<script src='path'></script>`
 
                 //
                 //  Handle script events 'abort', 'error', & 'load'
                 //
-                for (var i = 0; i < script_event_list__total; i ++) {
+                for (var i = 0; i < script_event_list.length; i ++) {
                     var type = script_event_list[i]
 
-                    tag.addEventListener(type, handle_script_event)
+                    tag.addEventListener(type, script_handle_event)
                 }
 
                 container.appendChild(tag)                      //  Attempt to load 'path' via the `<script>` tag.
@@ -325,12 +384,12 @@ if (Gem.handle_script_errors) {
                 }
             }
 
-            var scripts = Gem.scripts
+            var script_map = Gem.Script.script_map
 
 
             return function Gem__load_script(container, path) {
-                var script_data = scripts[path]   = {}
-                var tag         = script_data.tag = create_script_tag()
+                var script_data = script_map[path] = {}
+                var tag         = script_data.tag  = create_script_tag()
 
                 if ('setAttribute' in tag) {                //  Is this a modern browser?
                     tag.setAttribute('src', path)           //      New way: Modify to `<script src='path`></script>`
@@ -349,8 +408,8 @@ if (Gem.handle_script_errors) {
 //  Cleanup
 //
 Gem.execute(
-    function execute__remove__Gem__script_event_list() {
-        delete Gem.script_event_list
+    function execute__remove__Gem__Script__event_list() {
+        delete Gem.Script.event_list
     }
 )
 
@@ -380,34 +439,43 @@ Gem.execute(
 if (Gem.debug) {
     Gem.execute(
         function execute__reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
-            Gem.sources.js_plugins_Beryl = Gem.show_developer_tools
+            Gem.Source.js_plugins_Beryl = Gem.show_developer_tools
         }
     )
 }
 
 
+debugger
+
+
 //
 //  At this point, as part of the boot process, the following is defined in `Gem`:
 //
+//      .Script : {                                             Handling of `<script>` tags
+//              handle_script_errors : Boolean                      True if handling script errors
+//
+//              script_map : {                                      Map of all the scripts loaded (or loading)
+//                  ['Gem/Beryl/Boot.js'] : `<script>` tag          `<script>` tag to load "Gem/Beryl/Boot.js".
+//              }   
+//              
+//              #
+//              #   The rest of attributes are only used if `Gem.Script.handle_script_errors` is `true`.
+//              #
+//              handle_script_event : undefined or Function         Handle events of `<script>` tags
+//              handle_global_error : undefined or Function         Handle global errors from `<script>` tags
+//              source_attribute    : undefined or Function         Extract umodified `.src` attribute
+//          }
+//
+//      .Source : {                                             Sources to "hold onto" for Developer Tools
+//              js_plugins_Beryl : function                         Avoid garbage collection of 'js/plugins/Beryl.js'
+//          }
+//
 //      .clarity                      : true                    Clarity mode
 //      .debug                        : true                    Debug mode
-//      .is_node_webkit_12_or_lower   : true or false           True if using nw.js & it's version 0.12 or lower
-//      .is_node_webkit_13_or_greater : true or false           True if using nw.js & it's version 0.13 or greater
+//      .is_node_webkit_12_or_lower   : Boolean                 True if using nw.js & it's version 0.12 or lower
+//      .is_node_webkit_13_or_greater : Boolean                 True if using nw.js & it's version 0.13 or greater
 //      .load_script                  : function                Load a script using `<script>` tag.
-//      .handle_script_event          : false or function       Handle events of `<script>` tags
-//
-//      .scripts : {                                            Map of all the scripts loaded (or loading)
-//          ['Gem/Beryl/Boot.js'] : {                               Currently loading "Gem/Beryl/Boot.js"
-//              tag                 : <script src='Gem/Beryl/Boot.js'>  `<script>` tag to load "Gem/Beryl/Boot.js".
-//              handle_script_event : function                          Handle script events from 'Gem/Beryl/boot.js"
-//          }
-//      }
-//
-//      .show_developer_tools : function                        Show developer tools window
-//
-//      .sources : {                                            Sources to "hold onto" for Developer Tools
-//          js_plugins_Beryl : function                             Avoid garbage collection of 'js/plugins/Beryl.js'
-//      }
+//      .show_developer_tools         : function                Show developer tools window
 //
 //  Also the following temporary members of `Gem` exist, which will be deleted in Gem/Beryl/boot.js:
 //
