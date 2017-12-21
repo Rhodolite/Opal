@@ -10,42 +10,94 @@ Gem.NodeWebKit.show_developer_tools()
 
 if ('bind' in Function) {
     Gem.codify(
-        function codifier__Gem_Beryl__bind() {
-            return function Gem_Beryl__bind(f, bound_this /*, ...*/) {
+        //
+        //  Modern Browser implementation using `Function.prototype.bind`
+        //
+        function codifier__Gem__Beryl__bind() {
+            return function Gem__Beryl__bind(bound_f, bound_this /*, ...*/) {
                 if (arguments.length === 2) {
-                    return f.bind(bound_this)
+                    return bound_f.bind(bound_this)
                 }
 
-                return f.bind.apply(bound_this, arguments)
+                return bound_f.bind.apply(bound_this, arguments)
             }
         }
     )
 } else {
     Gem.codify(
-        function codifier__Gem_Beryl__bind() {
-            var slice = Array.slice.call
+        //
+        //  Backwards compatiable implementation emulating `Function.prototype.bind`
+        //
+        function codifier__Gem__Beryl__bind() {
+            //
+            //  NOTE #1:
+            //      The use of 'slice' is as recommended at:
+            //          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+            //
+            //      Since `arguments` may be implemented as a "fake Array" (for JavaScript optimizations), then the
+            //      use of `slice.call(arguments)` converts the [possible] "fake Array" to a real `Array`.
+            //
+            //      Without this, there is at least a theoretical possiblity, that some JavaScript implemention
+            //      would reject passing the "fake Array" to `.apply`, or `.concat` (as is done below).
+            //
+            //  NOTE #2:
+            //      Although the use of `slice.call` may be slightly inefficient, this is irrelevant, as this is for
+            //      a backwards compatiable implementation.
+            //
+            //      Any modern browser, would not be using this code anyway, but the real implementation above with
+            //      `Function.prototype.bind`.
+            //
+            var slice = Array.prototype.slice
 
 
-            return function Gem_Beryl__bind(f, bound_this /*, ...*/) {
+            return function Gem__Beryl__bind(bound_f, bound_this /*, ...*/) {
                 if (arguments.length === 2) {
-                    return function bound(/*...*/) {
+                    //
+                    //  No extra arguments passed in, the simple version ...
+                    //
+                    return function an_emulation_of_function_binding_for_ancient_browsers(/*...*/) {
+                        //  An enumulation of a bound function to [closure arguments] `bound_f` & `bound_this`.
+
                         if (arguments.length === 0) {
-                            return f.call(bound_this)
+                            //
+                            //  No extra arguments (second level) passed in, so a super simple `.call` ...
+                            //
+                            return bound_f.call(bound_this)
                         }
 
-                        return f.apply(bound_this, slice(arguments))
+                        //
+                        //  Extra arguments (second level) passed in, so use `.apply` (on the second level arguments)
+                        //  ...
+                        //
+                        return bound_f.apply(bound_this, slice.call(arguments))
                     }
                 }
 
-                var bound_arguments = slice(arguments, 2)
+
+                //
+                //  Extra arguments passed in, the more complicated version ...
+                //
+                var bound_arguments = slice.call(arguments, 2)
 
 
-                return function bound(/*...*/) {
+                return function an_emulation_of_function_binding_for_ancient_browsers(/*...*/) {
+                    //  An enumulation of a bound function to [closure arguments] `bound_f`, `bound_this`,
+                    //  and `bound_arguments`.
+
                     if (arguments.length === 0) {
-                        return f.apply(bound_this, bound_arguments)
+                        //
+                        //  No extra arguments (second level) passed in, so use `.apply` (of the extra
+                        //  arguments from the first level)
+                        //
+                        return bound_f.apply(bound_this, bound_arguments)
                     }
 
-                    return f.apply(bound_this, bound_arguments.concat(slice(arguments)))
+                    //
+                    //  Extra arguments passed in (second level), so use `.concat` on both the first & second level
+                    //  arguments to create a concatanated array of both set's of arguments, then pass this to
+                    //  `.apply`.
+                    //
+                    return bound_f.apply(bound_this, bound_arguments.concat(slice.call(arguments)))
                 }
             }
         }
@@ -55,7 +107,7 @@ if ('bind' in Function) {
 
 if ('bind' in Function) {
     Gem.execute(
-        function execute__codify__Gem_Beryl__bind_create_Object() {
+        function execute__codify__Gem__Beryl__bind_create_Object() {
             //
             //  Imports
             //
@@ -77,8 +129,24 @@ if ('bind' in Function) {
     )
 } else {
     Gem.codify(
-        function codifier__Gem_Beryl__bind_create_Object() {
-            return function Gem_Beryl__bind_create_Object(prototype, /*optional*/ properties) {
+        function codifier__Gem__Beryl__bind_create_Object() {
+            if (7) {
+                //
+                //  "Pure" implementation -- does work, but harder to understand
+                //
+                var bind = Gem.Beryl.bind
+
+                return function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
+                    if (arguments.length === 1) {
+                        return bind(bind, this, Create_Object, Object, prototype)
+                    }
+
+                    return bind(bind, this, Create_Object, Object, prototype, properties)
+                }
+            }
+
+
+            return function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
                 //  Return a bound version of `Object.create`.
                 //
                 //  In the bound function, the `prototype` parameter is passed as the first parameter to
@@ -109,18 +177,80 @@ if ('bind' in Function) {
     )
 }
 
+
+Gem.execute(
+    function execute__codify__Gem__Beryl__create_BoxOfPropertyDescriptors() {
+        //
+        //  Imports
+        //
+        var create_Object      = Object.create
+        var bind_create_Object = Gem.Beryl.bind_create_Object
+
+
+        if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
+            //
+            //  Locals
+            //
+            function BoxOfPropertyDescriptors() {
+                //  An unused fake "constructor" function named 'BoxOfPropertyDescriptors' so that Developer Tools
+                //  shows the "class name" of an instance (using this in it's next segment) as
+                //  'BoxOfPropertyDescriptors'
+            }
+
+
+            //
+            //  NOTE #2:
+            //      It is quite confusing in Javascript, but a function has two "prototype's":
+            //
+            //          1.  It's prototype (i.e.: `__proto__`) which is the type of the function, this
+            //              typically has the value of `Function.prototype`.
+            //
+            //          2.  It's `.prototype` member which is the type of the class it creates when used
+            //              as a class "constructor".
+            //
+            //      In the code below, Box's `.prototype` member (#2) is set to null.
+            //
+            BoxOfPropertyDescriptors.prototype  = null
+
+
+            var next_segment__BoxOfPropertyDescriptors = create_Object(
+                    null, 
+                    { constructor : { value : BoxOfPropertyDescriptors, enumerable : true } }//,
+                )
+        } else {
+            var next_segment__BoxOfPropertyDescriptors = null
+        }
+
+        Gem.Beryl.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
+    }
+)
+
+
 if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
     Gem.codify(
-        function codifier__Gem__Beryl__produce_create_box() {
+        function codifier__Gem__Beryl__produce_create_Box() {
+            //
+            //  Imports
+            //
+            var bind_create_Object = Gem.Beryl.bind_create_Object
+
+            //
+            //  Locals
+            //
             var property__constructor = { enumerable  : true }
-            var properties            = { constructor : property__constructor }
 
-            var create_Map_using_properties = Gem.Beryl.bind_create_Object(null, properties)
+            debugger
+
+            var property_descriptors = Gem.Beryl.create__BoxOfPropertyDescriptors(
+                    { constructor : { value : property__constructor } }//,
+                )
+
+            var create_AnonymousBox_using_property_descriptors = bind_create_Object(null, property_descriptors)
 
 
-            return function Gem__Beryl__produce_create_box(fake_constructor) {
-                //  Produce a create function to create Objects with `fake_constructor` as their constructor
-                //  which gives them the "class name" of `fake_constructor` in Developer Tools (for clarity)
+            return function Gem__Beryl__produce_create_Box(named_constructor) {
+                //  Produce a create function to create Objects with `named_constructor` as their constructor
+                //  which gives them the "class name" of `named_constructor` in Developer Tools (for clarity)
 
             
                 //
@@ -135,23 +265,23 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
                 //
                 //      In the code below, Box's `.prototype` member (#2) is set to null.
                 //
-                fake_constructor.prototype  = null
-                property__constructor.value = fake_constructor
+                named_constructor.prototype  = null
+                property__constructor.value = named_constructor
 
-                var prototype_with__fake_constructor = create_Map_using_properties()
+                var prototype_with__named_constructor = create_AnonymousBox_using_property_descriptors()
 
                 delete property__constructor.value
 
-                return bind_create_Object(prototype_with__fake_constructor)
+                return bind_create_Object(prototype_with__named_constructor)
             }
         }
     )
 } else {
     Gem.Codify(
-        function codifier__Gem__Beryl__produce_create_box() {
+        function codifier__Gem__Beryl__produce_create_Box() {
             var create_AnonymousBox = bind_create_Object(null)
 
-            return function Gem__Beryl__produce_create_box(/*fake_constructor*/) {
+            return function Gem__Beryl__produce_create_Box(/*fake_constructor*/) {
                 //  Produce a create function to create anonymous boxes.
                 //  The 'fake_constuctor' argument is ignored, as it is only used when creating named Boxes.
 
@@ -162,12 +292,16 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
 }
 
 
-Gem.codify(
-    function codifier__Gem_Beryl__create_Box() {
-        Function Box() {
+Gem.execute(
+    function execute__codify__Gem__Beryl__create_Box() {
+        function Box() {
+            //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
+            //  of an instance using this prototype as 'Box'
+        }
 
-        Gem.Beryl.create_box = Gem.Beryl.produce_create_box(
+        Gem.Beryl.create_Box = Gem.Beryl.produce_create_Box(Box)
     }
+)
 
 
 //
