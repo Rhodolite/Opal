@@ -12,9 +12,13 @@
 //      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
 //
 window.Gem = {
+    Beryl : {                                               //  Exports of Beryl module
+    },
+
     Configuration : {                                       //  Gem configuration values
-        clarity : true,                                     //      Set Gem clarity mode to true
-        debug   : true,                                     //      Set Gem debug mode to true
+        box_name : true,                                    //      Name 'box' instances 'Box' in Developer Tools.
+        clarity  : true,                                    //      Set Gem clarity mode to true
+        debug    : true,                                    //      Set Gem debug mode to true
     },
 
     NodeWebKit: {                                           //  Node WebKit members & methods
@@ -45,6 +49,12 @@ window.Gem = {
         //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'
     },
 
+    _ : {                                                   //  Private members & methods of all Gem modules
+        Beryl : {                                           //      Private members & methods of module Beryl
+        //  clarity_mode__gem_changed : []//,               //          Callbacks to call when `Gem` is changed
+        }//,
+    },
+
     //
     //  Gem.codify : Function                               //  [Temporary] bootstrap function ... (defined below)
     //
@@ -65,6 +75,19 @@ window.Gem = {
 
 
 //
+//  Gem._.Beryl.gem_changed
+//      Array of callback's when `Gem` is changed (clarity mode only)
+//
+Gem.execute(
+    function execute__set__Gem__private__Beryl__clarity_mode__gem_changed() {
+        if (Gem.Configuration.clarity) {
+            Gem._.Beryl.clarity_mode__gem_changed = []
+        }
+    }
+)
+
+
+//
 //  Gem.codify:
 //      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
 //      avoid the use of any global variables.'
@@ -74,6 +97,7 @@ Gem.execute(
         //
         //  Imports
         //
+        var Gem            = window.Gem
         var create_pattern = RegExp
 
         //
@@ -90,6 +114,9 @@ Gem.execute(
         }
 
 
+        //
+        //  Exports
+        //
         Gem.codify = function Gem__codify(codifier) {
             var code = codifier()
             var m    = name_match(code.name)
@@ -199,23 +226,19 @@ Gem.execute(
     function execute__set__Gem__Script__handle_errors() {
         //
         //  NOTE:
-        //      We only handle script events (and thus bring up an alert) if seven conditions are met:
+        //      We only handle script events (and thus bring up an alert) if five conditions are met:
         //
         //          1.  This is running in Gem debug mode;
         //          2.  This is running in RPG Maker MV "test" mode;
         //          3.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
         //          4.  The browser has a `.addEventListener`   method (all modern browsers do);
-        //          6.  The browser has a `.appendChild.bind`   method (all modern browsers do); AND
-        //          5.  The browser has a `.createElement.bind` method (all modern browsers do);
-        //          7.  The browser has a `.setAttribute`       method (all modern browsers do).
+        //          5.  The browser has a `.setAttribute`       method (all modern browsers do).
         //
         if (
                    Gem.Configuration.debug
                 && ('Utils' in window) && Utils.isNwjs()
                 && Utils.isOptionValid('test')
                 && ('addEventListener' in window)
-                && ('bind'             in document.createElement)
-                && ('bind'             in document.head.appendChild)
                 && ('setAttribute'     in document.head)
         ) {
             //
@@ -283,6 +306,9 @@ if (Gem.Script.handle_errors) {
 if (Gem.Script.handle_errors) {
     Gem.codify(
         function codifier__Gem__Script__handle_global_error() {
+            //
+            //  Imports
+            //
             var alert                = window.alert
             var document             = window.document
             var source_attribute     = Gem.Script.source_attribute
@@ -423,89 +449,94 @@ Gem.execute(
 //
 //      Hence we have to set the 'abort', 'error', & 'load' events on each individual `<script>` tag.
 //
-if (Gem.Script.handle_errors) {
-    //
-    //  NOTE:
-    //      We have tested above that this is modern browser that supports `.createElement.bind`, `.setAttribute` &
-    //      `.addEventListener`.
-    //
-    Gem.codify(
-        function codifier__Gem__Script__load() {
-            //
-            //  Imports
-            //
-            var create_script_tag   = document.createElement.bind(document, 'script')   //  Creates a `<script>` tag
-            var gem_scripts         = Gem.Script.gem_scripts
-            var script_event_list   = Gem.Script.event_list
-            var script_handle_event = Gem.Script.handle_event
-            var script_map          = Gem.Script.script_map
+Gem.execute(
+    function execute__codify__Gem__Script__load() {
+        //
+        //  NOTE:
+        //      `Gem.Script.event_list` is deleted later in this file; so make sure to grab a copy now, so
+        //      it is available, later, if `codifier__Gem__Script__load` is called a second time
+        //
+        var script_event_list = Gem.Script.event_list
 
 
-            var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
-
-
-            return function Gem__Script__load(path) {
-                var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
-
-                tag.setAttribute('src', path)                       //  Modify to `<script src='path'></script>`
-
-                //
-                //  Handle script events 'abort', 'error', & 'load'
-                //
-                for (var i = 0; i < script_event_list.length; i ++) {
-                    var type = script_event_list[i]
-
-                    tag.addEventListener(type, script_handle_event)
-                }
-
-                append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
-            }
-        }
-    )
-} else {
-    //
-    //  NOTE:
-    //      If there is no 'AddEventListener' we could do:
-    //
-    //          tag.onabort = handle_event           
-    //          tag.onerror = handle_event                        //  Alert user if any error happens (alternate method)
-    //          tag.onload  = handle_event           
-    //
-    //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable with super
-    //      super old browsers.
-    //
-    //      More importantly, we can't test this code -- untested code should not be inplemented.
-    //
-    //  NOTE #2:
-    //      We don't know if this browser supports `.bind`         or not, so just in case ... test for it.
-    //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
-    //
-    Gem.codify(
         function codifier__Gem__Script__load() {
             //
             //  Imports
             //
             if ('bind' in document.createElement) {
-                var create_script_tag = document.createElement.bind(document, 'script') //  Creates a `<script>` tag
+                //
+                //  New way: Creates a `<script>` tag
+                //
+                var create_script_tag = document.createElement.bind(document, 'script')
             } else {
+                //
+                //  Old way: Creates a `<script>` tag
+                //
                 var create_script_tag = function OLD_WAY__create_script_tag() {
-                    return document.createElement('script')                    //  Old way: Creates a `<script>` tag
+                    return document.createElement('script')
                 }
             }
 
+
             var gem_scripts = Gem.Script.gem_scripts
-            var script_map  = Gem.Script.script_map
 
 
             if ('bind' in gem_scripts.appendChild) {
                 var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
             } else {
                 var append_child = function OLD_WAY__append_child(tag) {
-                    gem_scripts.appendChild(tag)            //  Old way: Append to `gem_scripts`
+                    gem_scripts.appendChild(tag)                       //  Old way: Append to `gem_scripts`
                 }
             }
 
 
+            var script_map = Gem.Script.script_map
+
+
+            if (Gem.Script.handle_errors) {
+                //
+                //  NOTE:
+                //      We have tested above that this is modern browser that supports both `.setAttribute` &
+                //      `.addEventListener`.
+                //
+                var script_handle_event = Gem.Script.handle_event
+
+
+                return function Gem__Script__load(path) {
+                    var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
+
+                    tag.setAttribute('src', path)                       //  Modify to `<script src='path'></script>`
+
+                    //
+                    //  Handle script events 'abort', 'error', & 'load'
+                    //
+                    for (var i = 0; i < script_event_list.length; i ++) {
+                        var type = script_event_list[i]
+
+                        tag.addEventListener(type, script_handle_event)
+                    }
+
+                    append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
+                }
+            }
+
+
+            //
+            //  NOTE:
+            //      This is not a modern browser.  If there is no 'AddEventListener' we could do:
+            //
+            //          tag.onabort = handle_event           
+            //          tag.onerror = handle_event              //  Alert user if any error happens (alternate method)
+            //          tag.onload  = handle_event           
+            //
+            //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable
+            //      with super super old browsers.
+            //
+            //      More importantly, we can't test this code -- untested code should not be inplemented.
+            //
+            //  NOTE #2:
+            //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
+            //
             return function Gem__Script__load(path) {
                 var tag = script_map[path] = create_script_tag()
 
@@ -518,8 +549,27 @@ if (Gem.Script.handle_errors) {
                 append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
             }
         }
-    )
-}
+
+
+        Gem.codify(codifier__Gem__Script__load)
+
+
+        if (Gem.Configuration.clarity) {
+            //
+            //  Save callback to recalculate `Gem.Script.load`
+            //
+            //  NOTE:
+            //      When this callback is called later, `Gem.codify` no longer exists.
+            //      Hence we do the assignment to `Gem.Script.load` directly.
+            //
+            Gem._.Beryl.clarity_mode__gem_changed.push(
+                function recodify__Gem__Script__load() {
+                    Gem.Script.load = codifier__Gem__Script__load()
+                }
+            )
+        }
+    }
+)
 
 
 //

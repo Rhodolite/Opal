@@ -9,13 +9,58 @@ Gem.NodeWebKit.show_developer_tools()
 
 
 Gem.execute(
-    function execute__Gem__further_initialize() {
-        Gem.Beryl = {                                       //  Beryl module
+    function execute__brew__Gem__Beryl__create_Box() {
+        //
+        //  Imports
+        //
+        var create_Object = Object.create
+
+
+        if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
+            function Box() {
+                //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
+                //  of an instance using this prototype 'Box'
             }
 
-        Gem._ = {                                           //  Private members & methods of all Gem modules
-                Beryl : {}//,                               //  Private members & methods of module Beryl
+
+            //
+            //  NOTE #1:
+            //      It is quite confusing in Javascript, but a function has two "prototype's":
+            //
+            //          1.  It's prototype (i.e.: `__proto__`) which is the type of the function, this typically
+            //              has the value of `Function.prototype`.
+            //
+            //          2.  It's `.prototype` member which is the type of the class it creates when used as a
+            //              class "constructor".
+            //
+            //      In the code below, Box's `.prototype` member (#2) is set to null.
+            //
+            Box.prototype = null
+
+
+            var prototype__Box = create_Object(
+                    null,
+                    {
+                        constructor : { value : Box, enumerable : true }//,
+                    }//,
+                )
+        } else {
+            var prototype__Box = null
+        }
+
+        if ('bind' in create_Object) {
+            Gem.Beryl.create_Box = create_Object.bind(Object, prototype__Box)
+            return
+        }
+
+        Gem.Codify(
+            function codifier__Gem__Beryl__create_Box() {
+                return function Gem__Beryl__create_Box(properties) {
+                    //  Create a 'Box' with `properties`
+                    return create_Object(prototype__Box, properties)
+                }
             }
+        )
     }
 )
 
@@ -26,9 +71,8 @@ Gem.execute(
 //
 //      This makes it a lot clearer what the object is used for.
 //
-//      All "clarity" objects begin with `$` (see below for an exeption, when instead `.$__who__`
-//      or `.$__what__` is used to avoid conflicts).
-//
+//      All "clarity" objects begin with `$` (see below for an exeption, when instead `.$$who`
+//      or `.$$what` is used to avoid conflicts).  //
 //      Also each module appears in `Gem.$.ModuleName`, with each member of that module having a
 //      `.$who` & `.$what` members.
 //
@@ -36,21 +80,27 @@ Gem.execute(
 //      the `.[[Scopes]]` member of a function and introspect the value of each of it's closure objects.
 //
 //      When an object uses `.$who` or `.$what` members for it's own purposes, then the extra members created
-//      are named `.$__who__` and `.$__what__` to avoid conflicts.
+//      are named `.$$who` and `.$$what` to avoid conflicts.
 //
 if (Gem.Configuration.clarity) {
     Gem.execute(
         function execute__Gem__add_clarity() {
+            var create_Box = Gem.Beryl.create_Box
+
             Gem.$who  = 'Gem'                                       //  Name of this variable.
             Gem.$what = 'The only global variable used by Gem.'     //  What `Gem` is used for.
 
-            Gem.$ = {                                               //  Map of introspection of all the Gem modules
-                $who  : 'Gem.$',
-                $what : 'Map of introspection of all the Gem modules.',
-                Beryl : {
-                    $who  : 'Gem.$.Beryl',
-                    $what : 'An introspection of the Beryl module.'//,
-                }//,
+            if ( ! ('$' in Gem)) {
+                Gem.$ = create_Box({                                //  Map of introspection of all the Gem modules
+                    $who  : { value : 'Gem.$' },
+                    $what : { value : 'Map of introspection of all the Gem modules.' },
+                    Beryl : {
+                        value : create_Box({
+                            $who  : { value : 'Gem.$.Beryl' },
+                            $what : { value : 'An introspection of the Beryl module.' }//,
+                        })//,
+                    }//,
+                })
             }
 
             Gem.Beryl.$who  = 'Gem.Beryl'
@@ -85,15 +135,32 @@ if (Gem.Configuration.clarity) {
 
 //
 //  Bootstrap `Gem.codify`
+//      [Temporary Bootstrap] to codify code to Gem.Beryl
 //
 Gem.codify(
     function codifier__Gem__Beryl__codify() {
-        return function Gem__Beryl__codify(name, $what, codifier) {
-            Gem.Beryl[name] = codifier()
+        //
+        //  NOTE:
+        //      Since this is temporary code, we don't need to recalculate `Beryl` and `$Beryl` when `Gem` is
+        //      changed (since this code will be thrown away before `Gem` is changed).
+        //
+        var Beryl = Gem.Beryl
 
-            if (Gem.Configuration.clarity) {
-                Gem.$.Beryl[name] = { $who : name, $what : $what, $code : Gem.Beryl[name] }
+        if (Gem.Configuration.clarity) {
+            var $Beryl = Gem.$.Beryl
+
+            return function Gem__Beryl__codify(name, $what, codifier) {
+                //  [Temporary Bootstrap] to codify code to `Gem.Beryl` (and an introspection to `Gem.$.Beryl`)
+
+                Beryl[name] = codifier()
+                $Beryl[name] = { $who : name, $what : $what, $code : Gem.Beryl[name] }
             }
+        }
+
+        return function Gem__Beryl__codify(name, $what, codifier) {
+            //  [Temporary Bootstrap] to codify code to `Gem.Beryl`
+
+            Beryl[name] = codifier()
         }
     }
 )
@@ -134,30 +201,31 @@ Gem.Beryl.codify(
 
         //
         //  NOTE:
-        //      There are two *different* uses of `enumerable` here.  Here is what `Gem.cofify.properties1 will look
-        //      like when used:
+        //      There are two *different* uses of `enumerable` here.
+        //
+        //      Here is what `Gem.codify.properties` will look like when used:
         //
         //          properties = {
-        //              $who : {                                //  #1: '.$who' is enumerable
+        //              $$who  : 'Gem.codify.properties',   //  #1: `.$who__`  is *NOT* enumerable
+        //              $$what : 'Property ...'             //  #1: `.$$what` is *NOT* enumerable
+        //              $who : {                            //  #1: `.$who` is enumerable
         //                  $who       : 'Gem.codifiy.properties.$who',
         //                  $what      : 'Property descriptor ...',
-        //                  enumerable : true,                  //  #2. '.$who' creates a '.$who' that is enumerable
+        //              //  enumerable : false,             //  #2. `.$who` creates a `.$who` that is NOT enumerable
         //                  value      : To-Be-Determined
         //              },
-        //              $what : {                               //  #1: '.$what' is enumerable
+        //              $what : {                           //  #1: `.$what` is enumerable
         //                  $who       : 'Gem.codifiy.properties.$who',
         //                  $what      : 'Property descriptor ...',
-        //                  enumerable : true,                  //  #2. '.$what' creates a '.$what' that is enumerable
+        //              //  enumerable : false,             //  #2. `.$what` creates a `.$what` that is NOT enumerable
         //                  value      : To-Be-Determined
         //              },
-        //              $code : {                               //  #1: '.$code' is enumerable
+        //              $code : {                           //  #1: `.$code` is enumerable
         //                  $who       : 'Gem.codifiy.properties.$who',
         //                  $what      : 'Property descriptor ...',
-        //                  enumerable : true,                  //  #2. '.$code' creates a '.$code' that is enumerable
+        //              //  enumerable : false,             //  #2. `.$code` creates a `.$code` that is enumerable
         //                  value      : To-Be-Determined
         //              },
-        //              $__who__  :  'Gem.codify.properties',   //  #1: '.$__who__'  is *NOT* enumerable
-        //              $__what__ : 'Property descriptor ...'   //  #1: '.$__what__' is *NOT* enumerable
         //          }
         //
         //      Thus the attributes #1 are marked with enumerable as follows:
@@ -166,13 +234,13 @@ Gem.Beryl.codify(
         //                                  `properties` is used to create attributes.
         //          B.  enumerable       -- create a attribute when `properties` is used to create attributes.
         //
-        //      For those attributes #1 that are marked enumerable, there is a #2 enumerable that means:
+        //      For those attributes #1 that are marked enumerable, there is a [default] #2 enumerable that means:
         //
-        //          C.  The attribute that is being created, that attribute itself is enumerable.
+        //          C.  The attribute that is being created, that attribute itself is *NOT* enumerable.
         //
         //  Thus `Gem.codify.properties` has 5 members, but only 3 are enumerable:
         //
-        //      Two members `.$__who__` & `.$__what__` are to document `Gem.codify.properties`, and are thus
+        //      Two members `.$$who` & `.$$what` are to document `Gem.codify.properties`, and are thus
         //      *NOT* enumerable.
         //
         //      Three members `.$who`, `.$what`, and `.$code` are to be used to create other attributes, and
@@ -181,99 +249,78 @@ Gem.Beryl.codify(
         //      Thus when `Gem.codify.properties` is used to add attributes to an object, it only adds the
         //      three enumerable attributes (i.e.: `.$who`, `.$what`, and `.$code`).
         //
-        //      Since these three members each have a (nested) enumerable property that is true
-        //      (i.e.: `.$who.enumerable`, `.$what.enumerable`, and `.$code.enumerable` are all true)
-        //      then the attributes created when `Gem.codify.properties` is used are all enumerable.
+        //      Since these three members do not each have a (nested) enumerable property
+        //      (i.e.: `.$who.enumerable`, `.$what.enumerable`, and `.$code.enumerable` all default to `false`)
+        //      then the attributes created when `Gem.codify.properties` is used are all notk enumerable.
         //
-        //  Thus *IF* we wanted to create an non-enumerable attribute (not that we do, but if we did) say called
-        //  `.invisible`, we would have to mark it as follows:
+        //  Thus *IF* we wanted to create an enumerable attribute (not that we do, but if we did) say called
+        //  `.visible`, we would have to mark it as follows:
         //
-        //      #1.  Make `.invisible` (itself) enumerable, so it creates a `.invisible` attribute when
+        //      #1.  Make `.visible` (itself) enumerable, so it creates a `.visible` attribute when
         //           `Gem.codify.properties` is used to create attributes; and
         //
-        //      #2.  Make (the nested value of) `.invisible.enumerable` false, so it creates a non-enumerable
-        //           `.invisible` attribute
-        //
-        //           (Actually since the nested value of `.invisible.enumerable` defaults to false, we would
-        //           just omit it & not set it to true).
+        //      #2.  Make (the nested value of) `.visible.enumerable` to `true`, so it creates a enumerable
+        //           `.visible` attribute
         //
         //  Finally in comments below, #1 or #2 refers to the same #1 & #2 as in this comment; i.e.:
         //
         //      #1.  Means create an attribute; and
         //      #2.  Means the attribute created will be enumerable.
         //
-        function _create_enumerable_property_with_uninitialized_value($who) {
-            //
-            //  `r` is a alias for `result`, less typing ...
-            //
-            var r = create_object(
+        function _create_non_enumerable_property_with_uninitialized_value($who) {
+            return create_object(
                     null,
                     {
-                        enumerable : { value : true }//,        //  #2: Attributes that are created will be enumerable
-                        //value    : { value : uninitialized }  //  `.value` is set below
+                        $who : {
+                                value : 'Gem.codify.properties.' + $who//,
+                                //enumerable : false//, //  Only to document `properties_$*`, hence not enumerable
+                            },
+
+                        $what : {
+                                value : (
+                                          'Property descriptor used to initialize the `.' + $who + '`'
+                                         + ' attribute of a new member of `Gem.$.ModuleName`.'
+                                    )//,
+                                //enumerable : false//, //  Only to document `properties_$*`, hence not enumerable
+                            }//,
+
+                        //value      : { value : uninitialized }//  `.value` is set below
+                        //enumerable : { value : false }//,     //  #2: Attributes that are created will be enumerable
                     }//,
                 )
-
-            if (Gem.Configuration.clarity) {
-                Object.defineProperties(
-                        r,
-                        {
-                            $who : {
-                                    value : 'Gem.codify.properties.' + $who//,
-                                    //enumerable : false//, //  Only to document `properties_$*`, hence not enumerable
-                                },
-
-                            $what : {
-                                    value : (
-                                              'Property descriptor used to initialize the `.' + $who + '`'
-                                             + ' attribute of a new member of `Gem.$.ModuleName`.'
-                                        )//,
-                                    //enumerable : false//, //  Only to document `properties_$*`, hence not enumerable
-                                }//,
-                        }//,
-                    )
-            }
-
-            return r
         }
 
 
-        var property_$who  = _create_enumerable_property_with_uninitialized_value('$who')
-        var property_$what = _create_enumerable_property_with_uninitialized_value('$what')
-        var property_$code = _create_enumerable_property_with_uninitialized_value('$code')
+        var property_$who  = _create_non_enumerable_property_with_uninitialized_value('$who')
+        var property_$what = _create_non_enumerable_property_with_uninitialized_value('$what')
+        var property_$code = _create_non_enumerable_property_with_uninitialized_value('$code')
 
         var properties = create_object(
                 null,
                 {
+                    $$who : {
+                            value        : 'Gem.codify.properties'//,
+                            //enumerable : false//,     //  Only to document `properties`, hence not enumerable
+                        },
+
+                    $$what : {
+                            value : (
+                                      'Property descriptors used to initialize'
+                                     + ' a new member of `Gem.$.ModuleName`.'
+                                )//,
+                            //enumerable : false//,     //  Only to document `properties`, hence not enumerable
+                        },
+
                     $who  : { value : property_$who,  enumerable : true },  //  #1: create a `.$who` attribute
                     $what : { value : property_$what, enumerable : true },  //  #1: create a `.$what` attribute
                     $code : { value : property_$code, enumerable : true }//,//  #1: create a `.$code` attribute
                 }//,
             )
 
-        if (Gem.Configuration.clarity) {
-            Object.defineProperties(
-                    properties,
-                    {
-                        $__who__ : {
-                                value        : 'Gem.codify.properties'//,
-                                //enumerable : false//,     //  Only to document `properties`, hence not enumerable
-                            },
-
-                        $__what__ : {
-                                value : (
-                                          'Property descriptors used to initialize'
-                                         + ' a new member of `Gem.$.ModuleName`.'
-                                    )//,
-                                //enumerable : false//,     //  Only to document `properties`, hence not enumerable
-                            }//,
-                    }//,
-                )
-        }
 
         return function Beryl__produce_codify(exports, $) {
             if (Gem.Configuration.clarity) {
-                var $who    = '<closure Gem.$.ModuleName.codify>'
+                var $who  = '<closure Gem.$.ModuleName.codify>'
                 var $what = (
                           'The closure for `Gem.$.ModuleName.codify`'
                         + '.  Contains `exports` which is where the code is exported to'
@@ -285,11 +332,11 @@ Gem.Beryl.codify(
                 function _force_$who_and_$what_to_appear_in_the_closure() { return $who + $what }
             }
 
+
             return function Beryl__codify(name, $what, codifier) {
-                //
                 //  Create the code for a function or procedure, typically as a closure to avoid the use of any global
                 //  variables.
-                //
+
                 var $code = exports[name] = codifier()
 
                 property_$who .value = name
@@ -356,8 +403,8 @@ Gem.Beryl.codify(
         //      For example `Gem.Script.script_map['Gem/Beryl/Boot.js']` has a prototype of `HTMLScriptELement`,
         //      this prototype is meaningful & necessary, and therefore is not removed.
 
+        var create_Box               = Gem.Beryl.create_Box
         var object__prototype        = Object.prototype
-        var create_Object            = Object.create
         var enumerable_keys          = Object.keys
         var get_property_descriptors = Object.getOwnPropertyDescriptors
         var get_prototype_of         = Object.getPrototypeOf
@@ -380,7 +427,7 @@ Gem.Beryl.codify(
                 }
             }
 
-            return create_Object(null, properties)
+            return create_Box(properties)
         }
 
 
@@ -393,6 +440,17 @@ if (Gem.Configuration.clarity) {
     Gem.execute(
         function execute__deep_copy__Gem__without_object_prototypes() {
             window.Gem = Gem.Beryl.deep_copy_without_object_prototypes(Gem)
+
+            //
+            //  Now do callback's informing them that `Gem` has changed
+            //
+            var clarity_mode__gem_changed = Gem._.Beryl.clarity_mode__gem_changed
+
+            for (var i = 0; i < clarity_mode__gem_changed.length; i ++) {
+                var callback = clarity_mode__gem_changed[i]
+
+                callback()
+            }
         }
     )
 }
