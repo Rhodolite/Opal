@@ -8,61 +8,166 @@
 Gem.NodeWebKit.show_developer_tools()
 
 
-Gem.execute(
-    function execute__brew__Gem__Beryl__create_Box() {
-        //
-        //  Imports
-        //
-        var create_Object = Object.create
+if ('bind' in Function) {
+    Gem.codify(
+        function codifier__Gem_Beryl__bind() {
+            return function Gem_Beryl__bind(f, bound_this /*, ...*/) {
+                if (arguments.length === 2) {
+                    return f.bind(bound_this)
+                }
 
-
-        if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
-            function Box() {
-                //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
-                //  of an instance using this prototype 'Box'
+                return f.bind.apply(bound_this, arguments)
             }
+        }
+    )
+} else {
+    Gem.codify(
+        function codifier__Gem_Beryl__bind() {
+            var slice = Array.slice.call
 
+
+            return function Gem_Beryl__bind(f, bound_this /*, ...*/) {
+                if (arguments.length === 2) {
+                    return function bound(/*...*/) {
+                        if (arguments.length === 0) {
+                            return f.call(bound_this)
+                        }
+
+                        return f.apply(bound_this, slice(arguments))
+                    }
+                }
+
+                var bound_arguments = slice(arguments, 2)
+
+
+                return function bound(/*...*/) {
+                    if (arguments.length === 0) {
+                        return f.apply(bound_this, bound_arguments)
+                    }
+
+                    return f.apply(bound_this, bound_arguments.concat(slice(arguments)))
+                }
+            }
+        }
+    )
+}
+
+
+if ('bind' in Function) {
+    Gem.execute(
+        function execute__codify__Gem_Beryl__bind_create_Object() {
+            //
+            //  Imports
+            //
+            var create_Object = Object.create
 
             //
             //  NOTE #1:
-            //      It is quite confusing in Javascript, but a function has two "prototype's":
+            //      So the following is probably confusing ...
             //
-            //          1.  It's prototype (i.e.: `__proto__`) which is the type of the function, this typically
-            //              has the value of `Function.prototype`.
+            //          It means the same as the alternate implementation below.
             //
-            //          2.  It's `.prototype` member which is the type of the class it creates when used as a
-            //              class "constructor".
+            //      In other words we bind 'create_Object.bind', to create a bound function, with the same behavior as
+            //      the alternate implementation below (the bound function created, is itsef a binding function):
             //
-            //      In the code below, Box's `.prototype` member (#2) is set to null.
+            //          Hence the use of `.bind.bind` in the next statement.
             //
-            Box.prototype = null
-
-
-            var prototype__Box = create_Object(
-                    null,
-                    {
-                        constructor : { value : Box, enumerable : true }//,
-                    }//,
-                )
-        } else {
-            var prototype__Box = null
+            Gem.Beryl.bind_create_Object = create_Object.bind.bind(create_Object, Object)
         }
+    )
+} else {
+    Gem.codify(
+        function codifier__Gem_Beryl__bind_create_Object() {
+            return function Gem_Beryl__bind_create_Object(prototype, /*optional*/ properties) {
+                //  Return a bound version of `Object.create`.
+                //
+                //  In the bound function, the `prototype` parameter is passed as the first parameter to
+                //  `Object.create`.
+                //
+                //  Also, optionally, in the bound function, the `properties` parameter is passed as the second
+                //  parameter to `Object.create`
 
-        if ('bind' in create_Object) {
-            Gem.Beryl.create_Box = create_Object.bind(Object, prototype__Box)
-            return
-        }
+                if (arguments.length === 1) {
+                    //
+                    //  `properties` argument not passed in; hence accept a *NEW* `properties` arguments to
+                    //  `bound_create_Object`
+                    //
+                    return function bound_create_Object(properties) {
+                        return Object.create(prototype, properties)
+                    }
+                }
 
-        Gem.Codify(
-            function codifier__Gem__Beryl__create_Box() {
-                return function Gem__Beryl__create_Box(properties) {
-                    //  Create a 'Box' with `properties`
-                    return create_Object(prototype__Box, properties)
+                //
+                //  `properties` argument passed in; hence use the already passed in `properties` arguments to
+                //  `Gem.Beryl.bind_create_Object`
+                //
+                return function bound_create_Object() {
+                    return Object.create(prototype, properties)
                 }
             }
-        )
+        }
+    )
+}
+
+if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
+    Gem.codify(
+        function codifier__Gem__Beryl__produce_create_box() {
+            var property__constructor = { enumerable  : true }
+            var properties            = { constructor : property__constructor }
+
+            var create_Map_using_properties = Gem.Beryl.bind_create_Object(null, properties)
+
+
+            return function Gem__Beryl__produce_create_box(fake_constructor) {
+                //  Produce a create function to create Objects with `fake_constructor` as their constructor
+                //  which gives them the "class name" of `fake_constructor` in Developer Tools (for clarity)
+
+            
+                //
+                //  NOTE #2:
+                //      It is quite confusing in Javascript, but a function has two "prototype's":
+                //
+                //          1.  It's prototype (i.e.: `__proto__`) which is the type of the function, this
+                //              typically has the value of `Function.prototype`.
+                //
+                //          2.  It's `.prototype` member which is the type of the class it creates when used
+                //              as a class "constructor".
+                //
+                //      In the code below, Box's `.prototype` member (#2) is set to null.
+                //
+                fake_constructor.prototype  = null
+                property__constructor.value = fake_constructor
+
+                var prototype_with__fake_constructor = create_Map_using_properties()
+
+                delete property__constructor.value
+
+                return bind_create_Object(prototype_with__fake_constructor)
+            }
+        }
+    )
+} else {
+    Gem.Codify(
+        function codifier__Gem__Beryl__produce_create_box() {
+            var create_AnonymousBox = bind_create_Object(null)
+
+            return function Gem__Beryl__produce_create_box(/*fake_constructor*/) {
+                //  Produce a create function to create anonymous boxes.
+                //  The 'fake_constuctor' argument is ignored, as it is only used when creating named Boxes.
+
+                return create_AnonymousBox
+            }
+        }
+    )
+}
+
+
+Gem.codify(
+    function codifier__Gem_Beryl__create_Box() {
+        Function Box() {
+
+        Gem.Beryl.create_box = Gem.Beryl.produce_create_box(
     }
-)
 
 
 //
