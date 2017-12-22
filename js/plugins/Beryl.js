@@ -9,7 +9,7 @@
 //  Create global variable `Gem`
 //
 //  NOTE:
-//      Later `Gem` will be replaced with a proper instance of class `Gem.Global`
+//      Later `Gem` will be replaced with a proper instance of box "TheOnlyGlobalVariableUsedByGem".
 //
 window.Gem = {
     Beryl : {                                               //  Exports of Beryl module
@@ -110,7 +110,7 @@ Gem.execute(
         //
         //  Exports
         //
-        Gem.codify = function Gem__codify(codifier) {
+        Gem.codify = function Gem__codify(who, $what, codifier) {
             var code = codifier()
 
             if (typeof code === 'undefined') {
@@ -163,6 +163,8 @@ Gem.execute(
 //      See also: https://www.merriam-webster.com/dictionary/qualify/
 //
 Gem.codify(
+    'Gem.qualify',
+    'Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).',
     function codify__Gem__qualify() {
         //
         //  Imports
@@ -236,8 +238,14 @@ Gem.codify(
 )
 
 
+//
+//  Gem.qualification_note
+//      Add a qualification note to a variable or set of variables (clarity mode only).
+//
 if (Gem.Configuration.clarity) {
     Gem.codify(
+        'Gem.qualification_note',
+        'Add a qualification note to a variable or set of variables (clarity mode only).',
         function codify__Gem__qualification_note() {
             //
             //  Imports
@@ -296,6 +304,8 @@ if (Gem.Configuration.clarity) {
     )
 } else {
     Gem.codify(
+        'Gem.qualification_note',
+        'Empty function -- nothing to do, not in `Gem.Configuration.clarity` mode',
         function codify__Gem__qualification_note() {
             return function Gem__qualification_note(/*who, $what*/) {
                 //  Nothing to do, not in `Gem.Configuration.clarity` mode
@@ -307,20 +317,20 @@ if (Gem.Configuration.clarity) {
 
 //
 //  Gem._.Beryl.gem_changed
-//      Array of callback's when `Gem` is changed (clarity mode only)
+//      Array of callback's when `Gem` is changed (clarity mode only).
 //
 if (Gem.Configuration.clarity) {
     Gem.qualify(
         'Gem._.Beryl.clarity_mode__gem_changed',
-        "Array of callback's when `Gem` is changed (clarity mode only)",
+        "Array of callback's when `Gem` is changed (clarity mode only).",
         []//,
     )
 }
 
 
 //
-//  Gem.NodeWebKit.is_version_012_or_lower                  - True if using nw.js & it's version 0.12 or lower
-//  Gem.NodeWebKit.is_version_013_or_greater                - True if using nw.js & it's version 0.13 or greater
+//  Gem.NodeWebKit.is_version_012_or_lower                  - `true` if using nw.js & it's version 0.12 or lower.
+//  Gem.NodeWebKit.is_version_013_or_greater                - `true` if using nw.js & it's version 0.13 or greater.
 //
 //  NOTE:
 //      If not using nw.js, then both `Gem.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
@@ -354,13 +364,13 @@ Gem.execute(
         //
         Gem.qualify(
             'Gem.NodeWebKit.is_version_012_or_lower',
-            "True if using nw.js & it's version 0.12 or lower.",
+            "`true` if using nw.js & it's version 0.12 or lower.",
             (major === 0 && minor <= 12)//,
         )
 
         Gem.qualify(
             'Gem.NodeWebKit.is_version_013_or_higher',
-            "True if using nw.js & it's version 0.13 or greater.",
+            "`true` if using nw.js & it's version 0.13 or greater.",
             (major >   0 || minor >= 13)//,
         )
 
@@ -378,6 +388,8 @@ Gem.execute(
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
     Gem.codify(
+        'Gem.NodeWebKit.show_developer_tools()',
+        'Show developer tools (nw.js 0.12 or lower)',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
 
@@ -390,6 +402,8 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
     Gem.codify(
+        'Gem.NodeWebKit.show_developer_tools()',
+        'Show developer tools (nw.js 0.13 or higher)',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
 
@@ -408,6 +422,8 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
     Gem.codify(
+        'Gem.NodeWebKit.show_developer_tools()',
+        "Empty function -- Not using nw.js: Don't show developer tools",
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             return function Gem__NodeWebKit__show_developer_tools() {
                 //  Not using nw.js: Don't show developer tools
@@ -450,7 +466,7 @@ Gem.execute(
 
 //
 //  Gem.Script.source_attribute
-//      Get unmodified `.src` attribute.
+//      Get an unmodified `.src` attribute from a DOM (domain object model) element.
 //
 //  NOTE:
 //      On nw.js:
@@ -466,6 +482,8 @@ Gem.execute(
 if (Gem.Script.handle_errors) {
     if ('getAttribute' in document.head) {
         Gem.codify(
+            'Gem.Script.source_attribute',
+            'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
             function codifier__Gem__Script__source_attribute(tag) {
                 return function Gem__Script__source_attribute(tag) {
                     //  Get unmodified `.src` attribute
@@ -476,6 +494,8 @@ if (Gem.Script.handle_errors) {
         )
     } else {
         Gem.codify(
+            'Gem.Script.source_attribute',
+            'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
             function codifier__Gem__Script__source_attribute(tag) {
                 var origin_slash = location.origin + '/'
 
@@ -499,10 +519,12 @@ if (Gem.Script.handle_errors) {
 
 //
 //  Gem.Script.handle_global_error
-//      Handle errors when executing a `<script>` tag
+//      Handle errors when executing a `<script>` tag.
 //
 if (Gem.Script.handle_errors) {
     Gem.codify(
+        'Gem.Script.handle_global_error',
+        'Handle errors when executing a `<script>` tag.',
         function codifier__Gem__Script__handle_global_error() {
             //
             //  Imports
@@ -548,10 +570,12 @@ if (Gem.Script.handle_errors) {
 
 //
 //  Gem.Script.handle_event
-//      Handle events of `<script>` tags
+//      Handle events of `<script>` tags.
 //
 if (Gem.Script.handle_errors) {
     Gem.codify(
+        'Gem.Script.handle_event',
+        'Handle events of `<script>` tags.',
         function codifier__Gem__Script__handle_event() {
             //
             //  NOTE:
@@ -636,6 +660,7 @@ Gem.execute(
 
 //
 //  Gem.Script.load
+//      Load JavaScript code using a `<script>` tag.
 //
 //  NOTE:
 //      Annoyingly enough events on `<script>` tags do not bubble on purpose.
@@ -701,6 +726,8 @@ Gem.execute(
 
 
                 return function Gem__Script__load(path) {
+                    //  Load JavaScript code using a `<script>` tag.
+
                     var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
 
                     tag.setAttribute('src', path)                       //  Modify to `<script src='path'></script>`
@@ -736,6 +763,8 @@ Gem.execute(
             //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
             //
             return function Gem__Script__load(path) {
+                //  Load JavaScript code using a `<script>` tag.
+
                 var tag = script_map[path] = create_script_tag()
 
                 if ('setAttribute' in tag) {                //  Is this a modern browser?
@@ -749,7 +778,11 @@ Gem.execute(
         }
 
 
-        Gem.codify(codifier__Gem__Script__load)
+        Gem.codify(
+            'Gem.Script.load',
+            'Load JavaScript code using a `<script>` tag.',
+            codifier__Gem__Script__load//,
+        )
 
 
         if (Gem.Configuration.clarity) {

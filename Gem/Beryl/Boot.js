@@ -25,6 +25,8 @@ Gem.execute(
 
 if (Gem.Beryl.has_bind) {
     Gem.codify(
+        'Gem.Beryl.bind',
+        'Create a new function with a bound `this` value (and optionally other bound arguments).`',
         //
         //  Modern Browser implementation using `Function.prototype.bind`
         //
@@ -67,6 +69,8 @@ if (Gem.Beryl.has_bind) {
     )
 } else {
     Gem.codify(
+        'Gem.Beryl.bind',
+        'Create a new function with a bound `this` value (and optionally other bound arguments).`',
         //
         //  Backwards compatiable implementation emulating `Function.prototype.bind`
         //
@@ -152,7 +156,7 @@ if (Gem.Beryl.has_bind) {
 
 //
 //  Gem.beryl.bind_create_Object
-//      A factory of factories.
+//      A factory of factories.  The created factories create objects.
 //
 //      Overview:
 //          Factories are superior to `new`, as they are easier to refactor.
@@ -286,6 +290,8 @@ if (Gem.Beryl.has_bind) {
     //      emulates it with a double "closure" (making it easier to understand).
     //
     Gem.codify(
+        'Gem.Beryl.bind_create_Object',
+        'A factory of factories.  The created factories create objects.',
         function codifier__Gem__Beryl__bind_create_Object() {
             return function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
                 //  Return a bound version of `Object.create`.
@@ -367,8 +373,14 @@ Gem.execute(
 )
 
 
+//
+//  Gem.Beryl.produce_create_Box
+//      A factory of factories.  The created factories each creates a Box -- an Object with a "class name".
+//
 if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
     Gem.codify(
+        'Gem.Beryl.produce_create_Box',
+        'A factory of factories.  The created factories each creates a Box -- an Object with a "class name".',
         function codifier__Gem__Beryl__produce_create_Box() {
             //
             //  Imports
@@ -388,8 +400,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
 
 
             return function Gem__Beryl__produce_create_Box(named_constructor) {
-                //  Produce a create function to create Objects with `named_constructor` as their constructor
-                //  which gives them the "class name" of `named_constructor` in Developer Tools (for clarity)
+                //  A factory of factories.  The created factories each creates a Box -- an Object with a "class name".
 
             
                 //
@@ -416,13 +427,27 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
         }
     )
 } else {
-    Gem.Codify(
+    Gem.codify(
+        'Gem.Beryl.produce_create_Box',
+        (
+              'A factory of factories'
+            + '.  Since this is non clarity mode, in this simplified version'
+            + ', each created factory is really `create_AnonymousBox`'
+            + ' (which creates very simple Objects with no prototype; and hence no "class name")'
+            + '. In clarity mode, instead the created factories each creates a Box -- an Object with a "class name".'
+        ),
         function codifier__Gem__Beryl__produce_create_Box() {
             var create_AnonymousBox = bind_create_Object(null)
 
             return function Gem__Beryl__produce_create_Box(/*fake_constructor*/) {
-                //  Produce a create function to create anonymous boxes.
-                //  The 'fake_constuctor' argument is ignored, as it is only used when creating named Boxes.
+                //      A factory of factories.
+                //
+                //      Since this is non clarity mode, in this simplified version, each created factory is really
+                //      `create_AnonymousBox` (which creates very simple Objects with no prototype; and hence no
+                //      "class name").
+                //
+                //      In clarity mode, instead the created factories each creates a Box -- an Object with a
+                //      "class name"'.
 
                 return create_AnonymousBox
             }
@@ -516,6 +541,8 @@ if (Gem.Configuration.clarity) {
 //      [Temporary Bootstrap] to codify code to Gem.Beryl
 //
 Gem.codify(
+    'Gem.Beryl.codify',
+    '[Temporary Bootstrap] to codify code to Gem.Beryl',
     function codifier__Gem__Beryl__codify() {
         //
         //  NOTE:
@@ -545,9 +572,9 @@ Gem.codify(
 
 
 //
-//  Properly define `Gem.codify` like all other functions will be defined:
+//  Properly define `Gem.Beryl.codify` like all other functions will be defined:
 //
-//      One time only: Uses previously defined bootstrap version of `Gem.codify`.
+//      One time only: Uses previously defined bootstrap version of `Gem.Beryl.codify`.
 //
 Gem.Beryl.codify(
     'produce_codify',
@@ -581,12 +608,12 @@ Gem.Beryl.codify(
         //  NOTE:
         //      There are two *different* uses of `enumerable` here.
         //
-        //      Here is what `Gem.codify.properties` will look like when used:
+        //      Here is what `Gem.Beryl.codify.properties` will look like when used:
         //
         //          properties = {
-        //              $$who  : 'Gem.codify.properties',   //  #1: `.$who__`  is *NOT* enumerable
-        //              $$what : 'Property ...'             //  #1: `.$$what` is *NOT* enumerable
-        //              $who : {                            //  #1: `.$who` is enumerable
+        //              $$who  : 'Gem.Beryl.codify.properties', //  #1: `.$who__`  is *NOT* enumerable
+        //              $$what : 'Property descriptor ...',     //  #1: `.$$what` is *NOT* enumerable
+        //              $who : {                                //  #1: `.$who` is enumerable
         //                  $who       : 'Gem.codifiy.properties.$who',
         //                  $what      : 'Property descriptor ...',
         //              //  enumerable : false,             //  #2. `.$who` creates a `.$who` that is NOT enumerable
@@ -616,26 +643,26 @@ Gem.Beryl.codify(
         //
         //          C.  The attribute that is being created, that attribute itself is *NOT* enumerable.
         //
-        //  Thus `Gem.codify.properties` has 5 members, but only 3 are enumerable:
+        //  Thus `Gem.Beryl.codify.properties` has 5 members, but only 3 are enumerable:
         //
-        //      Two members `.$$who` & `.$$what` are to document `Gem.codify.properties`, and are thus
+        //      Two members `.$$who` & `.$$what` are to document `Gem.Beryl.codify.properties`, and are thus
         //      *NOT* enumerable.
         //
         //      Three members `.$who`, `.$what`, and `.$code` are to be used to create other attributes, and
         //      thus are enumerable.
         //
-        //      Thus when `Gem.codify.properties` is used to add attributes to an object, it only adds the
+        //      Thus when `Gem.Beryl.codify.properties` is used to add attributes to an object, it only adds the
         //      three enumerable attributes (i.e.: `.$who`, `.$what`, and `.$code`).
         //
         //      Since these three members do not each have a (nested) enumerable property
         //      (i.e.: `.$who.enumerable`, `.$what.enumerable`, and `.$code.enumerable` all default to `false`)
-        //      then the attributes created when `Gem.codify.properties` is used are all notk enumerable.
+        //      then the attributes created when `Gem.Beryl.codify.properties` is used are all notk enumerable.
         //
         //  Thus *IF* we wanted to create an enumerable attribute (not that we do, but if we did) say called
         //  `.visible`, we would have to mark it as follows:
         //
         //      #1.  Make `.visible` (itself) enumerable, so it creates a `.visible` attribute when
-        //           `Gem.codify.properties` is used to create attributes; and
+        //           `Gem.Beryl.codify.properties` is used to create attributes; and
         //
         //      #2.  Make (the nested value of) `.visible.enumerable` to `true`, so it creates a enumerable
         //           `.visible` attribute
@@ -650,7 +677,7 @@ Gem.Beryl.codify(
                     null,
                     {
                         $who : {
-                                value : 'Gem.codify.properties.' + $who//,
+                                value : 'Gem.Beryl.codify.properties.' + $who//,
                                 //enumerable : false//, //  Only to document `properties_$*`, hence not enumerable
                             },
 
@@ -677,7 +704,7 @@ Gem.Beryl.codify(
                 null,
                 {
                     $$who : {
-                            value        : 'Gem.codify.properties'//,
+                            value        : 'Gem.Beryl.codify.properties'//,
                             //enumerable : false//,     //  Only to document `properties`, hence not enumerable
                         },
 
