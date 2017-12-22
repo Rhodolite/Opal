@@ -139,8 +139,8 @@ Gem.execute(
 
 //
 //  Gem.qualify:
-//
-//      Temporary bootstrap function to create a global value.
+//      Temporary bootstrap function to qualify a global Gem variable
+//      (in clarity mode also adds an explanation of what the variable does).
 //
 //  NOTE #1:
 //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
@@ -193,6 +193,8 @@ Gem.codify(
 
 
         return function Gem__qualify(who, $what, value) {
+            //  Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).
+
             var m = name_match(who)
 
             if ( ! m) {
@@ -234,6 +236,75 @@ Gem.codify(
 )
 
 
+if (Gem.Configuration.clarity) {
+    Gem.codify(
+        function codify__Gem__qualification_note() {
+            //
+            //  Imports
+            //
+            var Gem            = window.Gem
+            var create_pattern = RegExp
+
+            //
+            //  Closures
+            //
+            var name_pattern = new RegExp(
+                      '^Gem'
+                    +    '\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*)'
+                    + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
+                    + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
+                    + '$'
+                )
+
+
+            if ('bind' in name_pattern.exec) {
+                var name_match = name_pattern.exec.bind(name_pattern)
+            } else {
+                var name_match = function OLD_WAY__name_match(s) {
+                    return name_pattern.exec(s)
+                }
+            }
+
+
+            return function Gem__qualification_note(who, $what) {
+                //  Add a qualification note to a variable or set of variables (clarity mode only)
+
+                var m = name_match(who)
+
+                if ( ! m) {
+                    throw Error('Unknown name to qualification_note: ' + who)
+                }
+
+                var module = m[1]
+                var first  = m[2]
+
+                if (first === undefined) {
+                    Gem[module + '$NOTE'] = $what
+                    return
+                }
+
+                var second = m[3]
+
+                if (second === undefined) {
+                    Gem[module][first + '$NOTE'] = $what
+                    return
+                }
+                
+                Gem[module][first][second + '$NOTE'] = $what
+            }
+        }
+    )
+} else {
+    Gem.codify(
+        function codify__Gem__qualification_note() {
+            return function Gem__qualification_note(/*who, $what*/) {
+                //  Nothing to do, not in `Gem.Configuration.clarity` mode
+            }
+        }
+    )
+}
+
+
 //
 //  Gem._.Beryl.gem_changed
 //      Array of callback's when `Gem` is changed (clarity mode only)
@@ -248,14 +319,14 @@ if (Gem.Configuration.clarity) {
 
 
 //
-//  Gem.NodeWebKit.is_version_12_or_lower                   - True if using nw.js & it's version 0.12 or lower
-//  Gem.NodeWebKit.is_version_13_or_greater                 - True if using nw.js & it's version 0.13 or greater
+//  Gem.NodeWebKit.is_version_012_or_lower                  - True if using nw.js & it's version 0.12 or lower
+//  Gem.NodeWebKit.is_version_013_or_greater                - True if using nw.js & it's version 0.13 or greater
 //
 //  NOTE:
 //      If not using nw.js, then both `Gem.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
 //
 Gem.execute(
-    function execute__extract__Gem__NodeWebKit__version() {
+    function execute__qualify__Gem__NodeWebKit__version() {
         //
         //  Imports
         //
@@ -281,8 +352,22 @@ Gem.execute(
         //
         //  Exports
         //
-        Gem.NodeWebKit.is_version_012_or_lower  = (major === 0 && minor <= 12)
-        Gem.NodeWebKit.is_version_013_or_higher = (major >   0 || minor >= 13)
+        Gem.qualify(
+            'Gem.NodeWebKit.is_version_012_or_lower',
+            "True if using nw.js & it's version 0.12 or lower.",
+            (major === 0 && minor <= 12)//,
+        )
+
+        Gem.qualify(
+            'Gem.NodeWebKit.is_version_013_or_higher',
+            "True if using nw.js & it's version 0.13 or greater.",
+            (major >   0 || minor >= 13)//,
+        )
+
+        Gem.qualification_note(
+            'Gem.NodeWebKit.is_version_{012_or_lower,013_or_higher}',
+            'If not using nw.js, then both `.is_version_{012_or_lower,013_or_higher}` will be `false`.',
+        )
     }
 )
 
