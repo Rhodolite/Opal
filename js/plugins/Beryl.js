@@ -92,8 +92,8 @@ Gem.execute(
         //
         var name_pattern = new RegExp(
                   '^Gem'
-                +    '__([A-Za-z_](?:[0-9A-Za-z]|_(?!_))*)'
-                + '(?:__([A-Za-z_](?:[0-9A-Za-z]|_(?!_))*))?'
+                +    '\.([A-Za-z_][0-9A-Za-z_]*)'
+                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
                 + '$'
             )
 
@@ -111,20 +111,47 @@ Gem.execute(
         //  Exports
         //
         Gem.codify = function Gem__codify(who, $what, codifier) {
-            var code = codifier()
-
-            if (typeof code === 'undefined') {
-                throw Error('Codifier `' + codifier.name + '` did not return a function; returned `undefined` instead')
-            }
-
-            var m = name_match(code.name)
+            var m = name_match(who)
 
             if ( ! m) {
-                throw Error('Codifier `' + codifier.name + '` returned an unknown name to codify: `' + code.name + '`')
+                throw Error('Unknown name to codify: ' + who)
             }
 
             var module = m[1]
             var name   = m[2]
+
+            var codifier_name = 'codifier__Gem__' + module
+            var code_name     =           'Gem__' + module
+
+            if (name !== undefined) {
+                codifier_name += '__' + name
+                code_name     += '__' + name
+            }
+
+            if (codifier_name !== codifier.name) {
+                throw Error(
+                        (
+                              "Codifier must be named '" + codifier_name + "'"
+                            + "; was instead named: '"   + codifier.name + "'"
+                        )//,
+                    )
+            }
+
+            var code = codifier()
+
+            if (typeof code === 'undefined') {
+                throw Error('Codifier `' + codifier_name + '` did not return a function; returned `undefined` instead')
+            }
+
+            if (code_name !== code.name) {
+                throw Error(
+                        (
+                              "Codifier `" + codifier_name + "`"
+                            +       " must return a function named '"  + code_name + "'"
+                            + "; instead returned a function named: '" + code.name + "'"
+                        )//,
+                    )
+            }
 
             if (name === undefined) {
                 Gem[module] = code
@@ -165,7 +192,7 @@ Gem.execute(
 Gem.codify(
     'Gem.qualify',
     'Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).',
-    function codify__Gem__qualify() {
+    function codifier__Gem__qualify() {
         //
         //  Imports
         //
@@ -246,7 +273,7 @@ if (Gem.Configuration.clarity) {
     Gem.codify(
         'Gem.qualification_note',
         'Add a qualification note to a variable or set of variables (clarity mode only).',
-        function codify__Gem__qualification_note() {
+        function codifier__Gem__qualification_note() {
             //
             //  Imports
             //
@@ -306,7 +333,7 @@ if (Gem.Configuration.clarity) {
     Gem.codify(
         'Gem.qualification_note',
         'Empty function -- nothing to do, not in `Gem.Configuration.clarity` mode',
-        function codify__Gem__qualification_note() {
+        function codifier__Gem__qualification_note() {
             return function Gem__qualification_note(/*who, $what*/) {
                 //  Nothing to do, not in `Gem.Configuration.clarity` mode
             }
@@ -388,7 +415,7 @@ Gem.execute(
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
     Gem.codify(
-        'Gem.NodeWebKit.show_developer_tools()',
+        'Gem.NodeWebKit.show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower)',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
@@ -402,7 +429,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
     Gem.codify(
-        'Gem.NodeWebKit.show_developer_tools()',
+        'Gem.NodeWebKit.show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher)',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
@@ -422,7 +449,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
     Gem.codify(
-        'Gem.NodeWebKit.show_developer_tools()',
+        'Gem.NodeWebKit.show_developer_tools',
         "Empty function -- Not using nw.js: Don't show developer tools",
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             return function Gem__NodeWebKit__show_developer_tools() {
