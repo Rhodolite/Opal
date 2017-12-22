@@ -8,10 +8,41 @@
 Gem.NodeWebKit.show_developer_tools()
 
 
-if ('bind' in Function) {
+Gem.execute(
+    function execute__set__Gem__Beryl__Bind() {
+        Gem.Beryl.has_bind = ('bind' in Function)
+
+        //
+        //  You can change the following `if (0)` to `if (7)` to disable the use of `.bind` directly, and test
+        //  the backwards compatability implementation when `.bind` does not exist in the browser.
+        //
+        if (0) {
+            Gem.Beryl.has_bind = false
+        }
+    }
+)
+
+
+if (Gem.Beryl.has_bind) {
     Gem.codify(
         //
         //  Modern Browser implementation using `Function.prototype.bind`
+        //
+        //  NOTE #1:
+        //      This version of `Gem.Beryl.bind` is correct.
+        //
+        //      However, it is really confusing to understand and use it, especially when doing stack traces in
+        //      Developer tools.
+        //
+        //      It is even more confusing, when trying to understand (below) "a factory of factories" which would
+        //      use this procedure, recursivly, on itself, if it did use this procedure.
+        //
+        //      Hence, for ease of understanding [the code & tracing it in developer tools], we really call
+        //      `Function.prototype.bind` instead of calling this procedure ...
+        //
+        //  NOTE #2:
+        //      You can enable the `if (0)` [way below] to `if (7)` to enable this function to be called
+        //      (see comment there).
         //
         function codifier__Gem__Beryl__bind() {
             //
@@ -23,14 +54,14 @@ if ('bind' in Function) {
             //  This suggestion came from:
             //      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
             //
-            var call_slice = Array.prototype.slice.call.bind(Array.prototype.slice)
+            var slice_call = Array.prototype.slice.call.bind(Array.prototype.slice)
 
             return function Gem__Beryl__bind(bound_f, bound_this /*, ...*/) {
                 if (arguments.length === 2) {
                     return bound_f.bind(bound_this)
                 }
 
-                return bound_f.bind.apply(bound_this, call_slice(arguments, 2))
+                return bound_f.bind.apply(bound_this, slice_call(arguments, 2))
             }
         }
     )
@@ -50,6 +81,9 @@ if ('bind' in Function) {
             //
             //      Without this, there is at least a theoretical possiblity, that some JavaScript implemention
             //      would reject passing the "fake Array" to `.apply`, or `.concat` (as is done below).
+            //
+            //      [Obviously we do not use `slice_call` as above, as in with this ancient brower we do not
+            //      have `.bind` functionality to implement `slice_call`].
             //
             //  NOTE #2:
             //      Although the use of `slice.call` may be slightly inefficient, this is irrelevant, as this is for
@@ -116,7 +150,51 @@ if ('bind' in Function) {
 }
 
 
-if ('bind' in Function) {
+//
+//  Gem.beryl.bind_create_Object
+//      A factory of factories.
+//
+//      Overview:
+//          Factories are superior to `new`, as they are easier to refactor.
+//
+//          It takes a while to understand factories.
+//
+//          The concept of a "factory of factories" is a little harder to understand, but becomes clearer over time.
+//
+//      Summary:
+//          A factory of factories.
+//
+//          The factories returned by `bind_create_Object` are named `create_*` (since they are factories, and
+//          factories, in general, begin with a "creation" verb like `create` and end with the name of what they
+//          create).
+//
+//      Details:
+//          Returns a bound create_Object (i.e.: a callable verion of `create_Object` with some of it's parameters
+//          bound).
+//
+//          In other words, `bind_create_objects` bind's some paramters to `create_object` and returns a callable
+//          function.
+//
+//          Since `create_object` is a factory then `bind_create_object` returns a factory with some of it's
+//          parameters bound.
+//
+//          Two examples (from below):
+//
+//              1.  `var create_AnonymousBox = bind_create_Object(null)`
+//                      Binds `null` as the first paramater to `create_Object`.
+//
+//                      Thus this returns a factory that creates "AnonymousBox" objects
+//
+//                      This factory, is thus, appropriatly named `create_AnonymousBox`.
+//
+//          2.  `.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)`
+//                      Binds `next_segment__BoxOfPropertyDescriptors` as the first paremater to `create_Object`.
+//
+//                      Thus this returns a factory that creates "BoxOfPrototypeDescriptors" objects.
+//
+//                      This factory, is thus, appropriatly named `create__BoxOfPropertyDescriptors`
+//
+if (Gem.Beryl.has_bind) {
     Gem.execute(
         function execute__codify__Gem__Beryl__bind_create_Object() {
             //
@@ -131,14 +209,82 @@ if ('bind' in Function) {
             //          It means the same as the two alternate implementations below.
             //
             //      In other words we bind 'create_Object.bind', to create a bound function, with the same behavior as
-            //      the alternate implementation below (the bound function created, is itsef a binding function):
+            //      the alternate implementation below (the bound function created, is itself a binding function):
             //
             //          Hence the use of `.bind.bind` in the next statement.
             //
+            //  NOTE #2:
+            //      Read the "overview" above on "a factory of factories."
+            //
+            //      Once you understand that `bind` is, in some sense, used as a factory, then it becomes clearer that
+            //      when creating "a factory of factories" we need to use `bind` twice, as is done below...
+            //
+            //      To be slightly more accurate `bind` allows us to "modify" a pre-existing function.  When
+            //      we "modify" a factory, then we are using `bind` to create a "modified" factory.
+            //
+            //      Since we are using `bind` on `create_Object` (which is is a factory that creates Objects),
+            //      then, in some sense, we are using `bind` to creat a "modified" factory.
+            //
+            //      So once again, since we are creating a "factory of factories" (using `create_Object` as the
+            //      underlying factory), and "`bind` is in some sense, a used as a factory" & we need to call
+            //      it `bind` twice.
+            //
+            //      (Thanks for reading this long comment, lol).
+            //
             Gem.Beryl.bind_create_Object = create_Object.bind.bind(create_Object, Object)
+
+            //
+            //  NOTE #3:
+            //      We deliberatly did *NOT* use the previously defined `Gem.Beryl.bind` here, since that is even more
+            //      confusing (you can see the "Pure" implementation below for use of `Gem.Beryl.Bind` and why
+            //      it is even more confusing).
+            //
+            //      If you really want to see `Beryl.bind_create_object` in action, then you can enable the
+            //      code below .. which does work ... by changing `if (0)` to `if (7)` & single tracing it.
+            //
+            if (7) {
+                //
+                //  This "Pure" implementation NOT used on purpose.  Only here for reference -- to understand other
+                //  versions.
+                //
+                //  This "Pure" implementation -- does work, but way harder to understand
+                //
+                debugger                                    //  Call debugger to help single trace this code ...
+
+                //
+                //  Hmm, so there are five bind's here ...
+                //      
+                //      ... which is correct ... As the comment about states "but way harder to understand" ...
+                //
+                //      The first bind, is to call the function `bind`.
+                //
+                //      The second bind is the `bound_f` (i.e.: the function to bind; i.e.: `bind`)
+                //
+                //      The third bind is the `bound_this` of `bound_f` (i.e.: the function to bind; i.e.: `bind`)
+                //
+                //      The fourth bind is the `bound_f` of the nested bind function being called.
+                //
+                //      The fifth bind is the `bound_this` of `bound_f` of the nested bind function being called.
+                //
+                //      After that follow the third & fourth argument of the nested bind function being called
+                //      (i.e.: `create_Object` & `Object`).
+                //
+                Gem.Beryl.bind_create_Object = Gem.Beryl.bind(  //  First `bind`
+                        Gem.Beryl.bind, Gem.Beryl.bind, //  Second & third `bind`: `bound_f` & `bound_this`
+                        Gem.Beryl.bind, Gem.Beryl.bind, //  Fourth & fourth `bind`: [nested] `bound_f` & `bound_this`
+                        create_Object,
+                        Object//,
+                    )
+            }
         }
     )
-} else if (7) {                                             //  `if (7)` means use this implementation ...
+} else {
+    //
+    //  This "mixed" implementation is the easiest to understand:
+    //
+    //      Although it does the same as the other version, it doesn't really do a double "bind"; but instead
+    //      emulates it with a double "closure" (making it easier to understand).
+    //
     Gem.codify(
         function codifier__Gem__Beryl__bind_create_Object() {
             return function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
@@ -168,39 +314,6 @@ if ('bind' in Function) {
                     return Object.create(prototype, properties)
                 }
             }
-        }
-    )
-} else {
-    //
-    //  This "Pure" implementation NOT used on purpose.  Only here for reference -- to understand other versions.
-    //
-    Gem.execute(
-        function execute__codify__Gem__Beryl__bind_create_Object() {
-            //
-            //  "Pure" implementation -- does work, but way harder to understand
-            //
-            var create_Object = Object.create
-            var bind          = Gem.Beryl.bind
-
-            //
-            //  Hmm, so there are five bind's here ...
-            //      
-            //      ... which is correct ... As the comment about states "but way harder to understand" ...
-            //
-            //      The first bind, is to call the function `bind`.
-            //
-            //      The second bind is the `bound_f` (i.e.: the function to bind; i.e.: `bind`)
-            //
-            //      The third bind is the `bound_this` of `bound_f` (i.e.: the function to bind; i.e.: `bind`)
-            //
-            //      The fourth bind is the `bound_f` of the nested bind function being called.
-            //
-            //      The fifth bind is the `bound_this` of `bound_f` of the nested bind function being called.
-            //
-            //      After that follow the third & fourth argument of the nested bind function being called
-            //      (i.e.: `create_Object` & `Object`).
-            //
-            Gem.Beryl.bind_create_Object = bind(bind, bind, bind, bind, create_Object, Object)
         }
     )
 }
