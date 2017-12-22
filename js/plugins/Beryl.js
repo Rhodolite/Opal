@@ -338,86 +338,100 @@ Gem.execute(
                 }
             }
         )
+
+
+        //
+        //  Gem.qualification_note
+        //      Add a qualification note to a variable or set of variables (clarity mode only).
+        //
+        if (Gem.Configuration.clarity) {
+            Gem.codify(
+                'Gem.qualification_note',
+                'Add a qualification note to a variable or set of variables (clarity mode only).',
+                function codifier__Gem__qualification_note() {
+                    //
+                    //  Imports
+                    //
+                    var Gem = window.Gem
+
+                    //
+                    //  Closures
+                    //
+                    var note_pattern = new Pattern(
+                              '^Gem'
+                            +    '\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*)'
+                            + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
+                            + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
+                            + '$'
+                        )
+
+
+                    if ('bind' in note_pattern.exec) {
+                        var note_match = note_pattern.exec.bind(note_pattern)
+                    } else {
+                        var note_match = function OLD_WAY__note_match(s) {
+                            return note_pattern.exec(s)
+                        }
+                    }
+
+
+                    return function Gem__qualification_note(who, $what) {
+                        //  Add a qualification note to a variable or set of variables (clarity mode only)
+
+                        var m = note_match(who)
+
+                        if ( ! m) {
+                            throw Error('Unknown name to qualification_note: ' + who)
+                        }
+
+                        var module = m[1]
+                        var first  = m[2]
+
+                        if (first === undefined) {
+                            concealed_constant_property.value = $what
+
+                            define_property(Gem, module + '$NOTE', concealed_constant_property)
+
+                            delete concealed_constant_property.value
+
+                            return
+                        }
+
+                        var second = m[3]
+
+                        if (second === undefined) {
+                            concealed_constant_property.value = $what
+
+                            define_property(Gem[module], first + '$NOTE', concealed_constant_property)
+
+                            delete concealed_constant_property.value
+
+                            return
+                        }
+                        
+                        concealed_constant_property.value = $what
+
+                        define_property(Gem[module][first], second + '$NOTE', concealed_constant_property)
+
+                        delete concealed_constant_property.value
+                    }
+                }
+            )
+        } else {
+            Gem.codify(
+                'Gem.qualification_note',
+                'Empty function -- nothing to do, not in `Gem.Configuration.clarity` mode',
+                function codifier__Gem__qualification_note() {
+                    return function Gem__qualification_note(/*who, $what*/) {
+                        //  Nothing to do, not in `Gem.Configuration.clarity` mode
+                    }
+                }
+            )
+        }
     }
 )
 
 
-
-//
-//  Gem.qualification_note
-//      Add a qualification note to a variable or set of variables (clarity mode only).
-//
-if (Gem.Configuration.clarity) {
-    Gem.codify(
-        'Gem.qualification_note',
-        'Add a qualification note to a variable or set of variables (clarity mode only).',
-        function codifier__Gem__qualification_note() {
-            //
-            //  Imports
-            //
-            var Gem            = window.Gem
-            var create_pattern = RegExp
-
-            //
-            //  Closures
-            //
-            var name_pattern = new RegExp(
-                      '^Gem'
-                    +    '\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*)'
-                    + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
-                    + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
-                    + '$'
-                )
-
-
-            if ('bind' in name_pattern.exec) {
-                var name_match = name_pattern.exec.bind(name_pattern)
-            } else {
-                var name_match = function OLD_WAY__name_match(s) {
-                    return name_pattern.exec(s)
-                }
-            }
-
-
-            return function Gem__qualification_note(who, $what) {
-                //  Add a qualification note to a variable or set of variables (clarity mode only)
-
-                var m = name_match(who)
-
-                if ( ! m) {
-                    throw Error('Unknown name to qualification_note: ' + who)
-                }
-
-                var module = m[1]
-                var first  = m[2]
-
-                if (first === undefined) {
-                    Gem[module + '$NOTE'] = $what
-                    return
-                }
-
-                var second = m[3]
-
-                if (second === undefined) {
-                    Gem[module][first + '$NOTE'] = $what
-                    return
-                }
-                
-                Gem[module][first][second + '$NOTE'] = $what
-            }
-        }
-    )
-} else {
-    Gem.codify(
-        'Gem.qualification_note',
-        'Empty function -- nothing to do, not in `Gem.Configuration.clarity` mode',
-        function codifier__Gem__qualification_note() {
-            return function Gem__qualification_note(/*who, $what*/) {
-                //  Nothing to do, not in `Gem.Configuration.clarity` mode
-            }
-        }
-    )
-}
 
 
 //
