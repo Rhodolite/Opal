@@ -75,22 +75,21 @@ window.Gem = {
 
 
 //
-//  Gem.codify:
-//      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
-//      avoid the use of any global variables.'
+//  Gem.codify, Gem.qualify, & Gem.qualification_note (can be executed twice in clarity mode)
 //
 Gem.execute(
-    function codifier__Gem__codify() {
+    function execute__setup__Gem() {
         //
         //  Imports
         //
-        var Gem            = window.Gem
-        var create_pattern = RegExp
+        var clarity = Gem.Configuration.clarity
+        var Pattern = RegExp
+
 
         //
         //  Closures
         //
-        var name_pattern = new RegExp(
+        var name_pattern = new Pattern(
                   '^Gem'
                 +    '\.([A-Za-z_][0-9A-Za-z_]*)'
                 + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
@@ -107,59 +106,127 @@ Gem.execute(
         }
 
 
-        //
-        //  Exports
-        //
-        Gem.codify = function Gem__codify(who, $what, codifier) {
-            var m = name_match(who)
+        if (clarity) {
+            //
+            //  Imports
+            //
+            var create_Object   = Object.create
+            var define_property = Object.defineProperty
 
-            if ( ! m) {
-                throw Error('Unknown name to codify: ' + who)
-            }
 
-            var module = m[1]
-            var name   = m[2]
-
-            var codifier_name = 'codifier__Gem__' + module
-            var code_name     =           'Gem__' + module
-
-            if (name !== undefined) {
-                codifier_name += '__' + name
-                code_name     += '__' + name
-            }
-
-            if (codifier_name !== codifier.name) {
-                throw Error(
-                        (
-                              "Codifier must be named '" + codifier_name + "'"
-                            + "; was instead named: '"   + codifier.name + "'"
-                        )//,
-                    )
-            }
-
-            var code = codifier()
-
-            if (typeof code === 'undefined') {
-                throw Error('Codifier `' + codifier_name + '` did not return a function; returned `undefined` instead')
-            }
-
-            if (code_name !== code.name) {
-                throw Error(
-                        (
-                              "Codifier `" + codifier_name + "`"
-                            +       " must return a function named '"  + code_name + "'"
-                            + "; instead returned a function named: '" + code.name + "'"
-                        )//,
-                    )
-            }
-
-            if (name === undefined) {
-                Gem[module] = code
-                return
-            }
-
-            Gem[module][name] = code
+            //
+            //  Closures
+            //      Read 'concealed' to mean 'not enumerable'.
+            //
+            var concealed_constant_property = create_Object(
+                    null//,
+                    //{
+                    //  configurable : { value : false },               //  Default value, no need to set
+                    //  enumerable   : { value : false },               //  Default value, no need to set
+                    //  writeable    : { value : false }//,             //  Default value, no need to set
+                    //}//,
+                )
         }
+
+
+        //
+        //  Gem.codify:
+        //      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
+        //      avoid the use of any global variables.
+        //
+        function codifier__Gem__codify() {
+            //
+            //  Imports
+            //
+            var Gem = window.Gem
+
+
+            return function Gem__codify(who, $what, codifier) {
+                //  Temporary bootstrap function to create the code for a function or procedure, typically as a
+                //  closure to avoid the use of any global variables.
+
+                var m = name_match(who)
+
+                if ( ! m) {
+                    throw Error('Unknown name to codify: ' + who)
+                }
+
+                var module = m[1]
+                var name   = m[2]
+
+                var codifier_name = 'codifier__Gem__' + module
+                var code_name     =           'Gem__' + module
+
+                if (name !== undefined) {
+                    codifier_name += '__' + name
+                    code_name     += '__' + name
+                }
+
+                if (codifier_name !== codifier.name) {
+                    throw Error(
+                            (
+                                  "Codifier must be named '" + codifier_name + "'"
+                                + "; was instead named: '"   + codifier.name + "'"
+                            )//,
+                        )
+                }
+
+                var code = codifier()
+
+                if (typeof code === 'undefined') {
+                    throw Error(
+                            (
+                                  'Codifier `' + codifier_name + '`'
+                                + ' did not return a function; returned `undefined` instead'
+                            )//,
+                        )
+                }
+
+                if (code_name !== code.name) {
+                    throw Error(
+                            (
+                                  "Codifier `" + codifier_name + "`"
+                                +       " must return a function named '"  + code_name + "'"
+                                + "; instead returned a function named: '" + code.name + "'"
+                            )//,
+                        )
+                }
+
+                if (clarity) {
+                    concealed_constant_property.value = who
+
+                    define_property(code, '$who', concealed_constant_property)
+
+                    concealed_constant_property.value = $what
+
+                    define_property(code, '$what', concealed_constant_property)
+
+                    delete concealed_constant_property.value
+                }
+
+                if (name === undefined) {
+                    Gem[module] = code
+
+                    return
+                }
+
+                Gem[module][name] = code
+            }
+        }
+
+
+        var temporary__Gem__codify = codifier__Gem__codify()    //  Grab a temporary copy of `Gem.codify` ...
+
+
+        temporary__Gem__codify(                         //  ... And use the temporary `Gem.codify` to codify itself ...
+            'Gem.codify',
+            (
+                  'Temporary bootstrap function to create the code for a function or procedure, typically as a'
+                + ' closure to avoid the use of any global variables'
+                + '.'
+            ),
+            codifier__Gem__codify//,
+        )
     }
 )
 
