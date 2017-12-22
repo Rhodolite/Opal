@@ -93,6 +93,7 @@ Gem.execute(
                   '^Gem'
                 +    '\.([A-Za-z_][0-9A-Za-z_]*)'
                 + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
+                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
                 + '$'
             )
 
@@ -152,14 +153,20 @@ Gem.execute(
                 }
 
                 var module = m[1]
-                var name   = m[2]
+                var first  = m[2]
+                var second = m[3]
 
                 var codifier_name = 'codifier__Gem__' + module
                 var code_name     =           'Gem__' + module
 
-                if (name !== undefined) {
-                    codifier_name += '__' + name
-                    code_name     += '__' + name
+                if (first !== undefined) {
+                    codifier_name += '__' + first
+                    code_name     += '__' + first
+                }
+
+                if (second !== undefined) {
+                    codifier_name += '__' + second
+                    code_name     += '__' + second
                 }
 
                 if (codifier_name !== codifier.name) {
@@ -204,13 +211,19 @@ Gem.execute(
                     delete concealed_constant_property.value
                 }
 
-                if (name === undefined) {
+                if (first === undefined) {
                     Gem[module] = code
 
                     return
                 }
 
-                Gem[module][name] = code
+                if (second === undefined) {
+                    Gem[module][first] = code
+
+                    return
+                }
+
+                Gem[module][first][second] = code
             }
         }
 
@@ -227,109 +240,107 @@ Gem.execute(
             ),
             codifier__Gem__codify//,
         )
+
+
+        //
+        //  Gem.qualify:
+        //      Temporary bootstrap function to qualify a global Gem variable
+        //      (in clarity mode also adds an explanation of what the variable does).
+        //
+        //  NOTE #1:
+        //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
+        //
+        //          `Gem.qualify` is used to "qualify" a value, by making sure it is ready to be used and
+        //          is adequate (i.e.: "qualified") for the task.
+        //
+        //  NOTE #2:
+        //      Meaning of "qualify" - a verb (used with object) meaning:
+        //
+        //          To provide, with attributes neccessary for a task ...
+        //
+        //          "To qualify oneself for a job"
+        //
+        //      See: https://www.vocabulary.com/dictionary/qualify
+        //           (Explains the two meaning's of "qualify", we are using the second meaning of "qualify")
+        //
+        //      See also: http://www.dictionary.com/browse/qualify
+        //
+        //      See also: https://www.merriam-webster.com/dictionary/qualify/
+        //
+        Gem.codify(
+            'Gem.qualify',
+            'Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).',
+            function codifier__Gem__qualify() {
+                //
+                //  Imports
+                //
+                var Gem = window.Gem
+
+
+                return function Gem__qualify(who, $what, value) {
+                    //  Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable
+                    //  does).
+
+                    var m = name_match(who)
+
+                    if ( ! m) {
+                        throw Error('Unknown name to qualify: ' + who)
+                    }
+
+                    var module = m[1]
+                    var first  = m[2]
+
+                    if (first === undefined) {
+                        Gem[module] = value
+
+                        if (clarity) {
+                            concealed_constant_property.value = $what
+
+                            define_property(Gem, module + '$', concealed_constant_property)
+
+                            delete concealed_constant_property.value
+
+                            return
+                        }
+
+                        return
+                    }
+
+                    var second = m[3]
+
+                    if (second === undefined) {
+                        Gem[module][first] = value
+
+                        if (clarity) {
+                            concealed_constant_property.value = $what
+
+                            define_property(Gem[module], first + '$', concealed_constant_property)
+
+                            delete concealed_constant_property.value
+
+                            return
+                        }
+
+                        return
+                    }
+                    
+                    Gem[module][first][second] = value
+
+                    if (clarity) {
+                        concealed_constant_property.value = $what
+
+                        define_property(Gem[module][first], second + '$', concealed_constant_property)
+
+                        delete concealed_constant_property.value
+
+                        return
+                    }
+                }
+            }
+        )
     }
 )
 
-
-//
-//  Gem.qualify:
-//      Temporary bootstrap function to qualify a global Gem variable
-//      (in clarity mode also adds an explanation of what the variable does).
-//
-//  NOTE #1:
-//      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
-//
-//          `Gem.qualify` is used to "qualify" a value, by making sure it is ready to be used and
-//          is adequate (i.e.: "qualified") for the task.
-//
-//  NOTE #2:
-//      Meaning of "qualify" - a verb (used with object) meaning:
-//
-//          To provide, with attributes neccessary for a task ...
-//
-//          "To qualify oneself for a job"
-//
-//      See: https://www.vocabulary.com/dictionary/qualify
-//           (Explains the two meaning's of "qualify", we are using the second meaning of "qualify")
-//
-//      See also: http://www.dictionary.com/browse/qualify
-//
-//      See also: https://www.merriam-webster.com/dictionary/qualify/
-//
-Gem.codify(
-    'Gem.qualify',
-    'Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).',
-    function codifier__Gem__qualify() {
-        //
-        //  Imports
-        //
-        var Gem            = window.Gem
-        var clarity        = Gem.Configuration.clarity
-        var create_pattern = RegExp
-
-        //
-        //  Closures
-        //
-        var name_pattern = new RegExp(
-                  '^Gem'
-                +    '\.([A-Za-z_][0-9A-Za-z_]*)'
-                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
-                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
-                + '$'
-            )
-
-
-        if ('bind' in name_pattern.exec) {
-            var name_match = name_pattern.exec.bind(name_pattern)
-        } else {
-            var name_match = function OLD_WAY__name_match(s) {
-                return name_pattern.exec(s)
-            }
-        }
-
-
-        return function Gem__qualify(who, $what, value) {
-            //  Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).
-
-            var m = name_match(who)
-
-            if ( ! m) {
-                throw Error('Unknown name to qualify: ' + who)
-            }
-
-            var module = m[1]
-            var first  = m[2]
-
-            if (first === undefined) {
-                Gem[module] = value
-
-                if (clarity) {
-                    Gem[module + '$'] = $what
-                }
-
-                return
-            }
-
-            var second = m[3]
-
-            if (second === undefined) {
-                Gem[module][first] = value
-
-                if (clarity) {
-                    Gem[module][first + '$'] = $what
-                }
-
-                return
-            }
-            
-            Gem[module][first][second] = value
-
-            if (clarity) {
-                Gem[module][first][second + '$'] = $what
-            }
-        }
-    }
-)
 
 
 //
