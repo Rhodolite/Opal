@@ -75,19 +75,6 @@ window.Gem = {
 
 
 //
-//  Gem._.Beryl.gem_changed
-//      Array of callback's when `Gem` is changed (clarity mode only)
-//
-Gem.execute(
-    function execute__set__Gem__private__Beryl__clarity_mode__gem_changed() {
-        if (Gem.Configuration.clarity) {
-            Gem._.Beryl.clarity_mode__gem_changed = []
-        }
-    }
-)
-
-
-//
 //  Gem.codify:
 //      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
 //      avoid the use of any global variables.'
@@ -103,12 +90,18 @@ Gem.execute(
         //
         //  Closures
         //
-        var name_pattern = new RegExp(/^Gem__([A-Z][A-Za-z_]*)__([a-z][0-9A-Za-z_]*)$/)
+        var name_pattern = new RegExp(
+                  '^Gem'
+                +    '__([A-Za-z_](?:[0-9A-Za-z]|_(?!_))*)'
+                + '(?:__([A-Za-z_](?:[0-9A-Za-z]|_(?!_))*))?'
+                + '$'
+            )
+
 
         if ('bind' in name_pattern.exec) {
             var name_match = name_pattern.exec.bind(name_pattern)
         } else {
-            var name_match = function name_match(s) {
+            var name_match = function OLD_WAY__name_match(s) {
                 return name_pattern.exec(s)
             }
         }
@@ -119,19 +112,139 @@ Gem.execute(
         //
         Gem.codify = function Gem__codify(codifier) {
             var code = codifier()
-            var m    = name_match(code.name)
+
+            if (typeof code === 'undefined') {
+                throw Error('Codifier `' + codifier.name + '` did not return a function; returned `undefined` instead')
+            }
+
+            var m = name_match(code.name)
 
             if ( ! m) {
-                throw Error('Unknown name to codify: ' + code.name)
+                throw Error('Codifier `' + codifier.name + '` returned an unknown name to codify: `' + code.name + '`')
             }
 
             var module = m[1]
             var name   = m[2]
 
+            if (name === undefined) {
+                Gem[module] = code
+                return
+            }
+
             Gem[module][name] = code
         }
     }
 )
+
+
+//
+//  Gem.qualify:
+//
+//      Temporary bootstrap function to create a global value.
+//
+//  NOTE #1:
+//      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
+//
+//          `Gem.qualify` is used to "qualify" a value, by making sure it is ready to be used and
+//          is adequate (i.e.: "qualified") for the task.
+//
+//  NOTE #2:
+//      Meaning of "qualify" - a verb (used with object) meaning:
+//
+//          To provide, with attributes neccessary for a task ...
+//
+//          "To qualify oneself for a job"
+//
+//      See: https://www.vocabulary.com/dictionary/qualify
+//           (Explains the two meaning's of "qualify", we are using the second meaning of "qualify")
+//
+//      See also: http://www.dictionary.com/browse/qualify
+//
+//      See also: https://www.merriam-webster.com/dictionary/qualify/
+//
+Gem.codify(
+    function codify__Gem__qualify() {
+        //
+        //  Imports
+        //
+        var Gem            = window.Gem
+        var clarity        = Gem.Configuration.clarity
+        var create_pattern = RegExp
+
+        //
+        //  Closures
+        //
+        var name_pattern = new RegExp(
+                  '^Gem'
+                +    '\.([A-Za-z_][0-9A-Za-z_]*)'
+                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
+                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
+                + '$'
+            )
+
+
+        if ('bind' in name_pattern.exec) {
+            var name_match = name_pattern.exec.bind(name_pattern)
+        } else {
+            var name_match = function OLD_WAY__name_match(s) {
+                return name_pattern.exec(s)
+            }
+        }
+
+
+        return function Gem__qualify(who, $what, value) {
+            var m = name_match(who)
+
+            if ( ! m) {
+                throw Error('Unknown name to qualify: ' + who)
+            }
+
+            var module = m[1]
+            var first  = m[2]
+
+            if (first === undefined) {
+                Gem[module] = value
+
+                if (clarity) {
+                    Gem[module + '$'] = $what
+                }
+
+                return
+            }
+
+            var second = m[3]
+
+            if (second === undefined) {
+                Gem[module][first] = value
+
+                if (clarity) {
+                    Gem[module][first + '$'] = $what
+                }
+
+                return
+            }
+            
+            Gem[module][first][second] = value
+
+            if (clarity) {
+                Gem[module][first][second + '$'] = $what
+            }
+        }
+    }
+)
+
+
+//
+//  Gem._.Beryl.gem_changed
+//      Array of callback's when `Gem` is changed (clarity mode only)
+//
+if (Gem.Configuration.clarity) {
+    Gem.qualify(
+        'Gem._.Beryl.clarity_mode__gem_changed',
+        "Array of callback's when `Gem` is changed (clarity mode only)",
+        []//,
+    )
+}
 
 
 //

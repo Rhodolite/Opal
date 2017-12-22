@@ -242,7 +242,7 @@ if (Gem.Beryl.has_bind) {
             //      If you really want to see `Beryl.bind_create_object` in action, then you can enable the
             //      code below .. which does work ... by changing `if (0)` to `if (7)` & single tracing it.
             //
-            if (7) {
+            if (0) {
                 //
                 //  This "Pure" implementation NOT used on purpose.  Only here for reference -- to understand other
                 //  versions.
