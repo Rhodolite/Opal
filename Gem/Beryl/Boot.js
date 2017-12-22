@@ -14,12 +14,23 @@ if ('bind' in Function) {
         //  Modern Browser implementation using `Function.prototype.bind`
         //
         function codifier__Gem__Beryl__bind() {
+            //
+            //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
+            //  to the `this` argument of `Array.prototype.slice`:
+            //
+            //      In other words `.slice_call(arguments, 2)` becomes `Array.prototype.slice.call(arguments, 2)`
+            //
+            //  This suggestion came from:
+            //      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+            //
+            var call_slice = Array.prototype.slice.call.bind(Array.prototype.slice)
+
             return function Gem__Beryl__bind(bound_f, bound_this /*, ...*/) {
                 if (arguments.length === 2) {
                     return bound_f.bind(bound_this)
                 }
 
-                return bound_f.bind.apply(bound_this, arguments)
+                return bound_f.bind.apply(bound_this, call_slice(arguments, 2))
             }
         }
     )
@@ -117,7 +128,7 @@ if ('bind' in Function) {
             //  NOTE #1:
             //      So the following is probably confusing ...
             //
-            //          It means the same as the alternate implementation below.
+            //          It means the same as the two alternate implementations below.
             //
             //      In other words we bind 'create_Object.bind', to create a bound function, with the same behavior as
             //      the alternate implementation below (the bound function created, is itsef a binding function):
@@ -127,25 +138,9 @@ if ('bind' in Function) {
             Gem.Beryl.bind_create_Object = create_Object.bind.bind(create_Object, Object)
         }
     )
-} else {
+} else if (7) {                                             //  `if (7)` means use this implementation ...
     Gem.codify(
         function codifier__Gem__Beryl__bind_create_Object() {
-            if (7) {
-                //
-                //  "Pure" implementation -- does work, but harder to understand
-                //
-                var bind = Gem.Beryl.bind
-
-                return function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
-                    if (arguments.length === 1) {
-                        return bind(bind, this, Create_Object, Object, prototype)
-                    }
-
-                    return bind(bind, this, Create_Object, Object, prototype, properties)
-                }
-            }
-
-
             return function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
                 //  Return a bound version of `Object.create`.
                 //
@@ -173,6 +168,39 @@ if ('bind' in Function) {
                     return Object.create(prototype, properties)
                 }
             }
+        }
+    )
+} else {
+    //
+    //  This "Pure" implementation NOT used on purpose.  Only here for reference -- to understand other versions.
+    //
+    Gem.execute(
+        function execute__codify__Gem__Beryl__bind_create_Object() {
+            //
+            //  "Pure" implementation -- does work, but way harder to understand
+            //
+            var create_Object = Object.create
+            var bind          = Gem.Beryl.bind
+
+            //
+            //  Hmm, so there are five bind's here ...
+            //      
+            //      ... which is correct ... As the comment about states "but way harder to understand" ...
+            //
+            //      The first bind, is to call the function `bind`.
+            //
+            //      The second bind is the `bound_f` (i.e.: the function to bind; i.e.: `bind`)
+            //
+            //      The third bind is the `bound_this` of `bound_f` (i.e.: the function to bind; i.e.: `bind`)
+            //
+            //      The fourth bind is the `bound_f` of the nested bind function being called.
+            //
+            //      The fifth bind is the `bound_this` of `bound_f` of the nested bind function being called.
+            //
+            //      After that follow the third & fourth argument of the nested bind function being called
+            //      (i.e.: `create_Object` & `Object`).
+            //
+            Gem.Beryl.bind_create_Object = bind(bind, bind, bind, bind, create_Object, Object)
         }
     )
 }
@@ -239,10 +267,8 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             //
             var property__constructor = { enumerable  : true }
 
-            debugger
-
             var property_descriptors = Gem.Beryl.create__BoxOfPropertyDescriptors(
-                    { constructor : { value : property__constructor } }//,
+                    { constructor : { value : property__constructor, enumerable : true } }//,
                 )
 
             var create_AnonymousBox_using_property_descriptors = bind_create_Object(null, property_descriptors)
