@@ -40,7 +40,7 @@ window.Gem = {
         //
         //  NOTE:
         //      The rest of attributes are only used if `Gem.Script.handle_errors` is `true`.
-        //    
+        //
         //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag
         //  handle_event        : Function                  //      Handle events of `<script>` tags
         //  source_attribute    : Function                  //      Get unmodified `.src` attribute.
@@ -151,14 +151,14 @@ Gem.execute(
         //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
         //
         //  Copies:
-        //      Gem.Beryl     .codify2
-        //      Gem.NodeWebKit.codify2
-        //      Gem.Script    .codify2
+        //      Gem.Beryl     .codify
+        //      Gem.NodeWebKit.codify
+        //      Gem.Script    .codify
         //          Same as Gem.codify, just acting on a different `this`.
         //
-        function codifier__Gem__codify2() {
+        function codifier__Gem__codify() {
             if (clarity) {
-                return function Gem__codify2(who, $what, codifier) {
+                return function Gem__codify(who, $what, codifier) {
                     //  Create the code for a function or procedure, typically as a closure to avoid the use of any
                     //  global variables.
                     //
@@ -179,21 +179,22 @@ Gem.execute(
 
                     var code = codifier()
 
-                    if (typeof code === 'undefined') {
+                    if (typeof code !== 'function' || code_name !== code.name) {
+                        if (typeof code === 'undefined') {
+                            var actual = '`undefined`'
+                        } else if (typeof code !== 'function') {
+                            var actual = 'a non function, the value: ' + code.toString()
+                        } else if (code.name === '') {
+                            var actual = 'an unnamed function'
+                        } else {
+                            var actual = 'a function named `' + code.name + '`'
+                        }
+
                         throw Error(
                                 (
                                       'Codifier `' + codifier_name + '`'
-                                    + ' did not return a function; returned `undefined` instead'
-                                )//,
-                            )
-                    }
-
-                    if (code_name !== code.name) {
-                        throw Error(
-                                (
-                                      "Codifier `" + codifier_name + "`"
-                                    +       " must return a function named '"  + code_name + "'"
-                                    + "; instead returned a function named: '" + code.name + "'"
+                                    + ' must return a function named `'  + code_name + '`'
+                                    + '; instead returned ' + actual
                                 )//,
                             )
                     }
@@ -212,9 +213,9 @@ Gem.execute(
                         delete visible_constant_property.value
                     }
                 }
-            } 
+            }
 
-            return function Gem__codify2(who, $what, codifier) {
+            return function Gem__codify(who, $what, codifier) {
                 //  Create the code for a function or procedure, typically as a closure to avoid the use of any
                 //  global variables.
                 //
@@ -225,21 +226,21 @@ Gem.execute(
         }
 
 
-        Gem.codify2 = codifier__Gem__codify2()      //  Grab a temporary copy of `Gem.codify2` ...
+        Gem.codify = codifier__Gem__codify()      //  Grab a temporary copy of `Gem.codify` ...
 
 
-        Gem.codify2(                                //  ... And use the temporary `Gem.codify2` to codify itself ...
-            'codify2',
+        Gem.codify(                                //  ... And use the temporary `Gem.codify` to codify itself ...
+            'codify',
             (
                   'Temporary bootstrap function to create the code for a function or procedure, typically as a'
                 + ' closure to avoid the use of any global variables'
                 + '.'
             ),
-            codifier__Gem__codify2//,
+            codifier__Gem__codify//,
         )
 
 
-        Gem.NodeWebKit.codify2 = Gem.Script.codify2 = Gem.Beryl.codify2 = Gem.codify2
+        Gem.NodeWebKit.codify = Gem.Script.codify = Gem.Beryl.codify = Gem.codify
 
 
         //
@@ -268,24 +269,67 @@ Gem.execute(
         //      See also: https://www.merriam-webster.com/dictionary/qualify/
         //
         //  Copies:
-        //      Gem._.Beryl.qualify
+        //      Gem._.Beryl   .qualify
+        //      Gem.NodeWebKit.qualify
+        //      Gem.Script    .qualify
         //          Same as Gem.qualify, just acting on a different `this`.
         //
-        Gem.codify2(
+        Gem.codify(
             'qualify',
             (
-                   'Qualify a global Gem variable'
-                + '.  Also in clarity mode adds an explanation of what the variable does'
-                + '.'
+                  'Qualify a global Gem variable.\n'
+                + '\n'
+                + 'The `qualifier` argument can be either a qualifier function that returns a value, or instead'
+                + ' just a simple value.\n'
+                + '\n'
+                + 'Also in clarity mode adds an explanation of what the variable does.'
             ),
             function codifier__Gem__qualify() {
                 if (clarity) {
-                    return function Gem__qualify(who, $what, value) {
+                    return function Gem__qualify(who, $what, qualifier) {
                         //  Qualify a global Gem variable.
+                        //
+                        //  The `qualifier` argument can be either a qualifier function that returns a value, or
+                        //  instead just a simple value.
                         //
                         //  Also in clarity mode adds an explanation of what the variable does.
 
-                        this[who] = value
+                        if (typeof qualifier == 'function') {
+                            var middle         = this.$who.replace('.', '__')
+                            var qualifier_name = 'qualifier__' + middle + '__' + who
+
+                            if (qualifier_name !== qualifier.name) {
+                                throw Error(
+                                        (
+                                              "Qualifier must be named '" + qualifier_name + "'"
+                                            + "; was instead named: '"    + qualifier.name + "'"
+                                        )//,
+                                    )
+                            }
+
+                            var value = qualifier()
+
+                            if (typeof value === 'undefined' || typeof value === 'function') {
+                                if (typeof value === 'undefined') {
+                                    var actual = '`undefined`'
+                                } else if (value.name === '') {
+                                    var actual = 'an unnamed function'
+                                } else {
+                                    var actual = 'a function named `' + value.name + '`'
+                                }
+
+                                throw Error(
+                                        (
+                                              'Qualifier `' + qualifier_name + '` did not return a value'
+                                            + '; returned ' + actual + ' instead'
+                                        )//,
+                                    )
+                            }
+
+                            this[who] = value
+                        } else {
+                            this[who] = qualifier
+                        }
 
                         if (7) {
                             visible_constant_property.value = $what
@@ -297,17 +341,20 @@ Gem.execute(
                     }
                 }
 
-                return function Gem__qualify(who, $what, value) {
+                return function Gem__qualify(who, $what, qualifier) {
                     //  Qualify a global Gem variable.
+                    //
+                    //  The `qualifier` argument can be either a qualifier function that returns a value, or
+                    //  instead just a simple value.
                     //
                     //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                    this[who] = value
+                    this[who] = (typeof qualifier == 'function' ? qualifier() : qualifier)
                 }
             }
         )
 
-        Gem.NodeWebKit.qualify = Gem._.Beryl.qualify = Gem.qualify
+        Gem.Script.qualify = Gem.NodeWebKit.qualify = Gem._.Beryl.qualify = Gem.qualify
 
 
         //
@@ -319,13 +366,11 @@ Gem.execute(
         //          Same as Gem.qualification_note, just acting on a different `this`.
         //
         if (Gem.Configuration.clarity) {
-            Gem.codify2(
+            Gem.codify(
                 'qualification_note',
                 'Add a qualification note to a variable or set of variables (clarity mode only).',
                 function codifier__Gem__qualification_note() {
                     return function Gem__qualification_note(who, $what) {
-                        debugger
-
                         //  Add a qualification note to a variable or set of variables (clarity mode only)
 
                         visible_constant_property.value = $what
@@ -409,7 +454,7 @@ Gem.execute(
         Gem.NodeWebKit.qualify(
             'is_version_013_or_higher',
             "`true` if using nw.js & it's version 0.13 or greater.",
-            (major >   0 || minor >= 13)//,
+            (major >  0 || minor >= 13)//,
         )
 
         Gem.NodeWebKit.qualification_note(
@@ -425,7 +470,7 @@ Gem.execute(
 //      Show developer tools.
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
-    Gem.NodeWebKit.codify2(
+    Gem.NodeWebKit.codify(
         'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower).',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
@@ -439,7 +484,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
-    Gem.NodeWebKit.codify2(
+    Gem.NodeWebKit.codify(
         'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher).',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
@@ -519,7 +564,7 @@ Gem.execute(
 //
 if (Gem.Script.handle_errors) {
     if ('getAttribute' in document.head) {
-        Gem.Script.codify2(
+        Gem.Script.codify(
             'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
             function codifier__Gem__Script__source_attribute(tag) {
@@ -531,7 +576,7 @@ if (Gem.Script.handle_errors) {
             }
         )
     } else {
-        Gem.Script.codify2(
+        Gem.Script.codify(
             'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
             function codifier__Gem__Script__source_attribute(tag) {
@@ -560,7 +605,7 @@ if (Gem.Script.handle_errors) {
 //      Handle errors when executing a `<script>` tag.
 //
 if (Gem.Script.handle_errors) {
-    Gem.Script.codify2(
+    Gem.Script.codify(
         'handle_global_error',
         'Handle errors when executing a `<script>` tag.',
         function codifier__Gem__Script__handle_global_error() {
@@ -611,7 +656,7 @@ if (Gem.Script.handle_errors) {
 //      Handle events of `<script>` tags.
 //
 if (Gem.Script.handle_errors) {
-    Gem.Script.codify2(
+    Gem.Script.codify(
         'handle_event',
         'Handle events of `<script>` tags.',
         function codifier__Gem__Script__handle_event() {
@@ -668,8 +713,10 @@ if (Gem.Script.handle_errors) {
 //
 //  Gem.Script.gem_scripts
 //
-Gem.execute(
-    function execute__Gem__Script__gem_scripts() {
+Gem.Script.qualify(
+    'gem_scripts',
+    '`div#gem_scripts` is inserted into `document.body` as the parent of all Gem `<script>` tags.',
+    function qualifier__Gem__Script__gem_scripts() {
         var id          = 'gem_scripts'
         var gem_scripts = document.getElementById(id)
 
@@ -684,14 +731,9 @@ Gem.execute(
 
         }
 
-
         document.head.appendChild(gem_scripts)
 
-
-        //
-        //  Export
-        //
-        Gem.Script.gem_scripts = gem_scripts
+        return gem_scripts
     }
 )
 
@@ -788,9 +830,9 @@ Gem.execute(
             //  NOTE:
             //      This is not a modern browser.  If there is no 'AddEventListener' we could do:
             //
-            //          tag.onabort = handle_event           
+            //          tag.onabort = handle_event
             //          tag.onerror = handle_event              //  Alert user if any error happens (alternate method)
-            //          tag.onload  = handle_event           
+            //          tag.onload  = handle_event
             //
             //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable
             //      with super super old browsers.
@@ -816,26 +858,23 @@ Gem.execute(
         }
 
 
-        Gem.Script.codify2(
-            'load',
-            'Load JavaScript code using a `<script>` tag.',
-            codifier__Gem__Script__load//,
-        )
+        function codify__Gem__Script__load() {
+            Gem.Script.codify(
+                'load',
+                'Load JavaScript code using a `<script>` tag.',
+                codifier__Gem__Script__load//,
+            )
+        }
+
+
+        codify__Gem__Script__load()
 
 
         if (Gem.Configuration.clarity) {
             //
             //  Save callback to recalculate `Gem.Script.load`
             //
-            //  NOTE:
-            //      When this callback is called later, `Gem.codify` no longer exists.
-            //      Hence we do the assignment to `Gem.Script.load` directly.
-            //
-            Gem._.Beryl.clarity_mode__gem_changed.push(
-                function recodify__Gem__Script__load() {
-                    Gem.Script.load = codifier__Gem__Script__load()
-                }
-            )
+            Gem._.Beryl.clarity_mode__gem_changed.push(codify__Gem__Script__load)
         }
     }
 )
