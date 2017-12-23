@@ -136,6 +136,7 @@ Gem.execute(
                 }
 
                 who_what(Gem,            'Gem',            'The only global variable used by Gem.')
+                who_what(Gem.Beryl,      'Gem.Beryl',      'Exports of the Beryl module.')
                 who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
                 who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
             }
@@ -232,7 +233,7 @@ Gem.execute(
         )
 
 
-        Gem.NodeWebKit.codify2 = Gem.Script.codify2 = Gem.codify2
+        Gem.NodeWebKit.codify2 = Gem.Script.codify2 = Gem.Beryl.codify2 = Gem.codify2
     }
 )
 
