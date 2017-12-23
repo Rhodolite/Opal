@@ -30,8 +30,9 @@ window.Gem = {
     Script : {                                              //  `<script>` handling
         beryl_boot_path : 'Gem/Beryl/Boot.js',              //      [Temporary] Module to load the rest of Gem modules
         event_list      : ['abort', 'error', 'load'],       //      List of `<script>` events to listen for.
-        handle_errors   : false,                            //      Changed to `true` if handling `<script>` errors
-        //  load        : Function                          //      Load a script using `<script>` tag.
+
+        //  handle_errors : false,                          //      `true` if handling `<script>` errors.
+        //  load          : Function                        //      Load a script using `<script>` tag.
 
         script_map : {                                      //      Map of all the scripts loaded (or loading)
             //  ['Gem/Beryl/Boot.js'] : `<script>` tag      //          `<script>` tag to load "Gem/Beryl/Boot.js".
@@ -140,6 +141,29 @@ Gem.execute(
                 who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
                 who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
             }
+
+
+            var throw_unexpected_value = function throw_unexpected_value(prefix, v) {
+                //  Throw an error message with the prefix `prefix` & the suffix as a portrayal of `v`
+
+                if (typeof v === 'function') {
+                    if (v.name.length) {
+                        var suffix = ' a function named `' + v.name + '`'
+                    } else {
+                        var suffix = ' an unnamed function'
+                    }
+                } else {
+                    if (typeof v === 'undefined') {
+                        var suffix = ' `undefined`'
+                    } else {
+                        var suffix = ' a non function, the value: ' + v.toString()
+                    }
+                }
+
+                var message = prefix + suffix
+
+                throw new Error(message)
+            }
         }
 
 
@@ -168,34 +192,23 @@ Gem.execute(
                     var codifier_name = 'codifier__' + middle + '__' + who
                     var code_name     =                middle + '__' + who
 
-                    if (codifier_name !== codifier.name) {
-                        throw Error(
-                                (
-                                      "Codifier must be named '" + codifier_name + "'"
-                                    + "; was instead named: '"   + codifier.name + "'"
-                                )//,
+                    if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
+                        throw_unexpected_value(
+                                'Codifier must be a function named `' + codifier_name + '`; was instead',
+                                codifier//,
                             )
                     }
 
                     var code = codifier()
 
                     if (typeof code !== 'function' || code_name !== code.name) {
-                        if (typeof code === 'undefined') {
-                            var actual = '`undefined`'
-                        } else if (typeof code !== 'function') {
-                            var actual = 'a non function, the value: ' + code.toString()
-                        } else if (code.name === '') {
-                            var actual = 'an unnamed function'
-                        } else {
-                            var actual = 'a function named `' + code.name + '`'
-                        }
-
-                        throw Error(
+                        throw_unexpected_value(
                                 (
                                       'Codifier `' + codifier_name + '`'
                                     + ' must return a function named `'  + code_name + '`'
-                                    + '; instead returned ' + actual
-                                )//,
+                                    + '; instead returned'
+                                ),
+                                code//,
                             )
                     }
 
@@ -298,30 +311,24 @@ Gem.execute(
                             var qualifier_name = 'qualifier__' + middle + '__' + who
 
                             if (qualifier_name !== qualifier.name) {
-                                throw Error(
+                                throw_unexpected_value(
                                         (
-                                              "Qualifier must be named '" + qualifier_name + "'"
-                                            + "; was instead named: '"    + qualifier.name + "'"
-                                        )//,
+                                              'Qualifier must be a function named `' + qualifier_name + '`'
+                                            + '; was instead'
+                                        ),
+                                        qualifier//,
                                     )
                             }
 
                             var value = qualifier()
 
                             if (typeof value === 'undefined' || typeof value === 'function') {
-                                if (typeof value === 'undefined') {
-                                    var actual = '`undefined`'
-                                } else if (value.name === '') {
-                                    var actual = 'an unnamed function'
-                                } else {
-                                    var actual = 'a function named `' + value.name + '`'
-                                }
-
-                                throw Error(
+                                throw_unexpected_value(
                                         (
                                               'Qualifier `' + qualifier_name + '` did not return a value'
-                                            + '; returned ' + actual + ' instead'
-                                        )//,
+                                            + '; instead returned'
+                                        ),
+                                        value//,
                                     )
                             }
 
@@ -518,31 +525,25 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 //
 //  Gem.Script.handle_errors
 //
-Gem.execute(
-    function execute__set__Gem__Script__handle_errors() {
-        //
-        //  NOTE:
-        //      We only handle script events (and thus bring up an alert) if five conditions are met:
-        //
-        //          1.  This is running in Gem debug mode;
-        //          2.  This is running in RPG Maker MV "test" mode;
-        //          3.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
-        //          4.  The browser has a `.addEventListener`   method (all modern browsers do);
-        //          5.  The browser has a `.setAttribute`       method (all modern browsers do).
-        //
-        if (
-                   Gem.Configuration.debug
-                && ('Utils' in window) && Utils.isNwjs()
-                && Utils.isOptionValid('test')
-                && ('addEventListener' in window)
-                && ('setAttribute'     in document.head)
-        ) {
-            //
-            //  Exports
-            //
-            Gem.Script.handle_errors = true
-        }
-    }
+//  NOTE:
+//      We only handle script events (and thus bring up an alert) if five conditions are met:
+//
+//          1.  This is running in Gem debug mode;
+//          2.  This is running in RPG Maker MV "test" mode;
+//          3.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
+//          4.  The browser has a `.addEventListener`   method (all modern browsers do);
+//          5.  The browser has a `.setAttribute`       method (all modern browsers do).
+//
+Gem.Script.qualify(
+    'handle_errors',
+    '`true` if handling `<script>` errors.',
+    (
+           Gem.Configuration.debug
+        && ('Utils' in window) && Utils.isNwjs()
+        && Utils.isOptionValid('test')
+        && ('addEventListener' in window)
+        && ('setAttribute'     in document.head)
+    )//,
 )
 
 
