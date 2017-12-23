@@ -490,9 +490,6 @@ if (Gem.Configuration.clarity) {
         function execute__Gem__add_clarity() {
             var create_Box = Gem.Beryl.create_Box
 
-            Gem.$who  = 'Gem'                                       //  Name of this variable.
-            Gem.$what = 'The only global variable used by Gem.'     //  What `Gem` is used for.
-
             if ( ! ('$' in Gem)) {
                 Gem.$ = create_Box({                                //  Map of introspection of all the Gem modules
                     $who  : { value : 'Gem.$' },
@@ -511,12 +508,6 @@ if (Gem.Configuration.clarity) {
 
             Gem.Configuration.$who  = 'Gem.Configuration'
             Gem.Configuration.$what = 'Gem Configuration values'
-
-            Gem.NodeWebKit.$who  = 'Gem.NodeWebKit'
-            Gem.NodeWebKit.$what = 'Node WebKit members & methods'
-
-            Gem.Script.$who  = 'Gem.Script'
-            Gem.Script.$what = '`<script>` handling'
 
             Gem.Script.script_map.$who  = 'Gem.Script.script_map'
             Gem.Script.script_map.$what = 'Map of all the scripts loaded (or loading).'

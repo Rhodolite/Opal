@@ -32,7 +32,8 @@ window.Gem = {
         event_list      : ['abort', 'error', 'load'],       //      List of `<script>` events to listen for.
         handle_errors   : false,                            //      Changed to `true` if handling `<script>` errors
         //  load        : Function                          //      Load a script using `<script>` tag.
-        script_map      : {                                 //      Map of all the scripts loaded (or loading)
+
+        script_map : {                                      //      Map of all the scripts loaded (or loading)
             //  ['Gem/Beryl/Boot.js'] : `<script>` tag      //          `<script>` tag to load "Gem/Beryl/Boot.js".
         }//,
 
@@ -71,7 +72,169 @@ window.Gem = {
     execute : function Gem__execute(code) {
         code()
     }//,
+
+    //
+    //  Gem.qualify            : Function                   //  [Temporary] bootstrap function ... (defined below)
+    //  Gem.qualification_note : Function                   //  [Temporary] bootstrap function ... (defined below)
+    //
 }
+
+
+//
+//  Gem.codify, Gem.qualify, & Gem.qualification_note (can be executed twice in clarity mode)
+//
+Gem.execute(
+    function execute__setup__Gem() {
+        //
+        //  Imports
+        //
+        var clarity = Gem.Configuration.clarity
+
+
+        if (clarity) {
+            //
+            //  Imports
+            //
+            var create_Object   = Object.create
+            var define_property = Object.defineProperty
+
+
+            //
+            //  Closures
+            //      Read 'visible' to mean 'enumerable'.
+            //
+            //      Enumerable properties are shown better in Developer Tools (at the top of the list,
+            //      and not grayed out).
+            //
+            var visible_constant_property = create_Object(
+                    null,
+                    {
+                    //  configurable : { value : false },   //  Default value, no need to set
+                        enumerable   : { value : true  }//, //  Enumerable proprites are shown better in Developer Tools
+                    //  writeable    : { value : false }//, //  Default value, no need to set
+                    }//,
+                )
+
+
+            //
+            //  `if (7)` means "always".
+            //
+            //      Used to enclose a section of code in '{' ... '}' to make it group the statements together, and
+            //      make the code easier to read.
+            //
+            if (7) {
+                function who_what(module, $who, $what) {
+                    visible_constant_property.value = $who
+
+                    define_property(module, '$who', visible_constant_property)
+
+                    visible_constant_property.value = $what
+
+                    define_property(module, '$what', visible_constant_property)
+
+                    delete visible_constant_property.value
+                }
+
+                who_what(Gem,            'Gem',            'The only global variable used by Gem.')
+                who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
+                who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
+            }
+        }
+
+
+        //
+        //  Gem.codify:
+        //      Create the code for a function or procedure, typically as a closure to avoid the use of any global
+        //      variables.
+        //
+        //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+        //
+        function codifier__Gem__codify2() {
+            if (clarity) {
+                return function Gem__codify2(who, $what, codifier) {
+                    //  Create the code for a function or procedure, typically as a closure to avoid the use of any
+                    //  global variables.
+                    //
+                    //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+
+                    var middle        = this.$who.replace('.', '__')
+                    var codifier_name = 'codifier__' + middle + '__' + who
+                    var code_name     =                middle + '__' + who
+
+                    if (codifier_name !== codifier.name) {
+                        throw Error(
+                                (
+                                      "Codifier must be named '" + codifier_name + "'"
+                                    + "; was instead named: '"   + codifier.name + "'"
+                                )//,
+                            )
+                    }
+
+                    var code = codifier()
+
+                    if (typeof code === 'undefined') {
+                        throw Error(
+                                (
+                                      'Codifier `' + codifier_name + '`'
+                                    + ' did not return a function; returned `undefined` instead'
+                                )//,
+                            )
+                    }
+
+                    if (code_name !== code.name) {
+                        throw Error(
+                                (
+                                      "Codifier `" + codifier_name + "`"
+                                    +       " must return a function named '"  + code_name + "'"
+                                    + "; instead returned a function named: '" + code.name + "'"
+                                )//,
+                            )
+                    }
+
+                    if (7) {
+                        visible_constant_property.value = who
+
+                        define_property(code, '$who', visible_constant_property)
+
+                        visible_constant_property.value = $what
+
+                        define_property(code, '$what', visible_constant_property)
+
+                        delete visible_constant_property.value
+                    }
+
+                    this[who] = code
+                }
+            } 
+
+            return function Gem__codify2(who, $what, codifier) {
+                //  Create the code for a function or procedure, typically as a closure to avoid the use of any
+                //  global variables.
+                //
+                //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                this[who] = codifier()
+            }
+        }
+
+
+        Gem.codify2 = codifier__Gem__codify2()      //  Grab a temporary copy of `Gem.codify2` ...
+
+
+        Gem.codify2(                                //  ... And use the temporary `Gem.codify2` to codify itself ...
+            'codify2',
+            (
+                  'Temporary bootstrap function to create the code for a function or procedure, typically as a'
+                + ' closure to avoid the use of any global variables'
+                + '.'
+            ),
+            codifier__Gem__codify2//,
+        )
+
+
+        Gem.NodeWebKit.codify2 = Gem.Script.codify2 = Gem.codify2
+    }
+)
 
 
 //
@@ -432,8 +595,6 @@ Gem.execute(
 )
 
 
-
-
 //
 //  Gem._.Beryl.gem_changed
 //      Array of callback's when `Gem` is changed (clarity mode only).
@@ -506,8 +667,8 @@ Gem.execute(
 //      Show developer tools
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
-    Gem.codify(
-        'Gem.NodeWebKit.show_developer_tools',
+    Gem.NodeWebKit.codify2(
+        'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower)',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
@@ -520,8 +681,8 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
-    Gem.codify(
-        'Gem.NodeWebKit.show_developer_tools',
+    Gem.NodeWebKit.codify2(
+        'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher)',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
@@ -540,8 +701,8 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
-    Gem.codify(
-        'Gem.NodeWebKit.show_developer_tools',
+    Gem.NodeWebKit.codify(
+        'show_developer_tools',
         "Empty function -- Not using nw.js: Don't show developer tools",
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             return function Gem__NodeWebKit__show_developer_tools() {
@@ -600,8 +761,8 @@ Gem.execute(
 //
 if (Gem.Script.handle_errors) {
     if ('getAttribute' in document.head) {
-        Gem.codify(
-            'Gem.Script.source_attribute',
+        Gem.Script.codify2(
+            'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
             function codifier__Gem__Script__source_attribute(tag) {
                 return function Gem__Script__source_attribute(tag) {
@@ -612,8 +773,8 @@ if (Gem.Script.handle_errors) {
             }
         )
     } else {
-        Gem.codify(
-            'Gem.Script.source_attribute',
+        Gem.Script.codify2(
+            'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
             function codifier__Gem__Script__source_attribute(tag) {
                 var origin_slash = location.origin + '/'
@@ -641,8 +802,8 @@ if (Gem.Script.handle_errors) {
 //      Handle errors when executing a `<script>` tag.
 //
 if (Gem.Script.handle_errors) {
-    Gem.codify(
-        'Gem.Script.handle_global_error',
+    Gem.Script.codify2(
+        'handle_global_error',
         'Handle errors when executing a `<script>` tag.',
         function codifier__Gem__Script__handle_global_error() {
             //
@@ -692,8 +853,8 @@ if (Gem.Script.handle_errors) {
 //      Handle events of `<script>` tags.
 //
 if (Gem.Script.handle_errors) {
-    Gem.codify(
-        'Gem.Script.handle_event',
+    Gem.Script.codify2(
+        'handle_event',
         'Handle events of `<script>` tags.',
         function codifier__Gem__Script__handle_event() {
             //
@@ -703,9 +864,9 @@ if (Gem.Script.handle_errors) {
             //
             //      Hence in case of an error, the following is done:
             //
-            //          1)  Alert the user with an alert message which says to see Developer Tools for full error;
-            //          2)  Force the user to acknowledge the alert box by hitting 'OK';
-            //          3)  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
+            //          1.  Alert the user with an alert message which says to see Developer Tools for full error;
+            //          2.  Force the user to acknowledge the alert box by hitting 'OK';
+            //          3.  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
             //
             //  NOTE #2:
             //      The previous note means there is no way to get the loading error messge (i.e.: if the file
@@ -897,8 +1058,8 @@ Gem.execute(
         }
 
 
-        Gem.codify(
-            'Gem.Script.load',
+        Gem.Script.codify2(
+            'load',
             'Load JavaScript code using a `<script>` tag.',
             codifier__Gem__Script__load//,
         )
