@@ -107,7 +107,7 @@ Gem.execute(
                 {
                 //  configurable : { value : false },   //  Default value, no need to set
                     enumerable   : { value : true  }//, //  Enumerable proprites are shown better in Developer Tools
-                //  writeable    : { value : false }//, //  Default value, no need to set
+                //  writable     : { value : false }//, //  Default value, no need to set
                 }//,
             )
 
@@ -122,11 +122,9 @@ Gem.execute(
             if (7) {
                 function who_what(module, $who, $what) {
                     visible_constant_property.value = $who
-
                     define_property(module, '$who', visible_constant_property)
 
                     visible_constant_property.value = $what
-
                     define_property(module, '$what', visible_constant_property)
 
                     delete visible_constant_property.value
@@ -138,8 +136,11 @@ Gem.execute(
             }
 
 
-            var throw_unexpected_value = function throw_unexpected_value(prefix, v) {
-                //  Throw an error message with the prefix `prefix` & the suffix as a portrayal of `v`
+            var Gem__throw_type_error, throw_type_error     //  Both full & short names used ...
+
+
+            Gem__throw_type_error = throw_type_error = function Gem__throw_type_error(prefix, v) {
+                //  Throw a type error (usually used when a function received invalid parameters).
 
                 if (typeof v === 'function') {
                     if (v.name.length) {
@@ -155,7 +156,7 @@ Gem.execute(
                     }
                 }
 
-                var message = prefix + suffix
+                var message = 'TypeError: ' + prefix + suffix
 
                 throw new Error(message)
             }
@@ -177,9 +178,9 @@ Gem.execute(
                 var method_name = this.$who.replace('.', '__') + '__' + who
 
                 if (typeof method !== 'function' || method_name !== method.name) {
-                    throw_unexpected_value(
+                    throw_type_error(
                             (
-                                  'Gem.method: parameter `method` must be a function named `' + method_name + '`'
+                                  'parameter `method` must be a function named `' + method_name + '`'
                                 + '; was instead'
                             ),
                             method//,
@@ -187,16 +188,13 @@ Gem.execute(
                 }
 
                 visible_constant_property.value = method
-
                 define_property(this, who, visible_constant_property)
 
                 if (7) {
                     visible_constant_property.value = this.$who + '.' + who
-
                     define_property(method, '$who', visible_constant_property)
 
                     visible_constant_property.value = $what
-
                     define_property(method, '$what', visible_constant_property)
                 }
 
@@ -209,9 +207,7 @@ Gem.execute(
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
 
                 visible_constant_property.value = method
-
                 define_property(this, who, visible_constant_property)
-
                 delete visible_constant_property.value
             }
         }
@@ -237,6 +233,39 @@ Gem.execute(
 
 
         Gem.NodeWebKit.method = Gem.Script.method = Gem.method
+
+
+        //
+        //  Gem.clarity_note
+        //      Add a note to a variable or set of variables (clarity mode only).
+        //
+        //  Copies:
+        //      Gem.NodeWebKit.clarity_note
+        //          Same as Gem.clarity_note, just acting on a different `this`.
+        //
+        if (Gem.Configuration.clarity) {
+            Gem.method(
+                'clarity_note',
+                'Add a note to a variable or set of variables (clarity mode only).',
+                function Gem__clarity_note(who, $what) {
+                    //  Add a note to a variable or set of variables (clarity mode only)
+
+                    visible_constant_property.value = $what
+                    define_property(this, who + '$NOTE', visible_constant_property)
+                    delete visible_constant_property.value
+                }
+            )
+        } else {
+            Gem.method(
+                'clarity_note',
+                'Empty function -- nothing to do, not in clarity mode',
+                function Gem__clarity_note(/*who, $what*/) {
+                    //  Nothing to do, not in clarity mode
+                }
+            )
+        }
+
+        Gem.NodeWebKit.clarity_note = Gem.clarity_note
 
 
         //
@@ -268,10 +297,9 @@ Gem.execute(
                     var method_name   =                middle + '__' + who
 
                     if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
-                        throw_unexpected_value(
+                        throw_type_error(
                                 (
-                                      'Gem.method'
-                                    + ': parameter `codifier` must be a function named `' + codifier_name + '`'
+                                      'parameter `codifier` must be a function named `' + codifier_name + '`'
                                     + '; was instead'
                                 ),
                                 codifier//,
@@ -286,10 +314,9 @@ Gem.execute(
                             //  Allow 'bound' methods to be defined: not an error
                             //
                         } else {
-                            throw_unexpected_value(
+                            throw_type_error(
                                     (
-                                          'Gem.method'
-                                        + ': codifier `' + codifier_name + '`'
+                                          'codifier `' + codifier_name + '`'
                                         + ' must return a function named `'  + method_name + '`'
                                         + '; instead returned'
                                     ),
@@ -299,16 +326,13 @@ Gem.execute(
                     }
 
                     visible_constant_property.value = method
-
                     define_property(this, who, visible_constant_property)
 
                     if (7) {
                         visible_constant_property.value = this.$who + '.' + who
-
                         define_property(method, '$who', visible_constant_property)
 
                         visible_constant_property.value = $what
-
                         define_property(method, '$what', visible_constant_property)
                     }
 
@@ -335,6 +359,66 @@ Gem.execute(
 
 
         Gem.NodeWebKit.codify_method = Gem.Script.codify_method = Gem.codify_method
+
+
+        //
+        //  Gem.constant:
+        //      Store a global Gem constant.
+        //
+        //      Also in clarity mode adds an explanation of what the constant does.
+        //
+        if (clarity) {
+            Gem.method(
+                'constant',
+                (
+                      'Store a global Gem constant.\n'
+                    + '\n'
+                    + 'Also in clarity mode adds an explanation of what the variable does.'
+                ),
+                function Gem__constant(who, $what, constant) {
+                    //  Store a global Gem constant.
+                    //
+                    //  Also in clarity mode adds an explanation of what the constant does.
+
+                    if (typeof constant === 'undefined' || typeof constant === 'function') {
+                        throw_type_error(
+                                'parameter `constant` must be a value; was instead',
+                                constant//,
+                            )
+                    }
+
+                    visible_constant_property.value = constant
+                    define_property(this, who, visible_constant_property)
+
+                    if (7) {
+                        visible_constant_property.value = $what
+                        define_property(this, who + '$', visible_constant_property)
+                    }
+
+                    delete visible_constant_property.value
+                }
+            )
+        } else {
+            Gem.method(
+                'constant',
+                (
+                      'Store a global Gem constant.\n'
+                    + '\n'
+                    + 'Ignores the `$what` parameter, which is only used in clarity mode.'
+                ),
+                function Gem__constant(who, $what, constant) {
+                    //  Store a global Gem constant.
+                    //
+                    //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                    visible_constant_property.value = constant
+                    define_property(this, who, visible_constant_property)
+                    delete visible_constant_property.value
+                }
+            )
+        }
+
+        Gem.Script.constant = Gem.NodeWebKit.constant = Gem._.Beryl.constant = Gem.constant
 
 
         //
@@ -390,9 +474,9 @@ Gem.execute(
                     var qualifier_name = 'qualifier__' + middle + '__' + who
 
                     if (typeof qualifier !== 'function' || qualifier_name !== qualifier.name) {
-                        throw_unexpected_value(
+                        throw_type_error(
                                 (
-                                      'Qualifier must be a function named `' + qualifier_name + '`'
+                                      'qualifier must be a function named `' + qualifier_name + '`'
                                     + '; was instead'
                                 ),
                                 qualifier//,
@@ -402,9 +486,9 @@ Gem.execute(
                     var constant = qualifier()
 
                     if (typeof constant === 'undefined' || typeof constant === 'function') {
-                        throw_unexpected_value(
+                        throw_type_error(
                                 (
-                                      'Qualifier `' + qualifier_name + '` did not return a constant'
+                                      'qualifier `' + qualifier_name + '` did not return a constant'
                                     + '; instead returned'
                                 ),
                                 value//,
@@ -412,14 +496,11 @@ Gem.execute(
                     }
 
                     visible_constant_property.value = constant
-
                     define_property(this, who, visible_constant_property)
 
                     if (7) {
                         visible_constant_property.value = $what
-
                         define_property(this, who + '$', visible_constant_property)
-
                     }
 
                     delete visible_constant_property.value
@@ -437,9 +518,7 @@ Gem.execute(
                     //  Ignores the `$what` parameter, which is only used in clarity mode.
 
                     visible_constant_property.value = qualifier()
-
                     define_property(this, who, visible_constant_property)
-
                     delete visible_constant_property.value
                 }
             )
@@ -448,103 +527,28 @@ Gem.execute(
         Gem.Script.qualify_constant = Gem.qualify_constant
 
 
-        //
-        //  Gem.clarity_note
-        //      Add a note to a variable or set of variables (clarity mode only).
-        //
-        //  Copies:
-        //      Gem.NodeWebKit.clarity_note
-        //          Same as Gem.clarity_note, just acting on a different `this`.
-        //
-        if (Gem.Configuration.clarity) {
-            Gem.method(
-                'clarity_note',
-                'Add a note to a variable or set of variables (clarity mode only).',
-                function Gem__clarity_note(who, $what) {
-                    //  Add a note to a variable or set of variables (clarity mode only)
-
-                    visible_constant_property.value = $what
-
-                    define_property(this, who + '$NOTE', visible_constant_property)
-
-                    delete visible_constant_property.value
-                }
-            )
-        } else {
-            Gem.method(
-                'clarity_note',
-                'Empty function -- nothing to do, not in clarity mode',
-                function Gem__clarity_note(/*who, $what*/) {
-                    //  Nothing to do, not in clarity mode
-                }
-            )
-        }
-
-        Gem.NodeWebKit.clarity_note = Gem.clarity_note
-
-
-        //
-        //  Gem.constant:
-        //      Store a global Gem constant.
-        //
-        //      Also in clarity mode adds an explanation of what the constant does.
-        //
         if (clarity) {
+            //
+            //  Gem.throw_type_error
+            //      Throw a type error (usually used when a function received invalid parameters).
+            //
             Gem.method(
-                'constant',
-                (
-                      'Store a global Gem constant.\n'
-                    + '\n'
-                    + 'Also in clarity mode adds an explanation of what the variable does.'
-                ),
-                function Gem__constant(who, $what, constant) {
-                    //  Store a global Gem constant.
-                    //
-                    //  Also in clarity mode adds an explanation of what the constant does.
-
-                    if (typeof constant === 'undefined' || typeof constant === 'function') {
-                        throw_unexpected_value(
-                                'Gem.constant: parameter `constant` must be a value; was instead',
-                                valid//,
-                            )
-                    }
-
-                    visible_constant_property.value = constant
-
-                    define_property(this, who, visible_constant_property)
-
-                    if (7) {
-                        visible_constant_property.value = $what
-
-                        define_property(this, who + '$', visible_constant_property)
-                    }
-
-                    delete visible_constant_property.value
-                }
-            )
-        } else {
-            Gem.method(
-                'constant',
-                (
-                      'Store a global Gem constant.\n'
-                    + '\n'
-                    + 'Ignores the `$what` parameter, which is only used in clarity mode.'
-                ),
-                function Gem__constant(who, $what, constant) {
-                    //  Store a global Gem constant.
-                    //
-                    //  Ignores the `$what` parameter, which is only used in clarity mode.
-
-                    visible_constant_property.value = constant
-
-                    define_property(this, who, visible_constant_property)
-
-                    delete visible_constant_property.value
-                }
+                'throw_type_error',
+                'Throw a type error (usually used when a function received invalid parameters).',
+                Gem__throw_type_error//,
             )
         }
 
-        Gem.Script.constant = Gem.NodeWebKit.constant = Gem._.Beryl.constant = Gem.constant
+
+        //
+        //  visible_constant_property
+        //      A property used to create visible (i.e.: enumerable) constant attributes
+        //
+        Gem.constant(
+            'visible_constant_property',
+            'A property used to create visible (i.e.: enumerable) constant attributes.',
+            visible_constant_property//,
+        )
     }
 )
 

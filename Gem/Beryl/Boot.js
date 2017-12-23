@@ -13,6 +13,7 @@ Gem.execute(
         Gem.Beryl = {
             constant      : Gem.constant,
             codify_method : Gem.codify_method//,
+            //  mutable   : Function
         }
 
         if (Gem.Configuration.clarity) {
@@ -23,13 +24,99 @@ Gem.execute(
 )
 
 
-Gem.Beryl.constant(
+//
+//  Gem.constant:
+//      Initialize a global Gem mutable value.
+//
+//      Also in clarity mode adds an explanation of what the mutable value does.
+//
+Gem.Beryl.codify_method(
+    'mutable',
+    (
+          'Initialize a global Gem mutable value.\n'
+        + '\n'
+        + 'Also in clarity mode adds an explanation of what the value does.'
+    ),
+    function codifier__Gem__Beryl__mutable() {
+        //
+        //  Imports
+        //
+        var clarity                   = Gem.Configuration.clarity
+        var create_Object             = Object.create
+        var define_property           = Object.defineProperty
+        var visible_constant_property = Gem.visible_constant_property
+
+        if (clarity) {
+            var throw_type_error = Gem.throw_type_error
+        }
+
+
+        //
+        //  Closures
+        //      Read 'visible' to mean 'enumerable'.
+        //
+        //      Enumerable properties are shown better in Developer Tools (at the top of the list,
+        //      and not grayed out).
+        //
+        var visible_mutable_attribute = create_Object(
+                null,
+                {
+                //  configurable : { value : false },       //  Default value, no need to set
+                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+                    writable     : { value : true  }//,     //  Mutable attribute (i.e.: writable)
+                }//,
+            )
+
+
+        if (clarity) {
+            return function Gem__Beryl__mutable(who, $what, value) {
+                //  Initialize a global Gem mutable value.
+                //
+                //  Also in clarity mode adds an explanation of what the mutable value does.
+
+                if (typeof value === 'undefined' || typeof value === 'function') {
+                    throw_unexpected_value(
+                            'parameter `value` must be a value; was instead',
+                            value//,
+                        )
+                }
+
+                visible_mutable_attribute.value = value
+                define_property(this, who, visible_mutable_attribute)
+                delete visible_mutable_attribute.value
+
+                if (7) {
+                    visible_constant_property.value = $what
+                    define_property(this, who + '$', visible_constant_property)
+                    delete visible_constant_property.value
+                }
+            }
+        }
+
+
+        return function Gem__Beryl__mutable(who, $what, value) {
+            //  Initialize a global Gem mutable value.
+            //
+            //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+            visible_mutable_attribute.value = value
+            define_property(this, who, visible_mutable_attribute)
+            delete visible_mutable_attribute.value
+        }
+    }//,
+)
+
+
+Gem.Beryl.mutable(
     'single_step_binding',
     (
           '`Gem.Beryl.trace_binding` can be set to true, to single step in Developer Tools'
         + ' the backwards compatability implementation when `.bind` does not exist in the browser.'
     ),
-    false,  //      Change to true to single step in Developer Tools ...
+    //
+    //  WARNING: Changing the following to `true` ... might, temporarily, turn your mind into a PRETZEL.
+    //
+    false,                                                  //  Change to true to single step in Developer Tools ...
 )
 
 
@@ -295,7 +382,16 @@ if (Gem.Beryl.has_bind) {
             //--------------------------------------------------------------+
             debugger                                    //  Call debugger to help single trace this PRETZEL code ...
 
-            var bind = Gem.beryl.bind                   //  Our "internal" implementation of `Function.prototype.bind`
+                                //-----------------------------------------------------------+
+                                //  ***README***                                             |
+                                //      When single stepping:                                |
+                                //      =====>>>  HIT F11  <<<===== to single step           |
+                                //      Keep doing this until you hit the next ***README***  |
+                                //-----------------------------------------------------------+
+
+            Gem.Beryl.single_step_binding = 'STEP 1 - START'
+
+            var bind = Gem.Beryl.bind                   //  Our "internal" implementation of `Function.prototype.bind`
 
 
             //
@@ -316,19 +412,36 @@ if (Gem.Beryl.has_bind) {
             //      After that follow the third & fourth argument of the nested bind function being called
             //      (i.e.: `create_Object` & `Object`).
             //
-            return bind(                //  First `bind`
+            var result = bind(                //  First `bind`
                 bind, bind,             //  Second & third  `bind`: `bound_f` & `bound_this` (i.e.: binding `bind`)
                 bind, bind,             //  Fourth & fourth `bind`: [nested] `bound_f` & `bound_this`
                 create_Object,
                 Object//,
-
-                //------------------------------------------------------------------+
-                //  ***README***                                                    |
-                //      When single stepping:                                       |
-                //      HIT F8 to CONTINUE in Developer tools.                      |
-                //      It will STOP again later with another 'debugger' statement  |
-                //------------------------------------------------------------------+
             )
+
+                                //------------------------------------------------------------------+
+                                //  ***README***                                                    |
+                                //      When single stepping:                                       |
+                                //                                                                  |
+                                //      EXAMINE & EXPAND `result` in Developer tools:               |
+                                //          1.  Look at `[[TargetFunction]]`                        |
+                                //          2.  Look at `[[BoundThis]]`                             |
+                                //          3.  Look at `[[BoundArgs]]`                             |
+                                //                                                                  |
+                                //      This will show you it is a binding on itself, with three    |
+                                //      bound arguments [for the nested] bind all                   |
+                                //------------------------------------------------------------------+
+
+            Gem.Beryl.single_step_binding = 'STEP 1 - COMPLETE'
+
+                                //------------------------------------------------------------------+
+                                //  ***README***                                                    |
+                                //      When single stepping:                                       |
+                                //      =====>>>  HIT F8  <<<===== to CONTINUE in Developer tools.  |
+                                //      It will STOP again later with another 'debugger' statement  |
+                                //------------------------------------------------------------------+
+
+            return result
         }
     )
 } else {
@@ -430,25 +543,52 @@ Gem.execute(
             var next_segment__BoxOfPropertyDescriptors = null
         }
 
-        if (Gem.Beryl.single_step_binding) {
-            //-----------------------------------------------------------------+
-            //  WARNING: PRETZEL CODE AHEAD -- PART #2                         |
-            //      Single step CONTINUES here, to "understand" this code ...  |
-            //-----------------------------------------------------------------+
-            debugger                                    //  Call debugger to help single trace this PRETZEL code ...
+        if ( ! Gem.Beryl.single_step_binding) {
+            Gem.Beryl.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
+            return
         }
 
-        Gem.Beryl.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
+        //-----------------------------------------------------------------+
+        //  WARNING: PRETZEL CODE AHEAD -- PART #2                         |
+        //      Single step CONTINUES here, to "understand" this code ...  |
+        //-----------------------------------------------------------------+
+        debugger                                    //  Call debugger to help single trace this PRETZEL code ...
 
-        if (Gem.Beryl.single_step_binding) {
-            //------------------------------------------------------------------+
-            //  ***README***                                                    |
-            //      When single stepping:                                       |
-            //      You are done -- Congratulations! :)                         |
-            //      HIT F8 to CONTINUE in Developer tools ...                   |
-            //      ... *HOPEFULLY* that was eduational ...                     |
-            //------------------------------------------------------------------+
-        }
+                            //-----------------------------------------------------------+
+                            //  ***README***                                             |
+                            //      When single stepping:                                |
+                            //      =====>>>  HIT F11  <<<===== to single step           |
+                            //      Keep doing this until you hit the next ***README***  |
+                            //-----------------------------------------------------------+
+
+        Gem.Beryl.single_step_binding = 'STEP 2 - START'
+
+        var create__BoxOfPropertyDescriptors
+            = Gem.Beryl.create__BoxOfPropertyDescriptors
+            = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
+
+                            //------------------------------------------------------------+
+                            //  ***README***                                              |
+                            //      When single stepping:                                 |
+                            //                                                            |
+                            //      EXAMINE & EXPAND `create__BoxOfPropertyDescriptors`   |
+                            //          1.  Look at `[[TargetFunction]]`                  |
+                            //          2.  Look at `[[BoundThis]]`                       |
+                            //          3.  Look at `[[BoundArgs]]`                       |
+                            //                                                            |
+                            //      This will show you it is a binding on Object.Create,  |
+                            //      with one bound argument in `[[BoundArgs]]`            |
+                            //      (i.e.: next_segment__BoxOfPropertyDescriptors)        |
+                            //------------------------------------------------------------+
+
+        Gem.Beryl.single_step_binding = 'STEP 2 - COMPLETE'
+
+                            //------------------------------------------------------------------+
+                            //  ***README***                                                    |
+                            //      When single stepping:                                       |
+                            //      =====>>>  HIT F8  <<<===== to CONTINUE in Developer tools.  |
+                            //      It will STOP again later with another 'debugger' statement  |
+                            //------------------------------------------------------------------+
     }
 )
 
@@ -472,9 +612,50 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             //
             var property__constructor = { enumerable  : true }
 
+            if (Gem.Beryl.single_step_binding) {
+                //-----------------------------------------------------------------+
+                //  WARNING: PRETZEL CODE AHEAD -- PART #3                         |
+                //      Single step CONTINUES here, to "understand" this code ...  |
+                //-----------------------------------------------------------------+
+                debugger                                    //  Call debugger to help single trace this PRETZEL code ...
+
+                            //-----------------------------------------------------------+
+                            //  ***README***                                             |
+                            //      When single stepping:                                |
+                            //      =====>>>  HIT F11  <<<===== to single step           |
+                            //      Keep doing this until you hit the next ***README***  |
+                            //-----------------------------------------------------------+
+
+                Gem.Beryl.single_step_binding = 'STEP 3 - START'
+            }
+
             var property_descriptors = Gem.Beryl.create__BoxOfPropertyDescriptors(
                     { constructor : { value : property__constructor, enumerable : true } }//,
                 )
+
+            if (Gem.Beryl.single_step_binding) {
+                            //-------------------------------------------------------+
+                            //  ***README***                                         |
+                            //      When single stepping:                            |
+                            //                                                       |
+                            //      EXAMINE & EXPAND `property_descriptors`          |
+                            //                                                       |
+                            //      This will show you it is a normal object with a  |
+                            //      `__proto__` of `BoxOfPropertyDescriptors`        |
+                            //                                                       |
+                            //      (i.e.: Success)                                  |
+                            //-------------------------------------------------------+
+
+                Gem.Beryl.single_step_binding = 'SINGLE STEPPING COMPLETE'
+
+                            //---------------------------------------------------------------------+
+                            //  ***README***                                                       |
+                            //      When single stepping:                                          |
+                            //      You are done -- Congratulations! :)                            |
+                            //      =====>>>  HIT F8  <<<===== to CONTINUE in Developer tools ...  |
+                            //      ... *HOPEFULLY* that was eduational ...                        |
+                            //---------------------------------------------------------------------+
+            }
 
             var create_AnonymousBox_using_property_descriptors = bind_create_Object(null, property_descriptors)
 
