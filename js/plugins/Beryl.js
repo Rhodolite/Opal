@@ -58,7 +58,9 @@ window.Gem = {
     },
 
     //
-    //  Gem.codify : Function                               //  [Temporary] bootstrap function ... (defined below)
+    //  Gem.clarity_note  : Function                        //  Add a note to a variable or set of variables
+    //  Gem.constant      : Function                        //  Store a global Gem constant.
+    //  Gem.codify_method : Function                        //  Create the code for a method as a closure
     //
 
     //
@@ -75,48 +77,45 @@ window.Gem = {
     }//,
 
     //
-    //  Gem.qualify            : Function                   //  [Temporary] bootstrap function ... (defined below)
-    //  Gem.qualification_note : Function                   //  [Temporary] bootstrap function ... (defined below)
+    //  Gem.method           : Function                         //  Define a Gem method.
+    //  Gem.qualify_constant : Function                         //  Qualify a global Gem constant.
     //
 }
 
 
 //
-//  Gem.codify, Gem.qualify, & Gem.qualification_note (can be executed twice in clarity mode)
+//  Gem.clarity_note, Gem.constant, Gem.codify_method, Gem.method, Gem.qualify_constant
+//
+//  OLD NOTE: can be executed twice in clarity mode.  (Need this?)
 //
 Gem.execute(
     function execute__setup__Gem() {
         //
         //  Imports
         //
-        var clarity = Gem.Configuration.clarity
+        var clarity         = Gem.Configuration.clarity
+        var create_Object   = Object.create
+        var define_property = Object.defineProperty
+
+
+        //
+        //  Closures
+        //      Read 'visible' to mean 'enumerable'.
+        //
+        //      Enumerable properties are shown better in Developer Tools (at the top of the list,
+        //      and not grayed out).
+        //
+        var visible_constant_property = create_Object(
+                null,
+                {
+                //  configurable : { value : false },   //  Default value, no need to set
+                    enumerable   : { value : true  }//, //  Enumerable proprites are shown better in Developer Tools
+                //  writeable    : { value : false }//, //  Default value, no need to set
+                }//,
+            )
 
 
         if (clarity) {
-            //
-            //  Imports
-            //
-            var create_Object   = Object.create
-            var define_property = Object.defineProperty
-
-
-            //
-            //  Closures
-            //      Read 'visible' to mean 'enumerable'.
-            //
-            //      Enumerable properties are shown better in Developer Tools (at the top of the list,
-            //      and not grayed out).
-            //
-            var visible_constant_property = create_Object(
-                    null,
-                    {
-                    //  configurable : { value : false },   //  Default value, no need to set
-                        enumerable   : { value : true  }//, //  Enumerable proprites are shown better in Developer Tools
-                    //  writeable    : { value : false }//, //  Default value, no need to set
-                    }//,
-                )
-
-
             //
             //  `if (7)` means "always".
             //
@@ -168,102 +167,187 @@ Gem.execute(
 
 
         //
-        //  Gem.codify:
-        //      Create the code for a function or procedure, typically as a closure to avoid the use of any global
-        //      variables.
+        //  Gem.method
+        //      Store a Gem Method.
+        //
+        //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
+        //
+        if (clarity) {
+            var Gem__method = function Gem__method(who, $what, method) {
+                //  Store a Gem Method.
+                //
+                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
+
+                var method_name = this.$who.replace('.', '__') + '__' + who
+
+                if (typeof method !== 'function' || method_name !== method.name) {
+                    throw_unexpected_value(
+                            (
+                                  'Gem.method: parameter `method` must be a function named `' + method_name + '`'
+                                + '; was instead'
+                            ),
+                            method//,
+                        )
+                }
+
+                visible_constant_property.value = method
+
+                define_property(this, who, visible_constant_property)
+
+                if (7) {
+                    visible_constant_property.value = this.$who + '.' + who
+
+                    define_property(method, '$who', visible_constant_property)
+
+                    visible_constant_property.value = $what
+
+                    define_property(method, '$what', visible_constant_property)
+                }
+
+                delete visible_constant_property.value
+            }
+        } else {
+            var Gem__method = function Gem__method(who, $what, method) {
+                //  Store a Gem Method.
+                //
+                //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                visible_constant_property.value = method
+
+                define_property(this, who, visible_constant_property)
+
+                delete visible_constant_property.value
+            }
+        }
+
+
+        //
+        //   Use `Gem__method` on itself ...
+        //
+        Gem__method.call(
+            Gem,
+            'method',
+            (
+                clarity
+                    ? (
+                             'Store a Gem Method.\n'
+                           + '\n'
+                           + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the method.'
+                      )
+                    : null
+            ),
+            Gem__method//,
+        )
+
+
+        Gem.NodeWebKit.method = Gem.Script.method = Gem.method
+
+
+        //
+        //  Gem.codify_method:
+        //      Create the code for a method as a closure to avoid the use of any global variables.
         //
         //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
         //
         //  Copies:
-        //      Gem.Beryl     .codify
-        //      Gem.NodeWebKit.codify
-        //      Gem.Script    .codify
-        //          Same as Gem.codify, just acting on a different `this`.
+        //      Gem.Beryl     .codify_method
+        //      Gem.NodeWebKit.codify_method
+        //      Gem.Script    .codify_method
+        //          Same as Gem.codify_method, just acting on a different `this`.
         //
-        function codifier__Gem__codify() {
-            if (clarity) {
-                return function Gem__codify(who, $what, codifier) {
-                    //  Create the code for a function or procedure, typically as a closure to avoid the use of any
-                    //  global variables.
+        if (clarity) {
+            Gem.method(
+                'codify_method',
+                (
+                      'Create the code for a method as a closure to avoid the use of any global variables.\n'
+                    + '\n'
+                    + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+                ),
+                function Gem__codify_method(who, $what, codifier) {
+                    //  Create the code for a method as a closure to avoid the use of any global variables.
                     //
                     //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
 
                     var middle        = this.$who.replace('.', '__')
                     var codifier_name = 'codifier__' + middle + '__' + who
-                    var code_name     =                middle + '__' + who
+                    var method_name   =                middle + '__' + who
 
                     if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
                         throw_unexpected_value(
-                                'Codifier must be a function named `' + codifier_name + '`; was instead',
+                                (
+                                      'Gem.method'
+                                    + ': parameter `codifier` must be a function named `' + codifier_name + '`'
+                                    + '; was instead'
+                                ),
                                 codifier//,
                             )
                     }
 
-                    var code = codifier()
+                    var method = codifier()
 
-                    if (typeof code !== 'function' || code_name !== code.name) {
+                    if (typeof method !== 'function' || method_name !== method.name) {
                         throw_unexpected_value(
                                 (
-                                      'Codifier `' + codifier_name + '`'
-                                    + ' must return a function named `'  + code_name + '`'
+                                      'Gem.method',
+                                    + ': codifier `' + codifier_name + '`'
+                                    + ' must return a function named `'  + method_name + '`'
                                     + '; instead returned'
                                 ),
-                                code//,
+                                method//,
                             )
                     }
 
-                    this[who] = code
+                    visible_constant_property.value = method
+
+                    define_property(this, who, visible_constant_property)
 
                     if (7) {
                         visible_constant_property.value = this.$who + '.' + who
 
-                        define_property(code, '$who', visible_constant_property)
+                        define_property(method, '$who', visible_constant_property)
 
                         visible_constant_property.value = $what
 
-                        define_property(code, '$what', visible_constant_property)
-
-                        delete visible_constant_property.value
+                        define_property(method, '$what', visible_constant_property)
                     }
+
+                    delete visible_constant_property.value
                 }
-            }
+            )
+        } else {
+            Gem.method(
+                'codify_method',
+                null,
+                function Gem__codify_method(who, $what, codifier) {
+                    //  Create the code for a method as a closure to avoid the use of any global variables.
+                    //
+                    //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-            return function Gem__codify(who, $what, codifier) {
-                //  Create the code for a function or procedure, typically as a closure to avoid the use of any
-                //  global variables.
-                //
-                //  Ignores the `$what` parameter, which is only used in clarity mode.
+                    visible_constant_property.value = codifier()
 
-                this[who] = codifier()
-            }
+                    define_property(this, who, visible_constant_property)
+
+                    delete visible_constant_property.value
+                }
+            )
         }
 
 
-        Gem.codify = codifier__Gem__codify()      //  Grab a temporary copy of `Gem.codify` ...
-
-
-        Gem.codify(                                //  ... And use the temporary `Gem.codify` to codify itself ...
-            'codify',
-            (
-                  'Temporary bootstrap function to create the code for a function or procedure, typically as a'
-                + ' closure to avoid the use of any global variables.'
-            ),
-            codifier__Gem__codify//,
-        )
-
-
-        Gem.NodeWebKit.codify = Gem.Script.codify = Gem.Beryl.codify = Gem.codify
+        Gem.NodeWebKit.codify_method = Gem.Script.codify_method = Gem.Beryl.codify_method = Gem.codify_method
 
 
         //
-        //  Gem.qualify:
-        //      Temporary bootstrap function to qualify a global Gem variable
-        //      (in clarity mode also adds an explanation of what the variable does).
+        //  Gem.qualify_constant:
+        //      Qualify a global Gem constant.
+        //
+        //      The `qualifier` argument is a function that returns the value of the constant.
+        //
+        //      Also in clarity mode adds an explanation of what the constant does.
         //
         //  NOTE #1:
         //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
         //
-        //          `Gem.qualify` is used to "qualify" a value, by making sure it is ready to be used and
+        //          `Gem.qualify_constant` is used to "qualify" a constant, by making sure it is ready to be used and
         //          is adequate (i.e.: "qualified") for the task.
         //
         //  NOTE #2:
@@ -281,125 +365,185 @@ Gem.execute(
         //      See also: https://www.merriam-webster.com/dictionary/qualify/
         //
         //  Copies:
-        //      Gem._.Beryl   .qualify
-        //      Gem.NodeWebKit.qualify
-        //      Gem.Script    .qualify
-        //          Same as Gem.qualify, just acting on a different `this`.
+        //      Gem.Script.qualify_constant
+        //          Same as Gem.qualify_constant, just acting on a different `this`.
         //
-        Gem.codify(
-            'qualify',
-            (
-                  'Qualify a global Gem variable.\n'
-                + '\n'
-                + 'The `qualifier` argument can be either a qualifier function that returns a value, or instead'
-                + ' just a simple value.\n'
-                + '\n'
-                + 'Also in clarity mode adds an explanation of what the variable does.'
-            ),
-            function codifier__Gem__qualify() {
-                if (clarity) {
-                    return function Gem__qualify(who, $what, qualifier) {
-                        //  Qualify a global Gem variable.
-                        //
-                        //  The `qualifier` argument can be either a qualifier function that returns a value, or
-                        //  instead just a simple value.
-                        //
-                        //  Also in clarity mode adds an explanation of what the variable does.
-
-                        if (typeof qualifier == 'function') {
-                            var middle         = this.$who.replace('.', '__')
-                            var qualifier_name = 'qualifier__' + middle + '__' + who
-
-                            if (qualifier_name !== qualifier.name) {
-                                throw_unexpected_value(
-                                        (
-                                              'Qualifier must be a function named `' + qualifier_name + '`'
-                                            + '; was instead'
-                                        ),
-                                        qualifier//,
-                                    )
-                            }
-
-                            var value = qualifier()
-
-                            if (typeof value === 'undefined' || typeof value === 'function') {
-                                throw_unexpected_value(
-                                        (
-                                              'Qualifier `' + qualifier_name + '` did not return a value'
-                                            + '; instead returned'
-                                        ),
-                                        value//,
-                                    )
-                            }
-
-                            this[who] = value
-                        } else {
-                            this[who] = qualifier
-                        }
-
-                        if (7) {
-                            visible_constant_property.value = $what
-
-                            define_property(this, who + '$', visible_constant_property)
-
-                            delete visible_constant_property.value
-                        }
-                    }
-                }
-
-                return function Gem__qualify(who, $what, qualifier) {
+        if (clarity) {
+            Gem.method(
+                'qualify_constant',
+                (
+                      'Qualify a global Gem constant.\n'
+                    + '\n'
+                    + 'The `qualifier` argument is a function that returns the value of the constant.'
+                    + '\n'
+                    + 'Also in clarity mode adds an explanation of what the constant does.'
+                ),
+                function Gem__qualify_constant(who, $what, qualifier) {
                     //  Qualify a global Gem variable.
                     //
-                    //  The `qualifier` argument can be either a qualifier function that returns a value, or
-                    //  instead just a simple value.
+                    //  The `qualifier` argument is a function that returns the value of the constant.
                     //
-                    //  Ignores the `$what` parameter, which is only used in clarity mode.
+                    //  Also in clarity mode adds an explanation of what the variable does.
 
-                    this[who] = (typeof qualifier == 'function' ? qualifier() : qualifier)
-                }
-            }
-        )
+                    var middle         = this.$who.replace('.', '__')
+                    var qualifier_name = 'qualifier__' + middle + '__' + who
 
-        Gem.Script.qualify = Gem.NodeWebKit.qualify = Gem._.Beryl.qualify = Gem.qualify
+                    if (typeof qualifier !== 'function' || qualifier_name !== qualifier.name) {
+                        throw_unexpected_value(
+                                (
+                                      'Qualifier must be a function named `' + qualifier_name + '`'
+                                    + '; was instead'
+                                ),
+                                qualifier//,
+                            )
+                    }
 
+                    var constant = qualifier()
 
-        //
-        //  Gem.qualification_note
-        //      Add a qualification note to a variable or set of variables (clarity mode only).
-        //
-        //  Copies:
-        //      Gem.NodeWebKit.qualification_note
-        //          Same as Gem.qualification_note, just acting on a different `this`.
-        //
-        if (Gem.Configuration.clarity) {
-            Gem.codify(
-                'qualification_note',
-                'Add a qualification note to a variable or set of variables (clarity mode only).',
-                function codifier__Gem__qualification_note() {
-                    return function Gem__qualification_note(who, $what) {
-                        //  Add a qualification note to a variable or set of variables (clarity mode only)
+                    if (typeof constant === 'undefined' || typeof constant === 'function') {
+                        throw_unexpected_value(
+                                (
+                                      'Qualifier `' + qualifier_name + '` did not return a constant'
+                                    + '; instead returned'
+                                ),
+                                value//,
+                            )
+                    }
 
+                    visible_constant_property.value = constant
+
+                    define_property(this, who, visible_constant_property)
+
+                    if (7) {
                         visible_constant_property.value = $what
 
-                        define_property(this, who + '$NOTE', visible_constant_property)
+                        define_property(this, who + '$', visible_constant_property)
 
-                        delete visible_constant_property.value
                     }
+
+                    delete visible_constant_property.value
                 }
             )
         } else {
-            Gem.codify(
-                'qualification_note',
-                'Empty function -- nothing to do, not in clarity mode',
-                function codifier__Gem__qualification_note() {
-                    return function Gem__qualification_note(/*who, $what*/) {
-                        //  Nothing to do, not in clarity mode
-                    }
+            Gem.method(
+                'qualify_constant',
+                null,
+                function Gem__qualify_constant(who, $what, qualifier) {
+                    //  Qualify a global Gem constant.
+                    //
+                    //  The `qualifier` argument is a function that returns the value of the constant.
+                    //
+                    //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                    visible_constant_property.value = qualifier()
+
+                    define_property(this, who, visible_constant_property)
+
+                    delete visible_constant_property.value
                 }
             )
         }
 
-        Gem.NodeWebKit.qualification_note = Gem.qualification_note
+        Gem.Script.qualify_constant = Gem.qualify_constant
+
+
+        //
+        //  Gem.clarity_note
+        //      Add a note to a variable or set of variables (clarity mode only).
+        //
+        //  Copies:
+        //      Gem.NodeWebKit.clarity_note
+        //          Same as Gem.clarity_note, just acting on a different `this`.
+        //
+        if (Gem.Configuration.clarity) {
+            Gem.method(
+                'clarity_note',
+                'Add a note to a variable or set of variables (clarity mode only).',
+                function Gem__clarity_note(who, $what) {
+                    //  Add a note to a variable or set of variables (clarity mode only)
+
+                    visible_constant_property.value = $what
+
+                    define_property(this, who + '$NOTE', visible_constant_property)
+
+                    delete visible_constant_property.value
+                }
+            )
+        } else {
+            Gem.method(
+                'clarity_note',
+                'Empty function -- nothing to do, not in clarity mode',
+                function Gem__clarity_note(/*who, $what*/) {
+                    //  Nothing to do, not in clarity mode
+                }
+            )
+        }
+
+        Gem.NodeWebKit.clarity_note = Gem.clarity_note
+
+
+        //
+        //  Gem.constant:
+        //      Store a global Gem constant.
+        //
+        //      Also in clarity mode adds an explanation of what the constant does.
+        //
+        if (clarity) {
+            Gem.method(
+                'constant',
+                (
+                      'Store a global Gem constant.\n'
+                    + '\n'
+                    + 'Also in clarity mode adds an explanation of what the variable does.'
+                ),
+                function Gem__constant(who, $what, constant) {
+                    //  Store a global Gem constant.
+                    //
+                    //  Also in clarity mode adds an explanation of what the constant does.
+
+                    if (typeof constant === 'undefined' || typeof constant === 'function') {
+                        throw_unexpected_value(
+                                'Gem.constant: parameter `constant` must be a value; was instead',
+                                valid//,
+                            )
+                    }
+
+                    visible_constant_property.value = constant
+
+                    define_property(this, who, visible_constant_property)
+
+                    if (7) {
+                        visible_constant_property.value = $what
+
+                        define_property(this, who + '$', visible_constant_property)
+                    }
+
+                    delete visible_constant_property.value
+                }
+            )
+        } else {
+            Gem.method(
+                'constant',
+                (
+                      'Store a global Gem constant.\n'
+                    + '\n'
+                    + 'Ignores the `$what` parameter, which is only used in clarity mode.'
+                ),
+                function Gem__constant(who, $what, constant) {
+                    //  Store a global Gem constant.
+                    //
+                    //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                    visible_constant_property.value = constant
+
+                    define_property(this, who, visible_constant_property)
+
+                    delete visible_constant_property.value
+                }
+            )
+        }
+
+        Gem.Script.constant = Gem.NodeWebKit.constant = Gem._.Beryl.constant = Gem.constant
     }
 )
 
@@ -409,7 +553,7 @@ Gem.execute(
 //      Array of callback's when `Gem` is changed (clarity mode only).
 //
 if (Gem.Configuration.clarity) {
-    Gem._.Beryl.qualify(
+    Gem._.Beryl.constant(
         'clarity_mode__gem_changed',
         "Array of callback's when `Gem` is changed (clarity mode only).",
         []//,
@@ -451,19 +595,19 @@ Gem.execute(
         //
         //  Exports
         //
-        Gem.NodeWebKit.qualify(
+        Gem.NodeWebKit.constant(
             'is_version_012_or_lower',
             "`true` if using nw.js & it's version 0.12 or lower.",
             (major === 0 && minor <= 12)//,
         )
 
-        Gem.NodeWebKit.qualify(
+        Gem.NodeWebKit.constant(
             'is_version_013_or_higher',
             "`true` if using nw.js & it's version 0.13 or greater.",
             (major >  0 || minor >= 13)//,
         )
 
-        Gem.NodeWebKit.qualification_note(
+        Gem.NodeWebKit.clarity_note(
             'is_version_{012_or_lower,013_or_higher}',
             'If not using nw.js, then both `.is_version_{012_or_lower,013_or_higher}` will be `false`.',
         )
@@ -476,7 +620,7 @@ Gem.execute(
 //      Show developer tools.
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
-    Gem.NodeWebKit.codify(
+    Gem.NodeWebKit.codify_method(
         'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower).',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
@@ -490,7 +634,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
-    Gem.NodeWebKit.codify(
+    Gem.NodeWebKit.codify_method(
         'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher).',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
@@ -510,13 +654,11 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
-    Gem.NodeWebKit.codify(
+    Gem.NodeWebKit.method(
         'show_developer_tools',
         "Empty function -- Not using nw.js: Don't show developer tools.",
-        function codifier__Gem__NodeWebKit__show_developer_tools() {
-            return function Gem__NodeWebKit__show_developer_tools() {
-                //  Not using nw.js: Don't show developer tools.
-            }
+        function Gem__NodeWebKit__show_developer_tools() {
+            //  Empty function -- Not using nw.js: Don't show developer tools.
         }
     )
 }
@@ -529,20 +671,20 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 //      We only handle script events (and thus bring up an alert) if five conditions are met:
 //
 //          1.  This is running in Gem debug mode;
-//          2.  This is running in RPG Maker MV "test" mode;
-//          3.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
-//          4.  The browser has a `.addEventListener`   method (all modern browsers do);
-//          5.  The browser has a `.setAttribute`       method (all modern browsers do).
+//          2.  This is running under nw.js (i.e.: not a normal browser like Firefox, etc.);
+//          3.  This is running in RPG Maker MV "test" mode;
+//          4.  The browser has a `.addEventListener` method (all modern browsers do);
+//          5.  The browser has a `.setAttribute`     method (all modern browsers do).
 //
-Gem.Script.qualify(
+Gem.Script.constant(
     'handle_errors',
     '`true` if handling `<script>` errors.',
     (
-           Gem.Configuration.debug
-        && ('Utils' in window) && Utils.isNwjs()
-        && Utils.isOptionValid('test')
-        && ('addEventListener' in window)
-        && ('setAttribute'     in document.head)
+           Gem.Configuration.debug                          //  1.  This is running in Gem debug mode;
+        && ('Utils' in window) && Utils.isNwjs()            //  2.  This is running under nw.js;
+        && Utils.isOptionValid('test')                      //  3.  This is running in RPG Maker MV "test" mode;
+        && ('addEventListener' in window)                   //  4.  The browser has a `.addEventListener` method; AND
+        && ('setAttribute'     in document.head)            //  5.  The browser has a `.setAttribute`     method.
     )//,
 )
 
@@ -564,22 +706,20 @@ Gem.Script.qualify(
 //
 if (Gem.Script.handle_errors) {
     if ('getAttribute' in document.head) {
-        Gem.Script.codify(
+        Gem.Script.method(
             'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
-            function codifier__Gem__Script__source_attribute(tag) {
-                return function Gem__Script__source_attribute(tag) {
-                    //  Get unmodified `.src` attribute
+            function Gem__Script__source_attribute(tag) {
+                //  Get unmodified `.src` attribute
 
-                    return tag.getAttribute('src')          //  Get unmodified `.src` attribute
-                }
+                return tag.getAttribute('src')          //  Get unmodified `.src` attribute
             }
         )
     } else {
-        Gem.Script.codify(
+        Gem.Script.codify_method(
             'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
-            function codifier__Gem__Script__source_attribute(tag) {
+            function codifier__Gem__Script__source_attribute() {
                 var origin_slash = location.origin + '/'
 
 
@@ -605,7 +745,7 @@ if (Gem.Script.handle_errors) {
 //      Handle errors when executing a `<script>` tag.
 //
 if (Gem.Script.handle_errors) {
-    Gem.Script.codify(
+    Gem.Script.codify_method(
         'handle_global_error',
         'Handle errors when executing a `<script>` tag.',
         function codifier__Gem__Script__handle_global_error() {
@@ -656,7 +796,7 @@ if (Gem.Script.handle_errors) {
 //      Handle events of `<script>` tags.
 //
 if (Gem.Script.handle_errors) {
-    Gem.Script.codify(
+    Gem.Script.codify_method(
         'handle_event',
         'Handle events of `<script>` tags.',
         function codifier__Gem__Script__handle_event() {
@@ -713,12 +853,9 @@ if (Gem.Script.handle_errors) {
 //
 //  Gem.Script.gem_scripts
 //
-Gem.Script.qualify(
+Gem.Script.qualify_constant(
     'gem_scripts',
-    (
-          '`div#gem_scripts` is the parent of all Gem `<script>` tags'
-        + ' (`div#gem_scripts` is inserted into `document.body`).'
-    ),
+    '`div#gem_scripts` is the parent of all Gem `<script>` tags and is inserted into `document.head`.',
     function qualifier__Gem__Script__gem_scripts() {
         var id          = 'gem_scripts'
         var gem_scripts = document.getElementById(id)
@@ -862,7 +999,7 @@ Gem.execute(
 
 
         function codify__Gem__Script__load() {
-            Gem.Script.codify(
+            Gem.Script.codify_method(
                 'load',
                 'Load JavaScript code using a `<script>` tag.',
                 codifier__Gem__Script__load//,

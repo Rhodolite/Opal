@@ -24,7 +24,7 @@ Gem.execute(
 
 
 if (Gem.Beryl.has_bind) {
-    Gem.Beryl.codify(
+    Gem.Beryl.codify_method(
         'bind',
         'Create a new function with a bound `this` value (and optionally other bound arguments).`',
         //
@@ -68,7 +68,7 @@ if (Gem.Beryl.has_bind) {
         }
     )
 } else {
-    Gem.Beryl.codify(
+    Gem.Beryl.codify_method(
         'bind',
         'Create a new function with a bound `this` value (and optionally other bound arguments).`',
         //
@@ -289,7 +289,7 @@ if (Gem.Beryl.has_bind) {
     //      Although it does the same as the other version, it doesn't really do a double "bind"; but instead
     //      emulates it with a double "closure" (making it easier to understand).
     //
-    Gem.Beryl.codify(
+    Gem.Beryl.codify_method(
         'bind_create_Object',
         'A factory of factories.  The created factories create objects.',
         function codifier__Gem__Beryl__bind_create_Object() {
@@ -378,7 +378,7 @@ Gem.execute(
 //      A factory of factories.  The created factories each creates a Box -- an Object with a "class name".
 //
 if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
-    Gem.Beryl.codify(
+    Gem.Beryl.codify_method(
         'produce_create_Box',
         'A factory of factories.  The created factories each creates a Box -- an Object with a "class name".',
         function codifier__Gem__Beryl__produce_create_Box() {
@@ -427,7 +427,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
         }
     )
 } else {
-    Gem.Beryl.codify(
+    Gem.Beryl.codify_method(
         'produce_create_Box',
         (
               'A factory of factories.\n'
@@ -526,7 +526,7 @@ if (Gem.Configuration.clarity) {
 }
 
 
-Gem.Beryl.codify(
+Gem.Beryl.codify_method(
     'deep_copy_without_object_prototypes',
     (
           "Create a deep copy of an object -- removing all it's prototypes that are Object.prototype"
@@ -556,6 +556,10 @@ Gem.Beryl.codify(
             for (var i = 0; i < keys.length; i ++) {
                 var k = keys[i]
                 var v = properties[k]
+
+                if (k === 'load') {
+                    v.configurable = true
+                }
 
                 if ('value' in v) {
                     var value = v.value
