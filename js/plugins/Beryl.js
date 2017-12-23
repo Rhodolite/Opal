@@ -309,20 +309,14 @@ Gem.execute(
                     var method = codifier()
 
                     if (typeof method !== 'function' || method_name !== method.name) {
-                        if (method.name.startsWith('bound ')) {
-                            //
-                            //  Allow 'bound' methods to be defined: not an error
-                            //
-                        } else {
-                            throw_type_error(
-                                    (
-                                          'codifier `' + codifier_name + '`'
-                                        + ' must return a function named `'  + method_name + '`'
-                                        + '; instead returned'
-                                    ),
-                                    method//,
-                                )
-                        }
+                        throw_type_error(
+                                (
+                                      'codifier `' + codifier_name + '`'
+                                    + ' must return a function named `'  + method_name + '`'
+                                    + '; instead returned'
+                                ),
+                                method//,
+                            )
                     }
 
                     visible_constant_property.value = method
@@ -349,9 +343,7 @@ Gem.execute(
                     //  Ignores the `$what` parameter, which is only used in clarity mode.
 
                     visible_constant_property.value = codifier()
-
                     define_property(this, who, visible_constant_property)
-
                     delete visible_constant_property.value
                 }
             )
@@ -614,7 +606,7 @@ Gem.execute(
 
         Gem.NodeWebKit.clarity_note(
             'is_version_{012_or_lower,013_or_higher}',
-            'If not using nw.js, then both `.is_version_{012_or_lower,013_or_higher}` will be `false`.',
+            'If not using nw.js, then both `.is_version_{012_or_lower,013_or_higher}` will be `false`.'//,
         )
     }
 )

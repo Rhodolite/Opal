@@ -8,36 +8,20 @@
 Gem.NodeWebKit.show_developer_tools()
 
 
-Gem.execute(
-    function execute$setup__Gem_Beryl() {
-        Gem.Beryl = {
-            constant      : Gem.constant,
-            codify_method : Gem.codify_method//,
-            //  mutable   : Function
-        }
-
-        if (Gem.Configuration.clarity) {
-            Gem.Beryl.$who  = 'Gem.Beryl'
-            Gem.Beryl.$what = 'Exports of the Beryl module.'
-        }
-    }
-)
-
-
 //
 //  Gem.constant:
 //      Initialize a global Gem mutable value.
 //
 //      Also in clarity mode adds an explanation of what the mutable value does.
 //
-Gem.Beryl.codify_method(
+Gem.codify_method(
     'mutable',
     (
           'Initialize a global Gem mutable value.\n'
         + '\n'
         + 'Also in clarity mode adds an explanation of what the value does.'
     ),
-    function codifier__Gem__Beryl__mutable() {
+    function codifier__Gem__mutable() {
         //
         //  Imports
         //
@@ -69,13 +53,13 @@ Gem.Beryl.codify_method(
 
 
         if (clarity) {
-            return function Gem__Beryl__mutable(who, $what, value) {
+            return function Gem__mutable(who, $what, value) {
                 //  Initialize a global Gem mutable value.
                 //
                 //  Also in clarity mode adds an explanation of what the mutable value does.
 
                 if (typeof value === 'undefined' || typeof value === 'function') {
-                    throw_unexpected_value(
+                    throw_type_error(
                             'parameter `value` must be a value; was instead',
                             value//,
                         )
@@ -94,7 +78,7 @@ Gem.Beryl.codify_method(
         }
 
 
-        return function Gem__Beryl__mutable(who, $what, value) {
+        return function Gem__mutable(who, $what, value) {
             //  Initialize a global Gem mutable value.
             //
             //  Ignores the `$what` parameter, which is only used in clarity mode.
@@ -107,6 +91,179 @@ Gem.Beryl.codify_method(
 )
 
 
+//
+//  Gem.codify_bound_method:
+//      Codify a global Gem bound method.
+//
+//      Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.
+//
+//  NOTE:
+//      A "bound method" is in some sense a "constant", thus this routine bears a lot of similiarity to
+//      `Gem.qualify_constant`.
+//
+//      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
+//
+Gem.codify_method(
+    'codify_bound_method',
+    (
+          'Codify a global Gem bound method.\n'
+        + '\n'
+        + 'Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.'
+    ),
+    function codifier__Gem__codify_bound_method() {
+        //
+        //  Imports
+        //
+        var clarity                   = Gem.Configuration.clarity
+        var define_property           = Object.defineProperty
+        var visible_constant_property = Gem.visible_constant_property
+
+        if (clarity) {
+            var throw_type_error = Gem.throw_type_error
+
+
+            var throw_wrong_arguments = function throw_wrong_arguments(name, actual, expected) {
+                //  Throw a type error when a function receives wrong number of arguments
+
+                if (expected === 0) {
+                    var takes = 'takes no arguments'
+                } else if (expected == 1) {
+                    var takes = 'takes exactly 1 argument'
+                } else {
+                    var takes = 'takes exactly ' + expected.toString() + ' arguments'
+                }
+
+                var message = 'TypeError: function `' + name + '` ' + takes + ' (' + actual.toString() + ' given)'
+
+                throw new Error(message)
+            }
+        }
+
+        //
+        //  Implementation
+        //
+        if (clarity) {
+            return function Gem__codify_bound_method(who, $what, $which, codifier) {
+                //  Codify a global Gem bound method.
+                //
+                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the bound method.
+
+                if (arguments.length !== 4) {
+                    throw_wrong_arguments('Gem.codify_bound_method', 4, arguments.length)
+                }
+
+                if (typeof who !== 'string') {
+                    throw_type_error('parameter `who` must be a string; was instead', who)
+                }
+
+                if (typeof $what !== 'string') {
+                    throw_type_error('parameter `$what` must be a string; was instead', $what)
+                }
+
+                if (typeof $which !== 'string') {
+                    throw_type_error('parameter `$which` must be a string; was instead', $which)
+                }
+
+                var codifier_name = 'codifier__' + this.$who.replace('.', '__') + '__' + who
+
+                if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
+                    throw_type_error(
+                            (
+                                  'parameter `codifier` must be a function named `' + codifier_name + '`'
+                                + '; was instead'
+                            ),
+                            codifier//,
+                        )
+                }
+
+                var bound_method = codifier()
+
+                if (
+                       typeof bound_method === 'function'
+                    && (
+                              (
+                                  //
+                                  //  JavaScript 6.0: Bound methods begin with the the prefix "bound "
+                                  //
+                                  bound_method.name.startsWith('bound ')
+                              )
+                           || (
+                                  //
+                                  //  JavaScript 5.0: Bound methods have a blank name & also do not have a `prototype`
+                                  //
+                                  (bound_method.name.length === 0) && ( ! ('prototype' in bound_method))
+                              )
+                       )
+                ) {
+                    //
+                    //  ... It kind of looks like a bound method (to the best of our abilities to determine) ...
+                    //      so we'll accept it ...
+                    //
+                    //  ... Unfortunatly there is no way to really determine if it is a bound method or not ...
+                    //
+                } else {
+                    throw_type_error(
+                            'codifier `' + codifier_name + '`' + ' must return a bound method; instead returned',
+                            bound_method//,
+                        )
+                }
+
+                visible_constant_property.value = bound_method
+                define_property(this, who, visible_constant_property)
+
+                if (7) {
+                    visible_constant_property.value = this.$who + '.' + who
+                    define_property(bound_method, '$who', visible_constant_property)
+
+                    visible_constant_property.value = $what
+                    define_property(bound_method, '$what', visible_constant_property)
+
+                    visible_constant_property.value = $which
+                    define_property(bound_method, '$which', visible_constant_property)
+                }
+
+                delete visible_constant_property.value
+            }
+        }
+
+
+        //
+        //  NOTE:
+        //      The implementation of this method is identical to `Gem.codify_constant`.
+        //
+        //      (Although this method has an extra `$which` parameter, so we can't substitute `Gem.codify_constant`
+        //      for this method).
+        //
+        return function Gem__codify_bound_method(who, $what, $which, codifier) {
+            //  Codify a global Gem bound method.
+            //
+            //  Ignores the `$what` & `$which` parameters, which are only used in clarity mode.
+
+            visible_constant_property.value = codifier()
+            define_property(this, who, visible_constant_property)
+            delete visible_constant_property.value
+        }
+    }//,
+)
+
+
+Gem.execute(
+    function execute$setup__Gem_Beryl() {
+        Gem.Beryl = {
+            codify_bound_method : Gem.codify_bound_method,
+            codify_method       : Gem.codify_method,
+            constant            : Gem.constant,
+            mutable             : Gem.mutable//,
+        }
+
+        if (Gem.Configuration.clarity) {
+            Gem.Beryl.$who  = 'Gem.Beryl'
+            Gem.Beryl.$what = 'Exports of the Beryl module.'
+        }
+    }
+)
+
+
 Gem.Beryl.mutable(
     'single_step_binding',
     (
@@ -116,7 +273,7 @@ Gem.Beryl.mutable(
     //
     //  WARNING: Changing the following to `true` ... might, temporarily, turn your mind into a PRETZEL.
     //
-    false,                                                  //  Change to true to single step in Developer Tools ...
+    false//,                                                //  Change to true to single step in Developer Tools ...
 )
 
 
@@ -271,50 +428,50 @@ if (Gem.Beryl.has_bind) {
 //  Gem.beryl.bind_create_Object
 //      A factory of factories.  The created factories create objects.
 //
-//      Overview:
-//          Factories are superior to `new`, as they are easier to refactor.
+//  Overview:
+//      Factories are superior to `new`, as they are easier to refactor.
 //
-//          It takes a while to understand factories.
+//      It takes a while to understand factories.
 //
-//          The concept of a "factory of factories" is a little harder to understand, but becomes clearer over time.
+//      The concept of a "factory of factories" is a little harder to understand, but becomes clearer over time.
 //
-//      Summary:
-//          A factory of factories.
+//  Summary:
+//      A factory of factories.
 //
-//          The factories returned by `bind_create_Object` are named `create_*` (since they are factories, and
-//          factories, in general, begin with a "creation" verb like `create` and end with the name of what they
-//          create).
+//      The factories returned by `bind_create_Object` are named `create_*` (since they are factories, and factories,
+//      in general, begin with a "creation" verb like `create` and end with the name of what they create).
 //
-//      Details:
-//          Returns a bound create_Object (i.e.: a callable verion of `create_Object` with some of it's parameters
-//          bound).
+//  Details:
+//      Returns a bound create_Object (i.e.: a callable verion of `create_Object` with some of it's parameters bound).
 //
-//          In other words, `bind_create_objects` bind's some paramters to `create_object` and returns a callable
-//          function.
+//      In other words, `bind_create_objects` bind's some paramters to `create_object` and returns a callable function.
 //
-//          Since `create_object` is a factory then `bind_create_object` returns a factory with some of it's
-//          parameters bound.
+//      Since `create_object` is a factory then `bind_create_object` returns a factory with some of it's parameters
+//      bound.
 //
-//          Two examples (from below):
+//      Two examples (from below):
 //
-//              1.  `var create_AnonymousBox = bind_create_Object(null)`
-//                      Binds `null` as the first paramater to `create_Object`.
+//          1.  `var create_AnonymousBox = bind_create_Object(null)`
 //
-//                      Thus this returns a factory that creates "AnonymousBox" objects
+//                  Binds `null` as the first paramater to `create_Object`.
 //
-//                      This factory, is thus, appropriatly named `create_AnonymousBox`.
+//                  Thus this returns a factory that creates "AnonymousBox" objects
+//
+//                  This factory, is thus, appropriatly named `create_AnonymousBox`.
 //
 //          2.  `.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)`
-//                      Binds `next_segment__BoxOfPropertyDescriptors` as the first paremater to `create_Object`.
 //
-//                      Thus this returns a factory that creates "BoxOfPrototypeDescriptors" objects.
+//                  Binds `next_segment__BoxOfPropertyDescriptors` as the first paremater to `create_Object`.
 //
-//                      This factory, is thus, appropriatly named `create__BoxOfPropertyDescriptors`
+//                  Thus this returns a factory that creates "BoxOfPrototypeDescriptors" objects.
+//
+//                  This factory, is thus, appropriatly named `create__BoxOfPropertyDescriptors`
 //
 if (Gem.Beryl.has_bind) {
-    Gem.Beryl.codify_method(
+    Gem.Beryl.codify_bound_method(
         'bind_create_Object',
         'A factory of factories.  The created factories create objects.',
+        'A binding of `Function.prototype.bind` to `Function.prototype.bind` (i.e.: a binding of `bind` to `bind).',
         function codifier__Gem__Beryl__bind_create_Object() {
             //
             //  Imports
@@ -358,7 +515,6 @@ if (Gem.Beryl.has_bind) {
                 //      (Thanks for reading this long comment, lol).
                 //
             }
-
 
             //
             //  NOTE #4:
@@ -442,7 +598,7 @@ if (Gem.Beryl.has_bind) {
                                 //------------------------------------------------------------------+
 
             return result
-        }
+        }//,
     )
 } else {
     //
@@ -657,6 +813,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
                             //---------------------------------------------------------------------+
             }
 
+
             var create_AnonymousBox_using_property_descriptors = bind_create_Object(null, property_descriptors)
 
 
@@ -719,15 +876,20 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
 }
 
 
-Gem.execute(
-    function execute$codify__Gem__Beryl__create_Box() {
+Gem.Beryl.codify_bound_method(
+    'create_Box',
+    'Create an object with a "class name" of "Box" in Developer Tools.',
+    'A binding of `create_Object` to `Box` (i.e.: A binding of `Object.create` to `Box`).',
+    function codifier__Gem__Beryl__create_Box() {
+        debugger
+
         function Box() {
             //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
             //  of an instance using this prototype as 'Box'
         }
 
-        Gem.Beryl.create_Box = Gem.Beryl.produce_create_Box(Box)
-    }
+        return Gem.Beryl.produce_create_Box(Box)
+    }//,
 )
 
 
