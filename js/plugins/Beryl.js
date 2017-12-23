@@ -150,6 +150,12 @@ Gem.execute(
         //
         //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
         //
+        //  Copies:
+        //      Gem.Beryl     .codify2
+        //      Gem.NodeWebKit.codify2
+        //      Gem.Script    .codify2
+        //          Same as Gem.codify, just acting on a different `this`.
+        //
         function codifier__Gem__codify2() {
             if (clarity) {
                 return function Gem__codify2(who, $what, codifier) {
@@ -192,8 +198,10 @@ Gem.execute(
                             )
                     }
 
+                    this[who] = code
+
                     if (7) {
-                        visible_constant_property.value = who
+                        visible_constant_property.value = this.$who + '.' + who
 
                         define_property(code, '$who', visible_constant_property)
 
@@ -203,8 +211,6 @@ Gem.execute(
 
                         delete visible_constant_property.value
                     }
-
-                    this[who] = code
                 }
             } 
 
@@ -234,6 +240,74 @@ Gem.execute(
 
 
         Gem.NodeWebKit.codify2 = Gem.Script.codify2 = Gem.Beryl.codify2 = Gem.codify2
+
+
+        //
+        //  Gem.qualify:
+        //      Temporary bootstrap function to qualify a global Gem variable
+        //      (in clarity mode also adds an explanation of what the variable does).
+        //
+        //  NOTE #1:
+        //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
+        //
+        //          `Gem.qualify` is used to "qualify" a value, by making sure it is ready to be used and
+        //          is adequate (i.e.: "qualified") for the task.
+        //
+        //  NOTE #2:
+        //      Meaning of "qualify" - a verb (used with object) meaning:
+        //
+        //          To provide, with attributes neccessary for a task ...
+        //
+        //          "To qualify oneself for a job"
+        //
+        //      See: https://www.vocabulary.com/dictionary/qualify
+        //           (Explains the two meaning's of "qualify", we are using the second meaning of "qualify")
+        //
+        //      See also: http://www.dictionary.com/browse/qualify
+        //
+        //      See also: https://www.merriam-webster.com/dictionary/qualify/
+        //
+        //  Copies:
+        //      Gem._.Beryl.qualify
+        //          Same as Gem.qualify, just acting on a different `this`.
+        //
+        Gem.codify2(
+            'qualify',
+            (
+                   'Qualify a global Gem variable'
+                + '.  Also in clarity mode adds an explanation of what the variable does'
+                + '.'
+            ),
+            function codifier__Gem__qualify() {
+                if (clarity) {
+                    return function Gem__qualify(who, $what, value) {
+                        //  Qualify a global Gem variable.
+                        //
+                        //  Also in clarity mode adds an explanation of what the variable does.
+
+                        this[who] = value
+
+                        if (7) {
+                            visible_constant_property.value = $what
+
+                            define_property(this, who + '$', visible_constant_property)
+
+                            delete visible_constant_property.value
+                        }
+                    }
+                }
+
+                return function Gem__qualify(who, $what, value) {
+                    //  Qualify a global Gem variable.
+                    //
+                    //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                    this[who] = value
+                }
+            }
+        )
+
+        Gem.NodeWebKit.qualify = Gem._.Beryl.qualify = Gem.qualify
     }
 )
 
@@ -294,223 +368,14 @@ Gem.execute(
         }
 
 
-        //
-        //  Gem.codify:
-        //      Temporary bootstrap function to create the code for a function or procedure, typically as a closure to
-        //      avoid the use of any global variables.
-        //
-        function codifier__Gem__codify() {
-            //
-            //  Imports
-            //
-            var Gem = window.Gem
-
-
-            return function Gem__codify(who, $what, codifier) {
-                //  Temporary bootstrap function to create the code for a function or procedure, typically as a
-                //  closure to avoid the use of any global variables.
-
-                var m = name_match(who)
-
-                if ( ! m) {
-                    throw Error('Unknown name to codify: ' + who)
-                }
-
-                var module = m[1]
-                var first  = m[2]
-                var second = m[3]
-
-                var codifier_name = 'codifier__Gem__' + module
-                var code_name     =           'Gem__' + module
-
-                if (first !== undefined) {
-                    codifier_name += '__' + first
-                    code_name     += '__' + first
-                }
-
-                if (second !== undefined) {
-                    codifier_name += '__' + second
-                    code_name     += '__' + second
-                }
-
-                if (codifier_name !== codifier.name) {
-                    throw Error(
-                            (
-                                  "Codifier must be named '" + codifier_name + "'"
-                                + "; was instead named: '"   + codifier.name + "'"
-                            )//,
-                        )
-                }
-
-                var code = codifier()
-
-                if (typeof code === 'undefined') {
-                    throw Error(
-                            (
-                                  'Codifier `' + codifier_name + '`'
-                                + ' did not return a function; returned `undefined` instead'
-                            )//,
-                        )
-                }
-
-                if (code_name !== code.name) {
-                    throw Error(
-                            (
-                                  "Codifier `" + codifier_name + "`"
-                                +       " must return a function named '"  + code_name + "'"
-                                + "; instead returned a function named: '" + code.name + "'"
-                            )//,
-                        )
-                }
-
-                if (clarity) {
-                    concealed_constant_property.value = who
-
-                    define_property(code, '$who', concealed_constant_property)
-
-                    concealed_constant_property.value = $what
-
-                    define_property(code, '$what', concealed_constant_property)
-
-                    delete concealed_constant_property.value
-                }
-
-                if (first === undefined) {
-                    Gem[module] = code
-
-                    return
-                }
-
-                if (second === undefined) {
-                    Gem[module][first] = code
-
-                    return
-                }
-
-                Gem[module][first][second] = code
-            }
-        }
-
-
-        var temporary__Gem__codify = codifier__Gem__codify()    //  Grab a temporary copy of `Gem.codify` ...
-
-
-        temporary__Gem__codify(                         //  ... And use the temporary `Gem.codify` to codify itself ...
-            'Gem.codify',
-            (
-                  'Temporary bootstrap function to create the code for a function or procedure, typically as a'
-                + ' closure to avoid the use of any global variables'
-                + '.'
-            ),
-            codifier__Gem__codify//,
-        )
-
-
-        //
-        //  Gem.qualify:
-        //      Temporary bootstrap function to qualify a global Gem variable
-        //      (in clarity mode also adds an explanation of what the variable does).
-        //
-        //  NOTE #1:
-        //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
-        //
-        //          `Gem.qualify` is used to "qualify" a value, by making sure it is ready to be used and
-        //          is adequate (i.e.: "qualified") for the task.
-        //
-        //  NOTE #2:
-        //      Meaning of "qualify" - a verb (used with object) meaning:
-        //
-        //          To provide, with attributes neccessary for a task ...
-        //
-        //          "To qualify oneself for a job"
-        //
-        //      See: https://www.vocabulary.com/dictionary/qualify
-        //           (Explains the two meaning's of "qualify", we are using the second meaning of "qualify")
-        //
-        //      See also: http://www.dictionary.com/browse/qualify
-        //
-        //      See also: https://www.merriam-webster.com/dictionary/qualify/
-        //
-        Gem.codify(
-            'Gem.qualify',
-            'Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable does).',
-            function codifier__Gem__qualify() {
-                //
-                //  Imports
-                //
-                var Gem = window.Gem
-
-
-                return function Gem__qualify(who, $what, value) {
-                    //  Qualify a global Gem variable (in clarity mode also adds an explanation of what the variable
-                    //  does).
-
-                    var m = name_match(who)
-
-                    if ( ! m) {
-                        throw Error('Unknown name to qualify: ' + who)
-                    }
-
-                    var module = m[1]
-                    var first  = m[2]
-
-                    if (first === undefined) {
-                        Gem[module] = value
-
-                        if (clarity) {
-                            concealed_constant_property.value = $what
-
-                            define_property(Gem, module + '$', concealed_constant_property)
-
-                            delete concealed_constant_property.value
-
-                            return
-                        }
-
-                        return
-                    }
-
-                    var second = m[3]
-
-                    if (second === undefined) {
-                        Gem[module][first] = value
-
-                        if (clarity) {
-                            concealed_constant_property.value = $what
-
-                            define_property(Gem[module], first + '$', concealed_constant_property)
-
-                            delete concealed_constant_property.value
-
-                            return
-                        }
-
-                        return
-                    }
-                    
-                    Gem[module][first][second] = value
-
-                    if (clarity) {
-                        concealed_constant_property.value = $what
-
-                        define_property(Gem[module][first], second + '$', concealed_constant_property)
-
-                        delete concealed_constant_property.value
-
-                        return
-                    }
-                }
-            }
-        )
-
 
         //
         //  Gem.qualification_note
         //      Add a qualification note to a variable or set of variables (clarity mode only).
         //
         if (Gem.Configuration.clarity) {
-            Gem.codify(
-                'Gem.qualification_note',
+            Gem.codify2(
+                'qualification_note',
                 'Add a qualification note to a variable or set of variables (clarity mode only).',
                 function codifier__Gem__qualification_note() {
                     //
@@ -601,8 +466,8 @@ Gem.execute(
 //      Array of callback's when `Gem` is changed (clarity mode only).
 //
 if (Gem.Configuration.clarity) {
-    Gem.qualify(
-        'Gem._.Beryl.clarity_mode__gem_changed',
+    Gem._.Beryl.qualify(
+        'clarity_mode__gem_changed',
         "Array of callback's when `Gem` is changed (clarity mode only).",
         []//,
     )
@@ -643,14 +508,14 @@ Gem.execute(
         //
         //  Exports
         //
-        Gem.qualify(
-            'Gem.NodeWebKit.is_version_012_or_lower',
+        Gem.NodeWebKit.qualify(
+            'is_version_012_or_lower',
             "`true` if using nw.js & it's version 0.12 or lower.",
             (major === 0 && minor <= 12)//,
         )
 
-        Gem.qualify(
-            'Gem.NodeWebKit.is_version_013_or_higher',
+        Gem.NodeWebKit.qualify(
+            'is_version_013_or_higher',
             "`true` if using nw.js & it's version 0.13 or greater.",
             (major >   0 || minor >= 13)//,
         )

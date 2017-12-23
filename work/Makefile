@@ -41,7 +41,7 @@ clean:
 	rm -f files files.new
 	rm -f g.js
 	rm -f i.html
-	rm -f j.js jk.js
+	rm -f j.js j0.js jk.js
 	rm -f m
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
@@ -61,6 +61,7 @@ links:
 	ln -s ../js/plugins/Gem.js    		        g.js
 	ln -s ../index.html           		        i.html
 	ln -s ../js/plugins/Jasper.js 		        j.js
+	ln -s ../Junk/Junk0.js         		        j0.js
 	ln -s ../Junk/Junk.js         		        jk.js
 	ln -s Makefile						        m
 	ln -s ../js/rpg_core.js         	        rc.js
