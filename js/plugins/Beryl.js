@@ -12,9 +12,6 @@
 //      Later `Gem` will be replaced with a proper instance of box "TheOnlyGlobalVariableUsedByGem".
 //
 window.Gem = {
-    Beryl : {                                               //  Exports of Beryl module
-    },
-
     Configuration : {                                       //  Gem configuration values
         box_name : true,                                    //      Name 'box' instances 'Box' in Developer Tools.
         clarity  : true,                                    //      Set Gem clarity mode to true
@@ -89,7 +86,7 @@ window.Gem = {
 //  OLD NOTE: can be executed twice in clarity mode.  (Need this?)
 //
 Gem.execute(
-    function execute__setup__Gem() {
+    function execute$setup__Gem() {
         //
         //  Imports
         //
@@ -136,7 +133,6 @@ Gem.execute(
                 }
 
                 who_what(Gem,            'Gem',            'The only global variable used by Gem.')
-                who_what(Gem.Beryl,      'Gem.Beryl',      'Exports of the Beryl module.')
                 who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
                 who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
             }
@@ -250,7 +246,6 @@ Gem.execute(
         //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
         //
         //  Copies:
-        //      Gem.Beryl     .codify_method
         //      Gem.NodeWebKit.codify_method
         //      Gem.Script    .codify_method
         //          Same as Gem.codify_method, just acting on a different `this`.
@@ -286,15 +281,21 @@ Gem.execute(
                     var method = codifier()
 
                     if (typeof method !== 'function' || method_name !== method.name) {
-                        throw_unexpected_value(
-                                (
-                                      'Gem.method',
-                                    + ': codifier `' + codifier_name + '`'
-                                    + ' must return a function named `'  + method_name + '`'
-                                    + '; instead returned'
-                                ),
-                                method//,
-                            )
+                        if (method.name.startsWith('bound ')) {
+                            //
+                            //  Allow 'bound' methods to be defined: not an error
+                            //
+                        } else {
+                            throw_unexpected_value(
+                                    (
+                                          'Gem.method'
+                                        + ': codifier `' + codifier_name + '`'
+                                        + ' must return a function named `'  + method_name + '`'
+                                        + '; instead returned'
+                                    ),
+                                    method//,
+                                )
+                        }
                     }
 
                     visible_constant_property.value = method
@@ -333,7 +334,7 @@ Gem.execute(
         }
 
 
-        Gem.NodeWebKit.codify_method = Gem.Script.codify_method = Gem.Beryl.codify_method = Gem.codify_method
+        Gem.NodeWebKit.codify_method = Gem.Script.codify_method = Gem.codify_method
 
 
         //
@@ -569,7 +570,7 @@ if (Gem.Configuration.clarity) {
 //      If not using nw.js, then both `Gem.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
 //
 Gem.execute(
-    function execute__qualify__Gem__NodeWebKit__version() {
+    function execute$qualify__Gem__NodeWebKit__version() {
         //
         //  Imports
         //
@@ -893,7 +894,7 @@ Gem.Script.qualify_constant(
 //      Hence we have to set the 'abort', 'error', & 'load' events on each individual `<script>` tag.
 //
 Gem.execute(
-    function execute__codify__Gem__Script__load() {
+    function execute$codify__Gem__Script__load() {
         //
         //  NOTE:
         //      `Gem.Script.event_list` is deleted later in this file; so make sure to grab a copy now, so
@@ -998,23 +999,30 @@ Gem.execute(
         }
 
 
-        function codify__Gem__Script__load() {
-            Gem.Script.codify_method(
-                'load',
-                'Load JavaScript code using a `<script>` tag.',
-                codifier__Gem__Script__load//,
-            )
-        }
-
-
-        codify__Gem__Script__load()
+        Gem.Script.codify_method(
+            'load',
+            'Load JavaScript code using a `<script>` tag.',
+            codifier__Gem__Script__load//,
+        )
 
 
         if (Gem.Configuration.clarity) {
             //
             //  Save callback to recalculate `Gem.Script.load`
             //
-            Gem._.Beryl.clarity_mode__gem_changed.push(codify__Gem__Script__load)
+            Gem._.Beryl.clarity_mode__gem_changed.push(
+                function recodify__Gem__Script__load() {
+                    //
+                    //  Have to use `.call` here, since `Gem.Script.codify_method` has been deleted ...
+                    //
+                    Gem.codify_method.call(
+                        Gem.Script,
+                        'load',
+                        'Load JavaScript code using a `<script>` tag.',
+                        codifier__Gem__Script__load//,
+                    )
+                }//,
+            )
         }
     }
 )
@@ -1024,7 +1032,26 @@ Gem.execute(
 //  Cleanup
 //
 Gem.execute(
-    function execute__remove__Gem__Script__event_list() {
+    function execute$cleanup__Gem_nested_methods() {
+        delete Gem.NodeWebKit.clarity_note
+
+        delete Gem.NodeWebKit.codify_method
+        delete Gem.Script    .codify_method
+
+        delete Gem._.Beryl   .constant
+        delete Gem.NodeWebKit.constant
+        delete Gem.Script    .constant
+
+        delete Gem.Script    .method
+        delete Gem.NodeWebKit.method
+
+        delete Gem.Script    .qualify_constant
+    }
+)
+
+
+Gem.execute(
+    function execute$cleanup__Gem__Script__event_list() {
         delete Gem.Script.event_list
     }
 )
@@ -1034,7 +1061,7 @@ Gem.execute(
 //  Load Gem/Beryl/Boot.js
 //
 Gem.execute(
-    function execute__load_next_script() {
+    function execute$load_next_script() {
         Gem.Script.load(Gem.Script.beryl_boot_path)
     }
 )
@@ -1051,7 +1078,7 @@ Gem.execute(
 //
 if (Gem.Configuration.debug) {
     Gem.execute(
-        function execute__reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
+        function execute$reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
             Gem.Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
         }
     )
