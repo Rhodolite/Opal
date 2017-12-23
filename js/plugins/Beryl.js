@@ -308,155 +308,47 @@ Gem.execute(
         )
 
         Gem.NodeWebKit.qualify = Gem._.Beryl.qualify = Gem.qualify
-    }
-)
-
-
-//
-//  Gem.codify, Gem.qualify, & Gem.qualification_note (can be executed twice in clarity mode)
-//
-Gem.execute(
-    function execute__setup__Gem() {
-        //
-        //  Imports
-        //
-        var clarity = Gem.Configuration.clarity
-        var Pattern = RegExp
-
-
-        //
-        //  Closures
-        //
-        var name_pattern = new Pattern(
-                  '^Gem'
-                +    '\.([A-Za-z_][0-9A-Za-z_]*)'
-                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
-                + '(?:\.([A-Za-z_][0-9A-Za-z_]*))?'
-                + '$'
-            )
-
-
-        if ('bind' in name_pattern.exec) {
-            var name_match = name_pattern.exec.bind(name_pattern)
-        } else {
-            var name_match = function OLD_WAY__name_match(s) {
-                return name_pattern.exec(s)
-            }
-        }
-
-
-        if (clarity) {
-            //
-            //  Imports
-            //
-            var create_Object   = Object.create
-            var define_property = Object.defineProperty
-
-
-            //
-            //  Closures
-            //      Read 'concealed' to mean 'not enumerable'.
-            //
-            var concealed_constant_property = create_Object(
-                    null//,
-                    //{
-                    //  configurable : { value : false },               //  Default value, no need to set
-                    //  enumerable   : { value : false },               //  Default value, no need to set
-                    //  writeable    : { value : false }//,             //  Default value, no need to set
-                    //}//,
-                )
-        }
-
 
 
         //
         //  Gem.qualification_note
         //      Add a qualification note to a variable or set of variables (clarity mode only).
         //
+        //  Copies:
+        //      Gem.NodeWebKit.qualification_note
+        //          Same as Gem.qualification_note, just acting on a different `this`.
+        //
         if (Gem.Configuration.clarity) {
             Gem.codify2(
                 'qualification_note',
                 'Add a qualification note to a variable or set of variables (clarity mode only).',
                 function codifier__Gem__qualification_note() {
-                    //
-                    //  Imports
-                    //
-                    var Gem = window.Gem
-
-                    //
-                    //  Closures
-                    //
-                    var note_pattern = new Pattern(
-                              '^Gem'
-                            +    '\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*)'
-                            + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
-                            + '(?:\.([A-Za-z_](?:[0-9A-Za-z_]|{[0-9,A-Za-z_]+})*))?'
-                            + '$'
-                        )
-
-
-                    if ('bind' in note_pattern.exec) {
-                        var note_match = note_pattern.exec.bind(note_pattern)
-                    } else {
-                        var note_match = function OLD_WAY__note_match(s) {
-                            return note_pattern.exec(s)
-                        }
-                    }
-
-
                     return function Gem__qualification_note(who, $what) {
+                        debugger
+
                         //  Add a qualification note to a variable or set of variables (clarity mode only)
 
-                        var m = note_match(who)
+                        visible_constant_property.value = $what
 
-                        if ( ! m) {
-                            throw Error('Unknown name to qualification_note: ' + who)
-                        }
+                        define_property(this, who + '$NOTE', visible_constant_property)
 
-                        var module = m[1]
-                        var first  = m[2]
-
-                        if (first === undefined) {
-                            concealed_constant_property.value = $what
-
-                            define_property(Gem, module + '$NOTE', concealed_constant_property)
-
-                            delete concealed_constant_property.value
-
-                            return
-                        }
-
-                        var second = m[3]
-
-                        if (second === undefined) {
-                            concealed_constant_property.value = $what
-
-                            define_property(Gem[module], first + '$NOTE', concealed_constant_property)
-
-                            delete concealed_constant_property.value
-
-                            return
-                        }
-                        
-                        concealed_constant_property.value = $what
-
-                        define_property(Gem[module][first], second + '$NOTE', concealed_constant_property)
-
-                        delete concealed_constant_property.value
+                        delete visible_constant_property.value
                     }
                 }
             )
         } else {
             Gem.codify(
                 'Gem.qualification_note',
-                'Empty function -- nothing to do, not in `Gem.Configuration.clarity` mode',
+                'Empty function -- nothing to do, not in clarity mode',
                 function codifier__Gem__qualification_note() {
                     return function Gem__qualification_note(/*who, $what*/) {
-                        //  Nothing to do, not in `Gem.Configuration.clarity` mode
+                        //  Nothing to do, not in clarity mode
                     }
                 }
             )
         }
+
+        Gem.NodeWebKit.qualification_note = Gem.qualification_note
     }
 )
 
@@ -520,8 +412,8 @@ Gem.execute(
             (major >   0 || minor >= 13)//,
         )
 
-        Gem.qualification_note(
-            'Gem.NodeWebKit.is_version_{012_or_lower,013_or_higher}',
+        Gem.NodeWebKit.qualification_note(
+            'is_version_{012_or_lower,013_or_higher}',
             'If not using nw.js, then both `.is_version_{012_or_lower,013_or_higher}` will be `false`.',
         )
     }
@@ -530,17 +422,17 @@ Gem.execute(
 
 //
 //  Gem.NodeWebKit.show_developer_tools
-//      Show developer tools
+//      Show developer tools.
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
     Gem.NodeWebKit.codify2(
         'show_developer_tools',
-        'Show developer tools (nw.js 0.12 or lower)',
+        'Show developer tools (nw.js 0.12 or lower).',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
 
             return function Gem__NodeWebKit__show_developer_tools() {
-                //  Show developer tools (nw.js 0.12 or lower)
+                //  Show developer tools (nw.js 0.12 or lower).
 
                 game_window.showDevTools()
             }
@@ -549,12 +441,12 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
     Gem.NodeWebKit.codify2(
         'show_developer_tools',
-        'Show developer tools (nw.js 0.13 or higher)',
+        'Show developer tools (nw.js 0.13 or higher).',
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
 
             return function Gem__NodeWebKit__show_developer_tools() {
-                //  Show developer tools (nw.js 0.13 or higher)
+                //  Show developer tools (nw.js 0.13 or higher).
 
                 //
                 //  NOTE:
@@ -569,10 +461,10 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 } else {                                                    //  Not using nw.js: Don't show developer tools
     Gem.NodeWebKit.codify(
         'show_developer_tools',
-        "Empty function -- Not using nw.js: Don't show developer tools",
+        "Empty function -- Not using nw.js: Don't show developer tools.",
         function codifier__Gem__NodeWebKit__show_developer_tools() {
             return function Gem__NodeWebKit__show_developer_tools() {
-                //  Not using nw.js: Don't show developer tools
+                //  Not using nw.js: Don't show developer tools.
             }
         }
     )
