@@ -233,8 +233,7 @@ Gem.execute(
             'codify',
             (
                   'Temporary bootstrap function to create the code for a function or procedure, typically as a'
-                + ' closure to avoid the use of any global variables'
-                + '.'
+                + ' closure to avoid the use of any global variables.'
             ),
             codifier__Gem__codify//,
         )
@@ -383,7 +382,7 @@ Gem.execute(
             )
         } else {
             Gem.codify(
-                'Gem.qualification_note',
+                'qualification_note',
                 'Empty function -- nothing to do, not in clarity mode',
                 function codifier__Gem__qualification_note() {
                     return function Gem__qualification_note(/*who, $what*/) {
@@ -715,7 +714,10 @@ if (Gem.Script.handle_errors) {
 //
 Gem.Script.qualify(
     'gem_scripts',
-    '`div#gem_scripts` is inserted into `document.body` as the parent of all Gem `<script>` tags.',
+    (
+          '`div#gem_scripts` is the parent of all Gem `<script>` tags'
+        + ' (`div#gem_scripts` is inserted into `document.body`).'
+    ),
     function qualifier__Gem__Script__gem_scripts() {
         var id          = 'gem_scripts'
         var gem_scripts = document.getElementById(id)

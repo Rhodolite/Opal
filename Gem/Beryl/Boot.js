@@ -430,14 +430,16 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
     Gem.Beryl.codify(
         'produce_create_Box',
         (
-              'A factory of factories'
-            + '.  Since this is non clarity mode, in this simplified version'
+              'A factory of factories.\n'
+            + '\n'
+            + 'Since this is non clarity mode, in this simplified version'
             + ', each created factory is really `create_AnonymousBox`'
-            + ' (which creates very simple Objects with no prototype; and hence no "class name")'
-            + '. In clarity mode, instead the created factories each creates a Box -- an Object with a "class name".'
+            + ' (which creates very simple Objects with no prototype; and hence no "class name").\n'
+            + '\n'
+            + 'In clarity mode, instead the created factories each creates a Box -- an Object with a "class name".'
         ),
         function codifier__Gem__Beryl__produce_create_Box() {
-            var create_AnonymousBox = bind_create_Object(null)
+            var create_AnonymousBox = Gem.Beryl.bind_create_Object(null)
 
             return function Gem__Beryl__produce_create_Box(/*fake_constructor*/) {
                 //      A factory of factories.
