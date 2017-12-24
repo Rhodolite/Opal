@@ -950,14 +950,24 @@ if (Gem.Configuration.clarity) {
 
 
 Gem.Beryl.codify_method(
-    'deep_copy_without_object_prototypes',
+    'deep_copy_with_adjustments',
     (
-          "Create a deep copy of an object -- removing all it's prototypes that are Object.prototype"
-        + '; This makes it easier to examine the object in Developer Tools with less "junk"'
+          'Create a deep copy of an object -- with various adjustments.\n'
+        + '\n'
+        + 'Adjustments:\n'
+        + '   1. Convert all it\'s objects that use Object.prototype to "named classes" for Developer Tools.\n'
+        + '   2. Make objects named `load` configurable (so they can be overwritten).\n'
+        + '\n'
+        + 'This makes it easier to examine the object in Developer Tools with less "junk".'
     ),
-    function codifier__Gem__Beryl__deep_copy_without_object_prototypes() {
-        //  Create a deep copy of an object -- removing all it's prototypes that are Object.prototype;
-        //  This makes it easier to examine the object in Developer Tools with less "junk"'
+    function codifier__Gem__Beryl__deep_copy_with_adjustments() {
+        //  Create a deep copy of an object -- with various adjustments
+        //
+        //  Adjustments:
+        //     1. Convert all it\'s objects that use Object.prototype to "named classes" for Developer Tools.
+        //     2. Make objects named `load` configurable (so they can be overwritten).
+        //
+        //  This makes it easier to examine the object in Developer Tools with less "junk".
         //
         //  NOTE:
         //      Prototype's other than Object.prototype are not removed, as they are meaningful & neccessary.
@@ -965,20 +975,89 @@ Gem.Beryl.codify_method(
         //      For example `Gem.Script.script_map['Gem/Beryl/Boot.js']` has a prototype of `HTMLScriptELement`,
         //      this prototype is meaningful & necessary, and therefore is not removed.
 
-        var create_Box               = Gem.Beryl.create_Box
-        var object__prototype        = Object.prototype
-        var enumerable_keys          = Object.keys
-        var get_property_descriptors = Object.getOwnPropertyDescriptors
-        var get_prototype_of         = Object.getPrototypeOf
+        debugger
 
+        var create_Box        = Gem.Beryl.create_Box
+        var object__prototype = Object.prototype
+        var get_prototype_of  = Object.getPrototypeOf
 
-        var deep_copy_without_object_prototypes = function Gem__Beryl__deep_copy_without_object_prototypes(instance) {
-            var properties = get_property_descriptors(instance)
-            var keys       = enumerable_keys(properties).sort()     //  `sort` makes the deep copy deterministic
+        if ('getOwnPropertyDescriptors' in Object) {
+            //
+            //  JavaScript 6.0
+            //
+            var enumerable_keys              = Object.keys
+            var get_all_property_descriptors = Object.getOwnPropertyDescriptors //  with a trailing 's'
+
+            var deep_copy_with_adjustments = function Gem__Beryl__deep_copy_with_adjustments(instance) {
+                if (7) {
+                    //
+                    //  JavaScript 6.0:
+                    //      Actually we could also use `get_property_names` in JavaScript 6.0; however it seems
+                    //      "cleaner" to use `enumable_keys(properties)` since we already created `properites`.
+                    //
+                    var properties = get_all_property_descriptors(instance)
+                    var keys       = enumerable_keys(properties).sort() //  `sort` makes the deep copy deterministic
+                }
+
+                for (var i = 0; i < keys.length; i ++) {
+                    var k = keys[i]
+
+                    if (7) {
+                        //
+                        //  JavaScript 6.0 -- we can just use the previous `properties`
+                        //
+                        var v = properties[k]
+                    }
+
+                    if (k === 'load') {
+                        v.configurable = true
+                    }
+
+                    if ('value' in v) {
+                        var value = v.value
+
+                        if (typeof value === 'object' && get_prototype_of(value) === object__prototype) {
+                            v.value = deep_copy_with_adjustments(value)
+                        }
+                    }
+                }
+
+                return create_Box(properties)
+            }
+
+            return deep_copy_with_adjustments
+        }
+
+        //
+        //  JavaScript 5.0
+        //
+        var get_property_names             = Object.getOwnPropertyNames
+        var get_single_property_descriptor = Object.getOwnPropertyDescriptor    //  *NO* trailing 's'
+
+        var deep_copy_with_adjustments = function Gem__Beryl__deep_copy_with_adjustments(instance) {
+            if (7) {
+                // 
+                //  JavaScript 5.0 does not have `Object.getOwnPropertyDescriptors` (with a trailing 's')
+                //      Hence use `get_property_names`, and we have to build our own `properties` object
+                //
+                var properties = create_Box()
+                var keys       = get_property_names(instance).sort()    //  `sort` makes the deep copy deterministic
+            }
 
             for (var i = 0; i < keys.length; i ++) {
                 var k = keys[i]
-                var v = properties[k]
+
+                if (7) {
+                    //
+                    //  JavaScript 5.0 does not have `Object.getOwnPropertyDescriptors` (with a trailing 's').
+                    //      So we have to get each property one by one.
+                    //
+                    //      *ALSO* we build our own `properties` object.
+                    //
+                    var v = get_single_property_descriptor(instance, k)
+
+                    properties[k] = v                                   //  Build our own `properties` object.
+                }
 
                 if (k === 'load') {
                     v.configurable = true
@@ -988,7 +1067,7 @@ Gem.Beryl.codify_method(
                     var value = v.value
 
                     if (typeof value === 'object' && get_prototype_of(value) === object__prototype) {
-                        v.value = deep_copy_without_object_prototypes(value)
+                        v.value = deep_copy_with_adjustments(value)
                     }
                 }
             }
@@ -997,7 +1076,7 @@ Gem.Beryl.codify_method(
         }
 
 
-        return deep_copy_without_object_prototypes
+        return deep_copy_with_adjustments
     }
 )
 
@@ -1005,7 +1084,7 @@ Gem.Beryl.codify_method(
 if (Gem.Configuration.clarity) {
     Gem.execute(
         function execute$deep_copy__Gem__without_object_prototypes() {
-            window.Gem = Gem.Beryl.deep_copy_without_object_prototypes(Gem)
+            window.Gem = Gem.Beryl.deep_copy_with_adjustments(Gem)
 
             //
             //  Now do callback's informing them that `Gem` has changed
