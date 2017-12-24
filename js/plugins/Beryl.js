@@ -353,7 +353,7 @@ Gem.Beryl.execute(
                     //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
 
                     var middle        = this.$who.replace('.', '__')
-                    var codifier_name = 'codifier__' + middle + '__' + who
+                    var codifier_name = 'codifier$' + middle + '__' + who
                     var method_name   =                middle + '__' + who
 
                     if (arguments.length !== 3) {
@@ -477,151 +477,45 @@ Gem.Beryl.execute(
 
 
         //
-        //  Gem.Beryl.qualify_constant:
+        //  Gem.Beryl.qualify_constant
         //      Qualify a global Gem constant.
         //
         //      The `qualifier` argument is a function that returns the value of the constant.
         //
-        //      Also in clarity mode adds an explanation of what the constant does.
+        //      Ignores the `$what` parameter, which is only used in clarity mode.
         //
-        //  NOTE #1:
-        //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
-        //
-        //          `Gem.Beryl.qualify_constant` is used to "qualify" a constant, by making sure it is ready to be
-        //          used and is adequate (i.e.: "qualified") for the task.
-        //
-        //  NOTE #2:
-        //      Meaning of "qualify" - a verb (used with object) meaning:
-        //
-        //          To provide, with attributes neccessary for a task ...
-        //
-        //          "To qualify oneself for a job"
-        //
-        //      See: https://www.vocabulary.com/dictionary/qualify
-        //           (Explains the two meaning's of "qualify", we are using the second meaning of "qualify")
-        //
-        //      See also: http://www.dictionary.com/browse/qualify
-        //
-        //      See also: https://www.merriam-webster.com/dictionary/qualify/
-        //
-        if (clarity) {
-            Gem.Beryl.method(
-                'qualify_constant',
-                (
-                      'Qualify a global Gem constant.\n'
-                    + '\n'
-                    + 'The `qualifier` argument is a function that returns the value of the constant.'
-                    + '\n'
-                    + 'Also in clarity mode adds an explanation of what the constant does.'
-                ),
-                function Gem__Beryl__qualify_constant(who, $what, qualifier) {
-                    //  Qualify a global Gem variable.
-                    //
-                    //  The `qualifier` argument is a function that returns the value of the constant.
-                    //
-                    //  Also in clarity mode adds an explanation of what the variable does.
+        Gem.Beryl.method(
+            'qualify_constant',
+            null,
+            function Gem__Beryl__qualify_constant(who, $what, qualifier) {
+                //  Qualify a global Gem constant.
+                //
+                //  The `qualifier` argument is a function that returns the value of the constant.
+                //
+                //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                    if (arguments.length !== 3) {
-                        throw_wrong_arguments('Gem.Beryl.qualify_constant', 3, arguments.length)
-                    }
-
-                    var middle         = this.$who.replace('.', '__')
-                    var qualifier_name = 'qualifier__' + middle + '__' + who
-
-                    if (typeof qualifier !== 'function' || qualifier_name !== qualifier.name) {
-                        throw_type_error(
-                                (
-                                      'qualifier must be a function named `' + qualifier_name + '`'
-                                    + '; was instead'
-                                ),
-                                qualifier//,
-                            )
-                    }
-
-                    var constant = qualifier()
-
-                    if (typeof constant === 'undefined' || typeof constant === 'function') {
-                        throw_type_error(
-                                (
-                                      'qualifier `' + qualifier_name + '` did not return a constant'
-                                    + '; instead returned'
-                                ),
-                                value//,
-                            )
-                    }
-
-                    visible_constant_attribute.value = constant
-                    define_property(this, who, visible_constant_attribute)
-
-                    if (7) {
-                        visible_constant_attribute.value = $what
-                        define_property(this, who + '$', visible_constant_attribute)
-                    }
-
-                    delete visible_constant_attribute.value
-                }
-            )
-        } else {
-            Gem.Beryl.method(
-                'qualify_constant',
-                null,
-                function Gem__Beryl__qualify_constant(who, $what, qualifier) {
-                    //  Qualify a global Gem constant.
-                    //
-                    //  The `qualifier` argument is a function that returns the value of the constant.
-                    //
-                    //  Ignores the `$what` parameter, which is only used in clarity mode.
-
-                    visible_constant_attribute.value = qualifier()
-                    define_property(this, who, visible_constant_attribute)
-                    delete visible_constant_attribute.value
-                }
-            )
-        }
+                visible_constant_attribute.value = qualifier()
+                define_property(this, who, visible_constant_attribute)
+                delete visible_constant_attribute.value
+            }
+        )
 
 
         if (clarity) {
-            //
-            //  Gem.Beryl.throw_must_be_number
-            //      Throw a type error when a parameter is not a number.
-            //
+            var murky$qualify_constant = Gem.Beryl.qualify_constant
+
             Gem.Beryl.method(
-                'throw_must_be_number',
-                'Throw a type error when a parameter is not a number.',
-                throw_must_be_number//,
-            )
+                'qualify_constant',
+                null, 
+                function Gem__Beryl__qualify_constant(who, $what, qualifier) {
+                    //  Brief version --  See "Gem/Beryl/Boot2_Clarity.js" for the real version.
 
+                    murky$qualify_constant.call(this, who, $what, qualifier)
 
-            //
-            //  Gem.Beryl.throw_must_be_string
-            //      Throw a type error when a parameter is not a string.
-            //
-            Gem.Beryl.method(
-                'throw_must_be_string',
-                'Throw a type error when a parameter is not a string.',
-                throw_must_be_string//,
-            )
-
-
-            //
-            //  Gem.Beryl.throw_type_error
-            //      Throw a type error (usually used when a method received invalid parameters).
-            //
-            Gem.Beryl.method(
-                'throw_type_error',
-                'Throw a type error (usually used when a method received invalid parameters).',
-                throw_type_error//,
-            )
-
-
-            //
-            //  Gem.Beryl.throw_wrong_arguments
-            //      Throw a type error when a method receives wrong number of arguments.
-            //
-            Gem.Beryl.method(
-                'throw_wrong_arguments',
-                'Throw a type error when a method receives wrong number of arguments.',
-                throw_wrong_arguments//,
+                    visible_constant_attribute.value = $what
+                    define_property(this, who + '$', visible_constant_attribute)
+                    delete visible_constant_attribute.value
+                }
             )
         }
 
@@ -697,8 +591,7 @@ Gem.Beryl.execute(
         //
         var major = NaN
         var minor = NaN
-
-        var version = (('process'  in window) && ('versions' in process) && (process.versions['node-webkit']))
+        var version = (('process' in window) && ('versions' in process) && (process.versions['node-webkit']))
 
         if (typeof version == 'string') {
             var version_list = version.split('.')
@@ -739,7 +632,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     Gem.NodeWebKit.codify_method(
         'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower).',
-        function codifier__Gem__NodeWebKit__show_developer_tools() {
+        function codifier$Gem__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
 
             return function Gem__NodeWebKit__show_developer_tools() {
@@ -753,7 +646,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     Gem.NodeWebKit.codify_method(
         'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher).',
-        function codifier__Gem__NodeWebKit__show_developer_tools() {
+        function codifier$Gem__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
 
             return function Gem__NodeWebKit__show_developer_tools() {
@@ -835,7 +728,7 @@ if (Gem.Script.handle_errors) {
         Gem.Script.codify_method(
             'source_attribute',
             'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
-            function codifier__Gem__Script__source_attribute() {
+            function codifier$Gem__Script__source_attribute() {
                 var origin_slash = location.origin + '/'
 
 
@@ -864,7 +757,7 @@ if (Gem.Script.handle_errors) {
     Gem.Script.codify_method(
         'error',
         'Show an error (either with alert or console.error).',
-        function codifier__Gem__Script__error() {
+        function codifier$Gem__Script__error() {
             var show_developer_tools = Gem.NodeWebKit.show_developer_tools
 
 
@@ -878,21 +771,16 @@ if (Gem.Script.handle_errors) {
             }
 
 
-            var console_error = console.error
-
-
             if ('bind' in console.error) {
-                var console_error_call = console.error.bind(console)
-
-                return function Gem__Script__error(message) {
-                    console_error_call(message)
-                    show_developer_tools()
+                var console_error = console.error.bind(console)
+            } else {
+                var console_error = function OLD_WAY__console_error(message) {
+                    console.error(message)
                 }
             }
 
-
             return function Gem__Script__error(message) {
-                console_error.call(console, message)
+                console_error(message)
                 show_developer_tools()
             }
         }//,
@@ -908,7 +796,7 @@ if (Gem.Script.handle_errors) {
     Gem.Script.codify_method(
         'handle_global_error',
         'Handle errors when executing a `<script>` tag.',
-        function codifier__Gem__Script__handle_global_error() {
+        function codifier$Gem__Script__handle_global_error() {
             //
             //  Imports
             //
@@ -950,7 +838,7 @@ if (Gem.Script.handle_errors) {
     Gem.Script.codify_method(
         'handle_event',
         'Handle events of `<script>` tags.',
-        function codifier__Gem__Script__handle_event() {
+        function codifier$Gem__Script__handle_event() {
             //
             //  NOTE:
             //      There is no way to get the error message, if there is one, when attempting to load
@@ -1003,7 +891,7 @@ if (Gem.Script.handle_errors) {
 Gem.Script.qualify_constant(
     'gem_scripts',
     '`div#gem_scripts` is the parent of all Gem `<script>` tags and is inserted into `document.head`.',
-    function qualifier__Gem__Script__gem_scripts() {
+    function qualifier$Gem__Script__gem_scripts() {
         var id          = 'gem_scripts'
         var gem_scripts = document.getElementById(id)
 
@@ -1043,12 +931,9 @@ Gem.Script.codify_method(
         + 'This routine can be called multiple times:\n'
         + '\n'
         + '    1.  Here;\n'
-        + '    2.  Again, in, Clarity mode;\n'
-        + '    3.  Again, in Clarity mode, after `Gem` is replaced.'
+        + '    2.  Again, in Clarity mode, after global variable `Gem` is replaced.'
     ),
-    function codifier__Gem__Script__codify_method_load() {
-        debugger
-
+    function codifier$Gem__Script__codify_method_load() {
         //
         //  Imports
         //
@@ -1089,29 +974,33 @@ Gem.Script.codify_method(
         }
 
 
-        return function Gem__Script__codify_method_load() {
-            //
-            //  Gem.Script.codify_load
-            //      Codify method `Gem.Script.load`.
-            //
-            //      This routine can be called multiple times:
-            //
-            //          1.  Here;
-            //          2.  Again, in clarity mode in 'Gem/Beryl/Boot2_Clarity.js' (REALLY -- VERIFY THIS?)
-            //          3.  Again, in clarity mode, after `Gem` is replaced.
-            //
-            Gem.Beryl.codify_method.call(               //  `Gem.Script.codify_method` might not exist; so use `.call`
-                Gem.Script,
-                'load',
-                'Load JavaScript code using a `<script>` tag.',
-                function codifier__Gem__Script__load() {
-                    //
-                    //  Grab "newest" version of `Gem.Script.gem_scripts` (Needed if `Gem` has changed).
-                    //
-                    var script_map = Gem.Script.script_map
+        //
+        //  Gem.Script.codify_load
+        //      Codify method `Gem.Script.load`.
+        //
+        //      This routine can be called multiple times:
+        //
+        //          1.  Here;
+        //          2.  Again, in clarity mode in 'Gem/Beryl/Boot2_Clarity.js' (REALLY -- VERIFY THIS?)
+        //          3.  Again, in clarity mode, after `Gem` is replaced.
+        //
+        if (handle_errors) {
+            return function Gem__Script__codify_method_load() {
+                Gem.Beryl.codify_method.call(           //  `Gem.Script.codify_method` might not exist; so use `.call`
+                    Gem.Script,
+                    'load',
+                    (
+                          'Load JavaScript code using a `<script>` tag.\n'
+                        + '(Version for a modern browser).'
+                    ),
+                    function codifier$Gem__Script__load() {
+                        //
+                        //  Grab "newest" version of `Gem.Script.gem_scripts`
+                        //  (Needed if global variable `Gem` has changed in clarity mode).
+                        //
+                        var script_map = Gem.Script.script_map
 
 
-                    if (handle_errors) {
                         //
                         //  Gem.Script.load
                         //      Load JavaScript code using a `<script>` tag.
@@ -1153,6 +1042,21 @@ Gem.Script.codify_method(
                             append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
                         }
                     }
+                )
+            }
+        }
+
+
+        return function Gem__Script__codify_method_load() {
+            Gem.Beryl.codify_method.call(
+                Gem.Script,
+                'load',
+                (
+                      'Load JavaScript code using a `<script>` tag.\n'
+                    + '(NO ERROR HANDLING VERSION -- for an ancient browser).'
+                ),
+                function codifier$Gem__Script__load() {
+                    var script_map = Gem.Script.script_map      //  See comment above on Grab "newest" ...
 
 
                     //
@@ -1198,56 +1102,25 @@ Gem.Script.codify_method(
 
 
 //
-//  Gem.Script.load
-//      Load JavaScript code using a `<script>` tag.
+//  Execute a codify of:
+//      Gem.Script.load
+//          Load JavaScript code using a `<script>` tag.
+//
+//  NOTE:
+//      Also does cleanup of `Gem.Script.codify_method_load` if not in clarity mode.
 //
 Gem.Beryl.execute(
-    function execute$execute_now__AND__push_to_execute_later$codify_method_load() {
-        debugger
-
-
+    function execute$execute_and_cleanup$codify_method_load() {
         //  Imports
         var clarity            = Gem.Configuration.clarity
         var codify_method_load = Gem.Script.codify_method_load
 
-
         codify_method_load()                                //  Call first time here ...
 
-
         if (clarity) {
-            //
-            //  Imports
-            //
-            var clarity_mode$global_variable_Gem_changed = Gem._.Beryl.clarity_mode$global_variable_Gem_changed
-
-
-            //
-            //  Callback to recodify `Gem.Script.load` (and also delete `Gem.Script.codify_method_load`
-            //
-            function callback$recodify$Gem__Script__load() {
-                codify_method_load()
-
-                //
-                //  Delayed deltion (instead of now):
-                //      This allows the user to 'introspect' Gem.Script.codify_method_load until it is
-                //      used & deleted.
-                //
-                //  NOTE:
-                //      We have to use the global `Gem` here, as we want to delete it from the currently
-                //      modified `Gem`.
-                //
-                delete window.Gem.Script.codify_method_load
-            }
-
-            //
-            //  Push the callback to be executed when global variable `Gem` is changed.
-            //
-            //                                              //  ... Call second time later.
-            //
-            clarity_mode$global_variable_Gem_changed.push(callback$recodify$Gem__Script__load)
-
+            //  Clarity mode will call `codify_method_load` again later.
         } else {
-            delete Gem.Script.codify_method_load
+            delete Gem.Script.codify_method_load            //  Not clarity mode -- don't need to keep this around
         }
     }
 )

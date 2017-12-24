@@ -21,7 +21,7 @@ Gem.Beryl.codify_method(
         + '\n'
         + 'Also in clarity mode adds an explanation of what the value does.'
     ),
-    function codifier__Gem__Beryl__mutable() {
+    function codifier$Gem__Beryl__mutable() {
         //
         //  Imports
         //
@@ -111,7 +111,7 @@ Gem.Beryl.codify_method(
         + '\n'
         + 'Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.'
     ),
-    function codifier__Gem__Beryl__codify_bound_method() {
+    function codifier$Gem__Beryl__codify_bound_method() {
         //
         //  Imports
         //
@@ -149,7 +149,7 @@ Gem.Beryl.codify_method(
                     throw_type_error('parameter `$which` must be a string; was instead', $which)
                 }
 
-                var codifier_name = 'codifier__' + this.$who.replace('.', '__') + '__' + who
+                var codifier_name = 'codifier$' + this.$who.replace('.', '__') + '__' + who
 
                 if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
                     throw_type_error(
@@ -293,7 +293,7 @@ if (Gem.Beryl.has_bind) {
         Gem.Beryl.codify_method(
             'bind',
             'Create a new function with a bound `this` value (and optionally other bound arguments).`',
-            function codifier__Gem__Beryl__bind() {
+            function codifier$Gem__Beryl__bind() {
                 //
                 //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
                 //  to the `this` argument of `Array.prototype.slice`:
@@ -322,7 +322,7 @@ if (Gem.Beryl.has_bind) {
         //
         //  Backwards compatiable implementation emulating `Function.prototype.bind`
         //
-        function codifier__Gem__Beryl__bind() {
+        function codifier$Gem__Beryl__bind() {
             //
             //  NOTE #1:
             //      The use of 'slice' is as recommended at:
@@ -450,7 +450,7 @@ if (Gem.Beryl.has_bind) {
         'bind_create_Object',
         'A factory of factories.  The created factories create objects.',
         'A binding of `Function.prototype.bind` to `Function.prototype.bind` (i.e.: a binding of `bind` to `bind).',
-        function codifier__Gem__Beryl__bind_create_Object() {
+        function codifier$Gem__Beryl__bind_create_Object() {
             //
             //  Imports
             //
@@ -745,7 +745,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             + '\n'
             + 'The "class name" comes from the name of parameter `named_constructor` (i.e.: `named_constructor.name`).'
         ),
-        function codifier__Gem__Beryl__produce_create_Box() {
+        function codifier$Gem__Beryl__produce_create_Box() {
             //
             //  Imports
             //
@@ -849,7 +849,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             + '\n'
             + 'In clarity mode, instead the created factories each creates a Box -- an Object with a "class name".'
         ),
-        function codifier__Gem__Beryl__produce_create_Box() {
+        function codifier$Gem__Beryl__produce_create_Box() {
             var create_AnonymousBox = Gem.Beryl.bind_create_Object(null)
 
             return function Gem__Beryl__produce_create_Box(/*named_constructor*/) {
@@ -873,7 +873,7 @@ Gem.Beryl.codify_bound_method(
     'create_Box',
     'Create an object with a "class name" of "Box" in Developer Tools.',
     'A binding of `create_Object` to `Box` (i.e.: A binding of `Object.create` to `Box`).',
-    function codifier__Gem__Beryl__create_Box() {
+    function codifier$Gem__Beryl__create_Box() {
         function Box() {
             //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
             //  of an instance using this prototype as 'Box'
@@ -951,7 +951,7 @@ Gem.Beryl.codify_method(
         + '\n'
         + 'This makes it easier to examine the object in Developer Tools with less "junk".'
     ),
-    function codifier__Gem__Beryl__deep_copy_with_adjustments() {
+    function codifier$Gem__Beryl__deep_copy_with_adjustments() {
         //  Create a deep copy of an object -- with various adjustments
         //
         //  Adjustments:
