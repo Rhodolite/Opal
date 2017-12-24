@@ -11,7 +11,7 @@
 //  var watching       = 'js/plugins/Silver.js'
 //  var watching       = 'js/plugins/Jasper.js'
 //  var watching       = 'js/plugins/Gem.js'
-    var watching_2     = 'Gem/Beryl/Boot.js'
+    var watching_2     = 'Gem/Beryl/Boot2_Clarity.js'
 
     "use strict"
 

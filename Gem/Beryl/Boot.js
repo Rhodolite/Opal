@@ -9,20 +9,19 @@ Gem.NodeWebKit.show_developer_tools()
 
 
 //
-//  Gem.mutable:
+//  Gem.Beryl.mutable:
 //      Initialize a global Gem mutable value.
 //
 //      Also in clarity mode adds an explanation of what the mutable value does.
 //
-Gem.Beryl.codify_method.call(
-    Gem,
+Gem.Beryl.codify_method(
     'mutable',
     (
           'Initialize a global Gem mutable value.\n'
         + '\n'
         + 'Also in clarity mode adds an explanation of what the value does.'
     ),
-    function codifier__Gem__mutable() {
+    function codifier__Gem__Beryl__mutable() {
         //
         //  Imports
         //
@@ -55,7 +54,7 @@ Gem.Beryl.codify_method.call(
 
 
         if (clarity) {
-            return function Gem__mutable(who, $what, value) {
+            return function Gem__Beryl__mutable(who, $what, value) {
                 //  Initialize a global Gem mutable value.
                 //
                 //  Also in clarity mode adds an explanation of what the mutable value does.
@@ -80,7 +79,7 @@ Gem.Beryl.codify_method.call(
         }
 
 
-        return function Gem__mutable(who, $what, value) {
+        return function Gem__Beryl__mutable(who, $what, value) {
             //  Initialize a global Gem mutable value.
             //
             //  Ignores the `$what` parameter, which is only used in clarity mode.
@@ -94,7 +93,7 @@ Gem.Beryl.codify_method.call(
 
 
 //
-//  Gem.codify_bound_method:
+//  Gem.Beryl.codify_bound_method:
 //      Codify a global Gem bound method.
 //
 //      Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.
@@ -105,15 +104,14 @@ Gem.Beryl.codify_method.call(
 //
 //      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
 //
-Gem.Beryl.codify_method.call(
-    Gem,
+Gem.Beryl.codify_method(
     'codify_bound_method',
     (
           'Codify a global Gem bound method.\n'
         + '\n'
         + 'Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.'
     ),
-    function codifier__Gem__codify_bound_method() {
+    function codifier__Gem__Beryl__codify_bound_method() {
         //
         //  Imports
         //
@@ -130,13 +128,13 @@ Gem.Beryl.codify_method.call(
         //  Implementation
         //
         if (clarity) {
-            return function Gem__codify_bound_method(who, $what, $which, codifier) {
+            return function Gem__Beryl__codify_bound_method(who, $what, $which, codifier) {
                 //  Codify a global Gem bound method.
                 //
                 //  Also in clarity mode adds a `.$who` and `.$what` attributes to the bound method.
 
                 if (arguments.length !== 4) {
-                    throw_wrong_arguments('Gem.codify_bound_method', 4, arguments.length)
+                    throw_wrong_arguments('Gem.Beryl.codify_bound_method', 4, arguments.length)
                 }
 
                 if (typeof who !== 'string') {
@@ -228,7 +226,7 @@ Gem.Beryl.codify_method.call(
         //      (Although this method has an extra `$which` parameter, so we can't substitute `Gem.codify_constant`
         //      for this method).
         //
-        return function Gem__codify_bound_method(who, $what, $which, codifier) {
+        return function Gem__Beryl__codify_bound_method(who, $what, $which, codifier) {
             //  Codify a global Gem bound method.
             //
             //  Ignores the `$what` & `$which` parameters, which are only used in clarity mode.
@@ -238,14 +236,6 @@ Gem.Beryl.codify_method.call(
             delete visible_constant_attribute.value
         }
     }//,
-)
-
-
-Gem.execute(
-    function execute$setup__Gem_Beryl() {
-        Gem.Beryl.codify_bound_method = Gem.codify_bound_method
-        Gem.Beryl.mutable             = Gem.mutable
-    }
 )
 
 
@@ -647,7 +637,7 @@ if (Gem.Beryl.has_bind) {
 }
 
 
-Gem.execute(
+Gem.Beryl.execute(
     function execute$codify__Gem__Beryl__create_BoxOfPropertyDescriptors() {
         //
         //  Imports
@@ -912,7 +902,7 @@ Gem.Beryl.codify_bound_method(
 //      are named `.$$who` and `.$$what` to avoid conflicts.
 //
 if (Gem.Configuration.clarity) {
-    Gem.execute(
+    Gem.Beryl.execute(
         function execute$Gem__add_clarity() {
             var create_Box = Gem.Beryl.create_Box
 
@@ -1081,7 +1071,7 @@ Gem.Beryl.codify_method(
 
 
 if (Gem.Configuration.clarity) {
-    Gem.execute(
+    Gem.Beryl.execute(
         function execute$deep_copy__Gem__without_object_prototypes() {
             window.Gem = Gem.Beryl.deep_copy_with_adjustments(Gem)
 
@@ -1100,7 +1090,7 @@ if (Gem.Configuration.clarity) {
 }
 
 
-Gem.execute(
+Gem.Beryl.execute(
     function execute$Gem__clear__and__log_Gem() {
         //console.clear()
         console.log('%o', Gem)

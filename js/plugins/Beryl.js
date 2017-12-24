@@ -20,6 +20,19 @@ window.Gem = {
     },
 
     Beryl : {                                               //  Exports of the Beryl Module.
+        //
+        //  Gem.Beryl.execute:
+        //      Execute code inside a function (to allow local variables)
+        //
+        //  NOTE:
+        //      The reason the function is named `Gem__Beryl__execute` (meaning `Gem.Beryl.execute`) is so that it
+        //      shows up in stack traces as the full name `Gem__Beryl__execute` instead of shorter name `execute`
+        //      (this is really really helpful when reading stack traces).
+        //
+        execute : function Gem__Beryl__execute(code) {
+            code()
+        }//,
+
         //  clarity_note          : Function                //      Add a note to a variable or set of variables.
         //  codify_method         : Function                //      Create the code for a method as a closure.
         //  constant              : Function                //      Store a global Gem constant.
@@ -61,22 +74,10 @@ window.Gem = {
 
     _ : {                                                   //  Private members & methods of all Gem modules.
         Beryl : {                                           //      Private members & methods of module Beryl.
-        //  clarity_mode__gem_changed : []//,               //          Callbacks to call when `Gem` is changed.
+        //  clarity_mode$global_variable_Gem_changed : []//,//      Callbacks to call when `Gem` is changed.
         }//,
     },
 
-    //
-    //  Gem.execute:
-    //      Execute code inside a function (to allow local variables)
-    //
-    //  NOTE:
-    //      The reason the function is named `Gem__execute` (meaning `Gem.execute`) is so that it shows
-    //      up in stack traces as the full name `Gem__execute` instead of shorter name `execute`
-    //      (this is really really helpful when reading stack traces).
-    //
-    execute : function Gem__execute(code) {
-        code()
-    }//,
 }
 
 
@@ -85,7 +86,7 @@ window.Gem = {
 //
 //  OLD NOTE: can be executed twice in clarity mode.  (Need this?)
 //
-Gem.execute(
+Gem.Beryl.execute(
     function execute$setup__Gem() {
         //
         //  Imports
@@ -138,8 +139,49 @@ Gem.execute(
             }
 
 
+            var throw_must_be_number = function Gem__Beryl__throw_must_be_number(name, v) {
+                //  Throw a type error when a parameter is not a number.
+
+                if (7) {
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.throw_must_be_number', 2, arguments.length)
+                    }
+
+                    if (typeof name !== 'string') { throw_must_be_string('name', name) }
+                    //  `v` can by any type (though obviously is not a string)
+                }
+
+                throw_type_error('parameter `' + name + '` must be a number; was instead', v)
+            }
+
+
+            var throw_must_be_string = function Gem__Beryl__throw_must_be_string(name, v) {
+                //  Throw a type error when a parameter is not a string.
+
+                if (7) {
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.throw_must_be_string', 2, arguments.length)
+                    }
+
+                    if (typeof name !== 'string') { throw_must_be_string('name', name) }
+                    //  `v` can by any type (though obviously is not a number)
+                }
+
+                throw_type_error('parameter `' + name + '` must be a string; was instead', v)
+            }
+
+
             var throw_type_error = function Gem__Beryl__throw_type_error(prefix, v) {
-                //  Throw a type error (usually used when a function received invalid parameters).
+                //  Throw a type error (usually used when a method received invalid parameters).
+
+                if (7) {
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.throw_type_error', 2, arguments.length)
+                    }
+
+                    if (typeof prefix !== 'string') { throw_must_be_string(prefix, 'prefix') }
+                    //  `v` handled below
+                }
 
                 if (typeof v === 'function') {
                     if (v.name.length) {
@@ -151,7 +193,7 @@ Gem.execute(
                     if (typeof v === 'undefined') {
                         var suffix = ' `undefined`'
                     } else {
-                        var suffix = ' a non function, the value: ' + v.toString()
+                        var suffix = ' the value: ' + v.toString()
                     }
                 }
 
@@ -162,7 +204,17 @@ Gem.execute(
 
 
             var throw_wrong_arguments = function Gem__Beryl__throw_wrong_arguments(name, actual, expected) {
-                //  Throw a type error when a function receives wrong number of arguments.
+                //  Throw a type error when a method receives wrong number of arguments.
+
+                if (7) {
+                    if (arguments.length !== 3) {
+                        throw_wrong_arguments('Gem.Beryl.throw_wrong_arguments', 3, arguments.length)
+                    }
+
+                    if (typeof name     !== 'string') { throw_must_be_string('name',     name)     }
+                    if (typeof actual   !== 'number') { throw_must_be_number('actual',   actual)   }
+                    if (typeof expected !== 'number') { throw_must_be_number('expected', expected) }
+                }
 
                 if (expected === 0) {
                     var takes = 'takes no arguments'
@@ -261,6 +313,10 @@ Gem.execute(
                 function Gem__Beryl__clarity_note(who, $what) {
                     //  Add a note to a variable or set of variables (clarity mode only)
 
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.clarity_note', 2, arguments.length)
+                    }
+
                     visible_constant_attribute.value = $what
                     define_property(this, who + '$NOTE', visible_constant_attribute)
                     delete visible_constant_attribute.value
@@ -299,6 +355,10 @@ Gem.execute(
                     var middle        = this.$who.replace('.', '__')
                     var codifier_name = 'codifier__' + middle + '__' + who
                     var method_name   =                middle + '__' + who
+
+                    if (arguments.length !== 3) {
+                        throw_wrong_arguments('Gem.Beryl.codify_method', 3, arguments.length)
+                    }
 
                     if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
                         throw_type_error(
@@ -372,6 +432,10 @@ Gem.execute(
                     //  Store a global Gem constant.
                     //
                     //  Also in clarity mode adds an explanation of what the constant does.
+
+                    if (arguments.length !== 3) {
+                        throw_wrong_arguments('Gem.Beryl.constant', 3, arguments.length)
+                    }
 
                     if (typeof constant === 'undefined' || typeof constant === 'function') {
                         throw_type_error(
@@ -457,6 +521,10 @@ Gem.execute(
                     //
                     //  Also in clarity mode adds an explanation of what the variable does.
 
+                    if (arguments.length !== 3) {
+                        throw_wrong_arguments('Gem.Beryl.qualify_constant', 3, arguments.length)
+                    }
+
                     var middle         = this.$who.replace('.', '__')
                     var qualifier_name = 'qualifier__' + middle + '__' + who
 
@@ -511,27 +579,48 @@ Gem.execute(
             )
         }
 
+
         if (clarity) {
             //
+            //  Gem.Beryl.throw_must_be_number
+            //      Throw a type error when a parameter is not a number.
+            //
+            Gem.Beryl.method(
+                'throw_must_be_number',
+                'Throw a type error when a parameter is not a number.',
+                throw_must_be_number//,
+            )
+
+
+            //
+            //  Gem.Beryl.throw_must_be_string
+            //      Throw a type error when a parameter is not a string.
+            //
+            Gem.Beryl.method(
+                'throw_must_be_string',
+                'Throw a type error when a parameter is not a string.',
+                throw_must_be_string//,
+            )
+
+
+            //
             //  Gem.Beryl.throw_type_error
-            //      Throw a type error (usually used when a function received invalid parameters).
+            //      Throw a type error (usually used when a method received invalid parameters).
             //
             Gem.Beryl.method(
                 'throw_type_error',
-                'Throw a type error (usually used when a function received invalid parameters).',
+                'Throw a type error (usually used when a method received invalid parameters).',
                 throw_type_error//,
             )
-        }
 
 
-        if (clarity) {
             //
             //  Gem.Beryl.throw_wrong_arguments
-            //      Throw a type error when a function receives wrong number of arguments.
+            //      Throw a type error when a method receives wrong number of arguments.
             //
             Gem.Beryl.method(
                 'throw_wrong_arguments',
-                'Throw a type error when a function receives wrong number of arguments.',
+                'Throw a type error when a method receives wrong number of arguments.',
                 throw_wrong_arguments//,
             )
         }
@@ -553,7 +642,7 @@ Gem.execute(
 //
 //  Copy - This is the inverse of `execute$cleanup__Gem_nested_methods` below
 //
-Gem.execute(
+Gem.Beryl.execute(
     function execute$copy__Gem_nested_methods() {
         var _Beryl     = Gem._.Beryl
         var Beryl      = Gem.Beryl
@@ -581,7 +670,7 @@ Gem.execute(
 //
 if (Gem.Configuration.clarity) {
     Gem._.Beryl.constant(
-        'clarity_mode__gem_changed',
+        'clarity_mode$global_variable_Gem_changed',
         "Array of callback's when `Gem` is changed (clarity mode only).",
         []//,
     )
@@ -595,7 +684,7 @@ if (Gem.Configuration.clarity) {
 //  NOTE:
 //      If not using nw.js, then both `Gem.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
 //
-Gem.execute(
+Gem.Beryl.execute(
     function execute$qualify__Gem__NodeWebKit__version() {
         //
         //  Imports
@@ -937,149 +1026,228 @@ Gem.Script.qualify_constant(
 
 
 //
-//  Gem.Script.load
-//      Load JavaScript code using a `<script>` tag.
+//  Gem.Script.codify_load
+//      Codify method `Gem.Script.load`.
 //
-//  NOTE:
-//      Annoyingly enough events on `<script>` tags do not bubble on purpose.
+//      This routine can be called multiple times:
 //
-//      `<script>` tags fire "simple events" which according to section 7.1.5.3 of
-//      https://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event means:
+//          1.  Here;
+//          2.  Again, in clarity mode in 'Gem/Beryl/Boot2_Clarity.js' (REALLY -- VERIFY THIS?)
+//          3.  Again, in clarity mode, after `Gem` is replaced.
 //
-//          "Firing a simple event named e means that a trusted event with the name e, which does not bubble"
-//
-//      Hence we have to set the 'abort', 'error', & 'load' events on each individual `<script>` tag.
-//
-Gem.execute(
-    function execute$codify__Gem__Script__load() {
+Gem.Script.codify_method(
+    'codify_method_load',
+    (
+          'Codify method `Gem.Script.load`.\n',
+        + '\n'
+        + 'This routine can be called multiple times:\n'
+        + '\n'
+        + '    1.  Here;\n'
+        + '    2.  Again, in, Clarity mode;\n'
+        + '    3.  Again, in Clarity mode, after `Gem` is replaced.'
+    ),
+    function codifier__Gem__Script__codify_method_load() {
+        debugger
+
         //
-        //  NOTE:
-        //      `Gem.Script.event_list` is deleted later in this file; so make sure to grab a copy now, so
-        //      it is available, later, if `codifier__Gem__Script__load` is called a second time
+        //  Imports
         //
+        var gem_scripts       = Gem.Script.gem_scripts
+        var handle_errors     = Gem.Script.handle_errors
         var script_event_list = Gem.Script.event_list
+//      var script_map        = Gem.Script.script_map       //  Not valid here -- *MUST* be done below
+
+        if (handle_errors) {
+            var script_handle_event = Gem.Script.handle_event
+        }
 
 
-        function codifier__Gem__Script__load() {
-            //
-            //  Imports
-            //
-            if ('bind' in document.createElement) {
-                //
-                //  New way: Creates a `<script>` tag
-                //
-                var create_script_tag = document.createElement.bind(document, 'script')
-            } else {
-                //
-                //  Old way: Creates a `<script>` tag
-                //
-                var create_script_tag = function OLD_WAY__create_script_tag() {
-                    return document.createElement('script')
-                }
-            }
-
-
-            var gem_scripts = Gem.Script.gem_scripts
-
-
-            if ('bind' in gem_scripts.appendChild) {
-                var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
-            } else {
-                var append_child = function OLD_WAY__append_child(tag) {
-                    gem_scripts.appendChild(tag)                       //  Old way: Append to `gem_scripts`
-                }
-            }
-
-
-            var script_map = Gem.Script.script_map
-
-
-            if (Gem.Script.handle_errors) {
-                //
-                //  NOTE:
-                //      We have tested above that this is modern browser that supports both `.setAttribute` &
-                //      `.addEventListener`.
-                //
-                var script_handle_event = Gem.Script.handle_event
-
-
-                return function Gem__Script__load(path) {
-                    //  Load JavaScript code using a `<script>` tag.
-
-                    var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
-
-                    tag.setAttribute('src', path)                       //  Modify to `<script src='path'></script>`
-
-                    //
-                    //  Handle script events 'abort', 'error', & 'load'
-                    //
-                    for (var i = 0; i < script_event_list.length; i ++) {
-                        var type = script_event_list[i]
-
-                        tag.addEventListener(type, script_handle_event)
-                    }
-
-                    append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
-                }
-            }
-
-
-            //
-            //  NOTE:
-            //      This is not a modern browser.  If there is no 'AddEventListener' we could do:
-            //
-            //          tag.onabort = handle_event
-            //          tag.onerror = handle_event              //  Alert user if any error happens (alternate method)
-            //          tag.onload  = handle_event
-            //
-            //      However, all modern browsers have an 'addEventListener', no need to be backwards compatiable
-            //      with super super old browsers.
-            //
-            //      More importantly, we can't test this code -- untested code should not be inplemented.
-            //
-            //  NOTE #2:
-            //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test for it.
-            //
-            return function Gem__Script__load(path) {
-                //  Load JavaScript code using a `<script>` tag.
-
-                var tag = script_map[path] = create_script_tag()
-
-                if ('setAttribute' in tag) {                //  Is this a modern browser?
-                    tag.setAttribute('src', path)           //      New way: Modify to `<script src='path`></script>`
-                } else {                                    //  Ancient Browser:
-                    tag.src = path                          //      Old way: Modify to `<script src='path'></script>`
-                }
-
-                append_child(tag)                           //  Attempt to load 'path' via the `<script>` tag.
+        //
+        //  Closures
+        //
+        if ('bind' in gem_scripts.appendChild) {
+            var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
+        } else {
+            var append_child = function OLD_WAY__append_child(tag) {
+                gem_scripts.appendChild(tag)                       //  Old way: Append to `gem_scripts`
             }
         }
 
 
-        Gem.Script.codify_method(
-            'load',
-            'Load JavaScript code using a `<script>` tag.',
-            codifier__Gem__Script__load//,
-        )
+        if ('bind' in document.createElement) {
+            //
+            //  New way: Creates a `<script>` tag
+            //
+            var create_script_tag = document.createElement.bind(document, 'script')
+        } else {
+            //
+            //  Old way: Creates a `<script>` tag
+            //
+            var create_script_tag = function OLD_WAY__create_script_tag() {
+                return document.createElement('script')
+            }
+        }
 
 
-        if (Gem.Configuration.clarity) {
+        return function Gem__Script__codify_method_load() {
             //
-            //  Save callback to recalculate `Gem.Script.load`
+            //  Gem.Script.codify_load
+            //      Codify method `Gem.Script.load`.
             //
-            Gem._.Beryl.clarity_mode__gem_changed.push(
-                function recodify__Gem__Script__load() {
+            //      This routine can be called multiple times:
+            //
+            //          1.  Here;
+            //          2.  Again, in clarity mode in 'Gem/Beryl/Boot2_Clarity.js' (REALLY -- VERIFY THIS?)
+            //          3.  Again, in clarity mode, after `Gem` is replaced.
+            //
+            Gem.Beryl.codify_method.call(               //  `Gem.Script.codify_method` might not exist; so use `.call`
+                Gem.Script,
+                'load',
+                'Load JavaScript code using a `<script>` tag.',
+                function codifier__Gem__Script__load() {
                     //
-                    //  Have to use `.call` here, since `Gem.Script.codify_method` has been deleted ...
+                    //  Grab "newest" version of `Gem.Script.gem_scripts` (Needed if `Gem` has changed).
                     //
-                    Gem.Beryl.codify_method.call(
-                        Gem.Script,
-                        'load',
-                        'Load JavaScript code using a `<script>` tag.',
-                        codifier__Gem__Script__load//,
-                    )
-                }//,
+                    var script_map = Gem.Script.script_map
+
+
+                    if (handle_errors) {
+                        //
+                        //  Gem.Script.load
+                        //      Load JavaScript code using a `<script>` tag.
+                        //      (Version for a modern browser).
+                        //
+                        //  NOTE #1:
+                        //      We have tested above that this is modern browser that supports both `.setAttribute` &
+                        //      `.addEventListener`.
+                        //
+                        //  NOTE #2:
+                        //      Annoyingly enough events on `<script>` tags do not bubble on purpose.
+                        //
+                        //      `<script>` tags fire "simple events" which according to section 7.1.5.3 of
+                        //      https://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event means:
+                        //
+                        //          "Firing a simple event named e means that a trusted event with the name e, which
+                        //          does not bubble"
+                        //
+                        //          Hence we have to set the 'abort', 'error', & 'load' events on each individual
+                        //          `<script>` tag.
+                        //
+                        return function Gem__Script__load(path) {
+                            //  Load JavaScript code using a `<script>` tag.
+                            //  (Version for a modern browser).
+
+                            var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
+
+                            tag.setAttribute('src', path)               //  Modify to `<script src='path'></script>`
+
+                            //
+                            //  Handle script events 'abort', 'error', & 'load'
+                            //
+                            for (var i = 0; i < script_event_list.length; i ++) {
+                                var type = script_event_list[i]
+
+                                tag.addEventListener(type, script_handle_event)
+                            }
+
+                            append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
+                        }
+                    }
+
+
+                    //
+                    //  Gem.Script.load:
+                    //      Load JavaScript code using a `<script>` tag
+                    //      (NO ERROR HANDLING VERSION -- for an ancient browser).
+                    //
+                    //  NOTE:
+                    //      This is not a modern browser.  If there is no 'AddEventListener' we could do:
+                    //
+                    //          tag.onabort = handle_event
+                    //          tag.onerror = handle_event      //  Alert user if any error happens (alternate method)
+                    //          tag.onload  = handle_event
+                    //
+                    //      However, all modern browsers have an 'addEventListener', no need to be backwards
+                    //      compatiable with super super old browsers.
+                    //
+                    //      More importantly, we can't test this code -- untested code should not be inplemented.
+                    //
+                    //  NOTE #2:
+                    //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test
+                    //      for it.
+                    //
+                    return function Gem__Script__load(path) {
+                        //  Load JavaScript code using a `<script>` tag
+                        //  (NO ERROR HANDLING VERSION -- for an ancient browser).
+
+                        var tag = script_map[path] = create_script_tag()
+
+                        if ('setAttribute' in tag) {        //  Is this a modern browser?
+                            tag.setAttribute('src', path)   //      New way: Modify to `<script src='path`></script>`
+                        } else {                            //  Ancient Browser:
+                            tag.src = path                  //      Old way: Modify to `<script src='path'></script>`
+                        }
+
+                        append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
+                    }
+                }
             )
+        }
+    }//,
+)
+
+
+//
+//  Gem.Script.load
+//      Load JavaScript code using a `<script>` tag.
+//
+Gem.Beryl.execute(
+    function execute$execute_now__AND__push_to_execute_later$codify_method_load() {
+        debugger
+
+
+        //  Imports
+        var clarity            = Gem.Configuration.clarity
+        var codify_method_load = Gem.Script.codify_method_load
+
+
+        codify_method_load()                                //  Call first time here ...
+
+
+        if (clarity) {
+            //
+            //  Imports
+            //
+            var clarity_mode$global_variable_Gem_changed = Gem._.Beryl.clarity_mode$global_variable_Gem_changed
+
+
+            //
+            //  Callback to recodify `Gem.Script.load` (and also delete `Gem.Script.codify_method_load`
+            //
+            function callback$recodify$Gem__Script__load() {
+                codify_method_load()
+
+                //
+                //  Delayed deltion (instead of now):
+                //      This allows the user to 'introspect' Gem.Script.codify_method_load until it is
+                //      used & deleted.
+                //
+                //  NOTE:
+                //      We have to use the global `Gem` here, as we want to delete it from the currently
+                //      modified `Gem`.
+                //
+                delete window.Gem.Script.codify_method_load
+            }
+
+            //
+            //  Push the callback to be executed when global variable `Gem` is changed.
+            //
+            //                                              //  ... Call second time later.
+            //
+            clarity_mode$global_variable_Gem_changed.push(callback$recodify$Gem__Script__load)
+
+        } else {
+            delete Gem.Script.codify_method_load
         }
     }
 )
@@ -1088,7 +1256,7 @@ Gem.execute(
 //
 //  Cleanup - This is the inverse of `execute$copy__Gem_nested_methods` above
 //
-Gem.execute(
+Gem.Beryl.execute(
     function execute$cleanup__Gem_nested_methods() {
         var _Beryl     = Gem._.Beryl
         var NodeWebKit = Gem.NodeWebKit
@@ -1109,7 +1277,7 @@ Gem.execute(
 )
 
 
-Gem.execute(
+Gem.Beryl.execute(
     function execute$cleanup__Gem__Script__event_list() {
         delete Gem.Configuration.show_alert
         delete Gem.Script       .event_list
@@ -1120,9 +1288,9 @@ Gem.execute(
 //
 //  Load Gem/Beryl/Boot.js
 //
-Gem.execute(
+Gem.Beryl.execute(
     function execute$load_next_script() {
-        Gem.Script.load(Gem.Script.beryl_boot_path)
+        Gem.Script.load('Gem/Beryl/Boot2_Clarity.js')
     }
 )
 
@@ -1137,7 +1305,7 @@ Gem.execute(
 //      file that has been loaded in.
 //
 if (Gem.Configuration.debug) {
-    Gem.execute(
+    Gem.Beryl.execute(
         function execute$reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
             Gem.Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
         }

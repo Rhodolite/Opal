@@ -329,3 +329,5 @@ Gem.Beryl.codify(
         return Gem.Beryl.produce_codify(Gem.Beryl, Gem.$.Beryl)
     }
 )
+        //      `Gem.Script.event_list` is deleted later in this file; so make sure to grab a copy now, so
+        //      it is available, later, if `codifier__Gem__Script__load` is called a second time
