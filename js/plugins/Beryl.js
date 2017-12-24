@@ -12,26 +12,37 @@
 //      Later `Gem` will be replaced with a proper instance of box "TheOnlyGlobalVariableUsedByGem".
 //
 window.Gem = {
-    Configuration : {                                       //  Gem configuration values
-        box_name : true,                                    //      Name 'box' instances 'Box' in Developer Tools.
-        clarity  : true,                                    //      Set Gem clarity mode to true
-        debug    : true,                                    //      Set Gem debug mode to true
+    Configuration : {                                       //  Gem configuration values.
+        box_name   : true,                                  //      Name 'box' instances 'Box' in Developer Tools.
+        clarity    : true,                                  //      Set Gem clarity mode to true.
+        debug      : true,                                  //      Set Gem debug mode to true.
+        show_alert : false,                                 //      [Temporary] Use 'alert' to warn of errors
     },
 
-    NodeWebKit: {                                           //  Node WebKit members & methods
-        //  is_version_012_or_lower   : false               //      True if using nw.js & it's version 0.12 or lower
-        //  is_version_013_or_greater : false               //      True if using nw.js & it's version 0.13 or greater
-        //  show_developer_tools      : Function            //      Show developer tools window
+    Beryl : {                                               //  Exports of the Beryl Module.
+        //  clarity_note          : Function                //      Add a note to a variable or set of variables.
+        //  codify_method         : Function                //      Create the code for a method as a closure.
+        //  constant              : Function                //      Store a global Gem constant.
+        //  method                : Function                //      Define a Gem method.
+        //  qualify_constant      : Function                //      Qualify a global Gem constant.
+        //  throw_type_error      : Function                //      Throw a type error (wrong argument).
+        //  throw_wrong_arguments : Function                //      Throw a type error (wrong number of arguments).
+    },
+
+    NodeWebKit: {                                           //  Node WebKit members & methods.
+        //  is_version_012_or_lower   : false               //      True if using nw.js & it's version 0.12 or lower.
+        //  is_version_013_or_greater : false               //      True if using nw.js & it's version 0.13 or greater.
+        //  show_developer_tools      : Function            //      Show developer tools window.
     },
 
     Script : {                                              //  `<script>` handling
-        beryl_boot_path : 'Gem/Beryl/Boot.js',              //      [Temporary] Module to load the rest of Gem modules
-        event_list      : ['abort', 'error', 'load'],       //      List of `<script>` events to listen for.
+        beryl_boot_path : 'Gem/Beryl/Boot.js',              //      Module to load the rest of Gem modules.
+        event_list      : ['abort', 'error', 'load'],       //      [Temporary] List of `<script>` events to listen for.
 
         //  handle_errors : false,                          //      `true` if handling `<script>` errors.
         //  load          : Function                        //      Load a script using `<script>` tag.
 
-        script_map : {                                      //      Map of all the scripts loaded (or loading)
+        script_map : {                                      //      Map of all the scripts loaded (or loading)>
             //  ['Gem/Beryl/Boot.js'] : `<script>` tag      //          `<script>` tag to load "Gem/Beryl/Boot.js".
         }//,
 
@@ -39,26 +50,20 @@ window.Gem = {
         //  NOTE:
         //      The rest of attributes are only used if `Gem.Script.handle_errors` is `true`.
         //
-        //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag
-        //  handle_event        : Function                  //      Handle events of `<script>` tags
+        //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag>
+        //  handle_event        : Function                  //      Handle events of `<script>` tags>
         //  source_attribute    : Function                  //      Get unmodified `.src` attribute.
     },
 
-    Source : {                                              //  Functions to "hold onto" for Developer Tools
-        //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'
+    Source : {                                              //  Functions to "hold onto" for Developer Tools>
+        //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'>
     },
 
-    _ : {                                                   //  Private members & methods of all Gem modules
-        Beryl : {                                           //      Private members & methods of module Beryl
-        //  clarity_mode__gem_changed : []//,               //          Callbacks to call when `Gem` is changed
+    _ : {                                                   //  Private members & methods of all Gem modules.
+        Beryl : {                                           //      Private members & methods of module Beryl.
+        //  clarity_mode__gem_changed : []//,               //          Callbacks to call when `Gem` is changed.
         }//,
     },
-
-    //
-    //  Gem.clarity_note  : Function                        //  Add a note to a variable or set of variables
-    //  Gem.constant      : Function                        //  Store a global Gem constant.
-    //  Gem.codify_method : Function                        //  Create the code for a method as a closure
-    //
 
     //
     //  Gem.execute:
@@ -72,16 +77,11 @@ window.Gem = {
     execute : function Gem__execute(code) {
         code()
     }//,
-
-    //
-    //  Gem.method           : Function                         //  Define a Gem method.
-    //  Gem.qualify_constant : Function                         //  Qualify a global Gem constant.
-    //
 }
 
 
 //
-//  Gem.clarity_note, Gem.constant, Gem.codify_method, Gem.method, Gem.qualify_constant
+//  Gem.Beryl.{clarity_note,codify_method,constant,method,qualify_constant}
 //
 //  OLD NOTE: can be executed twice in clarity mode.  (Need this?)
 //
@@ -102,12 +102,13 @@ Gem.execute(
         //      Enumerable properties are shown better in Developer Tools (at the top of the list,
         //      and not grayed out).
         //
-        var visible_constant_property = create_Object(
+        var visible_constant_attribute = create_Object(
                 null,
                 {
-                //  configurable : { value : false },   //  Default value, no need to set
-                    enumerable   : { value : true  }//, //  Enumerable proprites are shown better in Developer Tools
-                //  writable     : { value : false }//, //  Default value, no need to set
+                //  configurable : { value : false },       //  Default value, no need to set
+                    configurable : { value : true  },       //  TEMPORARY!
+                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+                //  writable     : { value : false }//,     //  Default value, no need to set
                 }//,
             )
 
@@ -121,25 +122,23 @@ Gem.execute(
             //
             if (7) {
                 function who_what(module, $who, $what) {
-                    visible_constant_property.value = $who
-                    define_property(module, '$who', visible_constant_property)
+                    visible_constant_attribute.value = $who
+                    define_property(module, '$who', visible_constant_attribute)
 
-                    visible_constant_property.value = $what
-                    define_property(module, '$what', visible_constant_property)
+                    visible_constant_attribute.value = $what
+                    define_property(module, '$what', visible_constant_attribute)
 
-                    delete visible_constant_property.value
+                    delete visible_constant_attribute.value
                 }
 
                 who_what(Gem,            'Gem',            'The only global variable used by Gem.')
+                who_what(Gem.Beryl,      'Gem.Beryl',      'Exports of the Beryl module.')
                 who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
                 who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
             }
 
 
-            var Gem__throw_type_error, throw_type_error     //  Both full & short names used ...
-
-
-            Gem__throw_type_error = throw_type_error = function Gem__throw_type_error(prefix, v) {
+            var throw_type_error = function Gem__Beryl__throw_type_error(prefix, v) {
                 //  Throw a type error (usually used when a function received invalid parameters).
 
                 if (typeof v === 'function') {
@@ -160,20 +159,41 @@ Gem.execute(
 
                 throw new Error(message)
             }
+
+
+            var throw_wrong_arguments = function Gem__Beryl__throw_wrong_arguments(name, actual, expected) {
+                //  Throw a type error when a function receives wrong number of arguments.
+
+                if (expected === 0) {
+                    var takes = 'takes no arguments'
+                } else if (expected == 1) {
+                    var takes = 'takes exactly 1 argument'
+                } else {
+                    var takes = 'takes exactly ' + expected.toString() + ' arguments'
+                }
+
+                var message = 'TypeError: function `' + name + '` ' + takes + ' (' + actual.toString() + ' given)'
+
+                throw new Error(message)
+            }
         }
 
 
         //
-        //  Gem.method
+        //  Gem.Beryl.method
         //      Store a Gem Method.
         //
         //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
         //
         if (clarity) {
-            var Gem__method = function Gem__method(who, $what, method) {
+            var method = function Gem__Beryl__method(who, $what, method) {
                 //  Store a Gem Method.
                 //
                 //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
+
+                if (arguments.length !== 3) {
+                    throw_wrong_arguments('Gem.Beryl.method', 3, arguments.length)
+                }
 
                 var method_name = this.$who.replace('.', '__') + '__' + who
 
@@ -187,107 +207,91 @@ Gem.execute(
                         )
                 }
 
-                visible_constant_property.value = method
-                define_property(this, who, visible_constant_property)
+                visible_constant_attribute.value = method
+                define_property(this, who, visible_constant_attribute)
 
                 if (7) {
-                    visible_constant_property.value = this.$who + '.' + who
-                    define_property(method, '$who', visible_constant_property)
+                    visible_constant_attribute.value = this.$who + '.' + who
+                    define_property(method, '$who', visible_constant_attribute)
 
-                    visible_constant_property.value = $what
-                    define_property(method, '$what', visible_constant_property)
+                    visible_constant_attribute.value = $what
+                    define_property(method, '$what', visible_constant_attribute)
                 }
 
-                delete visible_constant_property.value
+                delete visible_constant_attribute.value
             }
+
+
+            //
+            //   Use `method` on itself ...
+            //
+            method.call(
+                Gem.Beryl,
+                'method',
+                (
+                       'Store a Gem Method.\n'
+                     + '\n'
+                     + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the method.'
+                ),
+                method//,
+            )
         } else {
-            var Gem__method = function Gem__method(who, $what, method) {
+            var method = function Gem__Beryl__method(who, $what, method) {
                 //  Store a Gem Method.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                visible_constant_property.value = method
-                define_property(this, who, visible_constant_property)
-                delete visible_constant_property.value
+                visible_constant_attribute.value = method
+                define_property(this, who, visible_constant_attribute)
+                delete visible_constant_attribute.value
             }
+
+            method.call(Gem.Beryl, 'method', null, method)  //   Use `method` on itself ...
         }
 
 
         //
-        //   Use `Gem__method` on itself ...
-        //
-        Gem__method.call(
-            Gem,
-            'method',
-            (
-                clarity
-                    ? (
-                             'Store a Gem Method.\n'
-                           + '\n'
-                           + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the method.'
-                      )
-                    : null
-            ),
-            Gem__method//,
-        )
-
-
-        Gem.NodeWebKit.method = Gem.Script.method = Gem.method
-
-
-        //
-        //  Gem.clarity_note
+        //  Gem.Beryl.clarity_note
         //      Add a note to a variable or set of variables (clarity mode only).
         //
-        //  Copies:
-        //      Gem.NodeWebKit.clarity_note
-        //          Same as Gem.clarity_note, just acting on a different `this`.
-        //
         if (Gem.Configuration.clarity) {
-            Gem.method(
+            Gem.Beryl.method(
                 'clarity_note',
                 'Add a note to a variable or set of variables (clarity mode only).',
-                function Gem__clarity_note(who, $what) {
+                function Gem__Beryl__clarity_note(who, $what) {
                     //  Add a note to a variable or set of variables (clarity mode only)
 
-                    visible_constant_property.value = $what
-                    define_property(this, who + '$NOTE', visible_constant_property)
-                    delete visible_constant_property.value
+                    visible_constant_attribute.value = $what
+                    define_property(this, who + '$NOTE', visible_constant_attribute)
+                    delete visible_constant_attribute.value
                 }
             )
         } else {
-            Gem.method(
+            Gem.Beryl.method(
                 'clarity_note',
                 'Empty function -- nothing to do, not in clarity mode',
-                function Gem__clarity_note(/*who, $what*/) {
+                function Gem__Beryl__clarity_note(/*who, $what*/) {
                     //  Nothing to do, not in clarity mode
                 }
             )
         }
 
-        Gem.NodeWebKit.clarity_note = Gem.clarity_note
-
 
         //
-        //  Gem.codify_method:
+        //  Gem.Beryl.codify_method:
         //      Create the code for a method as a closure to avoid the use of any global variables.
         //
         //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
         //
-        //  Copies:
-        //      Gem.NodeWebKit.codify_method
-        //      Gem.Script    .codify_method
-        //          Same as Gem.codify_method, just acting on a different `this`.
-        //
         if (clarity) {
-            Gem.method(
+            Gem.Beryl.method(
                 'codify_method',
                 (
                       'Create the code for a method as a closure to avoid the use of any global variables.\n'
                     + '\n'
                     + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
                 ),
-                function Gem__codify_method(who, $what, codifier) {
+                function Gem__Beryl__codify_method(who, $what, codifier) {
                     //  Create the code for a method as a closure to avoid the use of any global variables.
                     //
                     //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
@@ -319,55 +323,52 @@ Gem.execute(
                             )
                     }
 
-                    visible_constant_property.value = method
-                    define_property(this, who, visible_constant_property)
+                    visible_constant_attribute.value = method
+                    define_property(this, who, visible_constant_attribute)
 
                     if (7) {
-                        visible_constant_property.value = this.$who + '.' + who
-                        define_property(method, '$who', visible_constant_property)
+                        visible_constant_attribute.value = this.$who + '.' + who
+                        define_property(method, '$who', visible_constant_attribute)
 
-                        visible_constant_property.value = $what
-                        define_property(method, '$what', visible_constant_property)
+                        visible_constant_attribute.value = $what
+                        define_property(method, '$what', visible_constant_attribute)
                     }
 
-                    delete visible_constant_property.value
+                    delete visible_constant_attribute.value
                 }
             )
         } else {
-            Gem.method(
+            Gem.Beryl.method(
                 'codify_method',
                 null,
-                function Gem__codify_method(who, $what, codifier) {
+                function Gem__Beryl__codify_method(who, $what, codifier) {
                     //  Create the code for a method as a closure to avoid the use of any global variables.
                     //
                     //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                    visible_constant_property.value = codifier()
-                    define_property(this, who, visible_constant_property)
-                    delete visible_constant_property.value
+                    visible_constant_attribute.value = codifier()
+                    define_property(this, who, visible_constant_attribute)
+                    delete visible_constant_attribute.value
                 }
             )
         }
 
 
-        Gem.NodeWebKit.codify_method = Gem.Script.codify_method = Gem.codify_method
-
-
         //
-        //  Gem.constant:
+        //  Gem.Beryl.constant:
         //      Store a global Gem constant.
         //
         //      Also in clarity mode adds an explanation of what the constant does.
         //
         if (clarity) {
-            Gem.method(
+            Gem.Beryl.method(
                 'constant',
                 (
                       'Store a global Gem constant.\n'
                     + '\n'
                     + 'Also in clarity mode adds an explanation of what the variable does.'
                 ),
-                function Gem__constant(who, $what, constant) {
+                function Gem__Beryl__constant(who, $what, constant) {
                     //  Store a global Gem constant.
                     //
                     //  Also in clarity mode adds an explanation of what the constant does.
@@ -379,42 +380,40 @@ Gem.execute(
                             )
                     }
 
-                    visible_constant_property.value = constant
-                    define_property(this, who, visible_constant_property)
+                    visible_constant_attribute.value = constant
+                    define_property(this, who, visible_constant_attribute)
 
                     if (7) {
-                        visible_constant_property.value = $what
-                        define_property(this, who + '$', visible_constant_property)
+                        visible_constant_attribute.value = $what
+                        define_property(this, who + '$', visible_constant_attribute)
                     }
 
-                    delete visible_constant_property.value
+                    delete visible_constant_attribute.value
                 }
             )
         } else {
-            Gem.method(
+            Gem.Beryl.method(
                 'constant',
                 (
                       'Store a global Gem constant.\n'
                     + '\n'
                     + 'Ignores the `$what` parameter, which is only used in clarity mode.'
                 ),
-                function Gem__constant(who, $what, constant) {
+                function Gem__Beryl__constant(who, $what, constant) {
                     //  Store a global Gem constant.
                     //
                     //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                    visible_constant_property.value = constant
-                    define_property(this, who, visible_constant_property)
-                    delete visible_constant_property.value
+                    visible_constant_attribute.value = constant
+                    define_property(this, who, visible_constant_attribute)
+                    delete visible_constant_attribute.value
                 }
             )
         }
 
-        Gem.Script.constant = Gem.NodeWebKit.constant = Gem._.Beryl.constant = Gem.constant
-
 
         //
-        //  Gem.qualify_constant:
+        //  Gem.Beryl.qualify_constant:
         //      Qualify a global Gem constant.
         //
         //      The `qualifier` argument is a function that returns the value of the constant.
@@ -424,8 +423,8 @@ Gem.execute(
         //  NOTE #1:
         //      We are using [the less well known secondary] meaning of "qualify", as in the sentence:
         //
-        //          `Gem.qualify_constant` is used to "qualify" a constant, by making sure it is ready to be used and
-        //          is adequate (i.e.: "qualified") for the task.
+        //          `Gem.Beryl.qualify_constant` is used to "qualify" a constant, by making sure it is ready to be
+        //          used and is adequate (i.e.: "qualified") for the task.
         //
         //  NOTE #2:
         //      Meaning of "qualify" - a verb (used with object) meaning:
@@ -441,12 +440,8 @@ Gem.execute(
         //
         //      See also: https://www.merriam-webster.com/dictionary/qualify/
         //
-        //  Copies:
-        //      Gem.Script.qualify_constant
-        //          Same as Gem.qualify_constant, just acting on a different `this`.
-        //
         if (clarity) {
-            Gem.method(
+            Gem.Beryl.method(
                 'qualify_constant',
                 (
                       'Qualify a global Gem constant.\n'
@@ -455,7 +450,7 @@ Gem.execute(
                     + '\n'
                     + 'Also in clarity mode adds an explanation of what the constant does.'
                 ),
-                function Gem__qualify_constant(who, $what, qualifier) {
+                function Gem__Beryl__qualify_constant(who, $what, qualifier) {
                     //  Qualify a global Gem variable.
                     //
                     //  The `qualifier` argument is a function that returns the value of the constant.
@@ -487,61 +482,96 @@ Gem.execute(
                             )
                     }
 
-                    visible_constant_property.value = constant
-                    define_property(this, who, visible_constant_property)
+                    visible_constant_attribute.value = constant
+                    define_property(this, who, visible_constant_attribute)
 
                     if (7) {
-                        visible_constant_property.value = $what
-                        define_property(this, who + '$', visible_constant_property)
+                        visible_constant_attribute.value = $what
+                        define_property(this, who + '$', visible_constant_attribute)
                     }
 
-                    delete visible_constant_property.value
+                    delete visible_constant_attribute.value
                 }
             )
         } else {
-            Gem.method(
+            Gem.Beryl.method(
                 'qualify_constant',
                 null,
-                function Gem__qualify_constant(who, $what, qualifier) {
+                function Gem__Beryl__qualify_constant(who, $what, qualifier) {
                     //  Qualify a global Gem constant.
                     //
                     //  The `qualifier` argument is a function that returns the value of the constant.
                     //
                     //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                    visible_constant_property.value = qualifier()
-                    define_property(this, who, visible_constant_property)
-                    delete visible_constant_property.value
+                    visible_constant_attribute.value = qualifier()
+                    define_property(this, who, visible_constant_attribute)
+                    delete visible_constant_attribute.value
                 }
             )
         }
 
-        Gem.Script.qualify_constant = Gem.qualify_constant
+        if (clarity) {
+            //
+            //  Gem.Beryl.throw_type_error
+            //      Throw a type error (usually used when a function received invalid parameters).
+            //
+            Gem.Beryl.method(
+                'throw_type_error',
+                'Throw a type error (usually used when a function received invalid parameters).',
+                throw_type_error//,
+            )
+        }
 
 
         if (clarity) {
             //
-            //  Gem.throw_type_error
-            //      Throw a type error (usually used when a function received invalid parameters).
+            //  Gem.Beryl.throw_wrong_arguments
+            //      Throw a type error when a function receives wrong number of arguments.
             //
-            Gem.method(
-                'throw_type_error',
-                'Throw a type error (usually used when a function received invalid parameters).',
-                Gem__throw_type_error//,
+            Gem.Beryl.method(
+                'throw_wrong_arguments',
+                'Throw a type error when a function receives wrong number of arguments.',
+                throw_wrong_arguments//,
             )
         }
 
 
         //
-        //  visible_constant_property
+        //  visible_constant_attribute
         //      A property used to create visible (i.e.: enumerable) constant attributes
         //
-        Gem.constant(
-            'visible_constant_property',
+        Gem.Beryl.constant(
+            'visible_constant_attribute',
             'A property used to create visible (i.e.: enumerable) constant attributes.',
-            visible_constant_property//,
+            visible_constant_attribute//,
         )
     }
+)
+
+
+//
+//  Copy - This is the inverse of `execute$cleanup__Gem_nested_methods` below
+//
+Gem.execute(
+    function execute$copy__Gem_nested_methods() {
+        var _Beryl     = Gem._.Beryl
+        var Beryl      = Gem.Beryl
+        var NodeWebKit = Gem.NodeWebKit
+        var Script     = Gem.Script
+
+        _Beryl.constant = Beryl.constant
+
+        NodeWebKit.clarity_note  = Beryl.clarity_note
+        NodeWebKit.codify_method = Beryl.codify_method
+        NodeWebKit.constant      = Beryl.constant
+        NodeWebKit.method        = Beryl.method
+
+        Script.codify_method    = Beryl.codify_method
+        Script.constant         = Beryl.constant
+        Script.method           = Beryl.method
+        Script.qualify_constant = Beryl.qualify_constant
+    }//,
 )
 
 
@@ -738,6 +768,50 @@ if (Gem.Script.handle_errors) {
 
 
 //
+//  Gem.Script.error
+//      Show an error (either with `alert` or `console.error`).
+//
+if (Gem.Script.handle_errors) {
+    Gem.Script.codify_method(
+        'error',
+        'Show an error (either with alert or console.error).',
+        function codifier__Gem__Script__error() {
+            var show_developer_tools = Gem.NodeWebKit.show_developer_tools
+
+
+            if (Gem.Configuration.show_alert) {
+                var alert = window.alert
+
+                return function Gem__Script__error(message) {
+                    alert(message + '\n' + 'Please see Developer Tools for full error')
+                    show_developer_tools()
+                }
+            }
+
+
+            var console_error = console.error
+
+
+            if ('bind' in console.error) {
+                var console_error_call = console.error.bind(console)
+
+                return function Gem__Script__error(message) {
+                    console_error_call(message)
+                    show_developer_tools()
+                }
+            }
+
+
+            return function Gem__Script__error(message) {
+                console_error.call(console, message)
+                show_developer_tools()
+            }
+        }//,
+    )
+}
+
+
+//
 //  Gem.Script.handle_global_error
 //      Handle errors when executing a `<script>` tag.
 //
@@ -749,10 +823,9 @@ if (Gem.Script.handle_errors) {
             //
             //  Imports
             //
-            var alert                = window.alert
             var document             = window.document
             var source_attribute     = Gem.Script.source_attribute
-            var show_developer_tools = Gem.NodeWebKit.show_developer_tools
+            var error                = Gem.Script.error
 
 
             function Gem__Script__handle_global_error(e) {
@@ -768,15 +841,7 @@ if (Gem.Script.handle_errors) {
                     return
                 }
 
-                var path = source_attribute(tag)
-
-                alert(
-                      path + '#' + e.lineno
-                    + ': ' + e.error
-                    + '\n' + 'Please see Developer Tools for full error'
-                )
-
-                show_developer_tools()
+                error(source_attribute(tag) + '#' + e.lineno + ': ' + e.error)
             }
 
 
@@ -815,10 +880,9 @@ if (Gem.Script.handle_errors) {
             //      Any syntax error (on successful load) can be caught & is caught by `Gem.Script.handle_global_error`
             //      above.
             //
-            var alert                = window.alert
-            var source_attribute     = Gem.Script.source_attribute
-            var show_developer_tools = Gem.NodeWebKit.show_developer_tools
-            var script_event_list    = Gem.Script.event_list
+            var error             = Gem.Script.error
+            var source_attribute  = Gem.Script.source_attribute
+            var script_event_list = Gem.Script.event_list
 
 
             var script_handle_event = function Gem__Script__handle_event(e) {
@@ -833,10 +897,7 @@ if (Gem.Script.handle_errors) {
                 }
 
                 if (e.type === 'abort' || e.type === 'error') {
-                    var path = source_attribute(tag)
-
-                    alert(path + ': Failed to load.  Please see Developer Tools for full error')
-                    show_developer_tools()
+                    error(source_attribute(tag) + ': Failed to load')
                 }
             }
 
@@ -1011,7 +1072,7 @@ Gem.execute(
                     //
                     //  Have to use `.call` here, since `Gem.Script.codify_method` has been deleted ...
                     //
-                    Gem.codify_method.call(
+                    Gem.Beryl.codify_method.call(
                         Gem.Script,
                         'load',
                         'Load JavaScript code using a `<script>` tag.',
@@ -1025,30 +1086,33 @@ Gem.execute(
 
 
 //
-//  Cleanup
+//  Cleanup - This is the inverse of `execute$copy__Gem_nested_methods` above
 //
 Gem.execute(
     function execute$cleanup__Gem_nested_methods() {
-        delete Gem.NodeWebKit.clarity_note
+        var _Beryl     = Gem._.Beryl
+        var NodeWebKit = Gem.NodeWebKit
+        var Script     = Gem.Script
 
-        delete Gem.NodeWebKit.codify_method
-        delete Gem.Script    .codify_method
+        delete _Beryl.constant
 
-        delete Gem._.Beryl   .constant
-        delete Gem.NodeWebKit.constant
-        delete Gem.Script    .constant
+        delete NodeWebKit.clarity_note
+        delete NodeWebKit.codify_method
+        delete NodeWebKit.constant
+        delete NodeWebKit.method
 
-        delete Gem.Script    .method
-        delete Gem.NodeWebKit.method
-
-        delete Gem.Script    .qualify_constant
+        delete Script.codify_method
+        delete Script.constant
+        delete Script.method
+        delete Script.qualify_constant
     }
 )
 
 
 Gem.execute(
     function execute$cleanup__Gem__Script__event_list() {
-        delete Gem.Script.event_list
+        delete Gem.Configuration.show_alert
+        delete Gem.Script       .event_list
     }
 )
 
@@ -1084,9 +1148,10 @@ if (Gem.Configuration.debug) {
 //
 //  At this point, as part of the boot process, `Gem` is now defined as in the original comment above:
 //
-//      With the exception of Gem.Script.event_list (which has been deleted).
+//      With the exception of:
 //
-//  The two attributes marked [Temporary] are deleted in later code
+//          `Gem.Configuration.show_alert`  (which has been deleted); and
+//          `Gem.Script.event_list`         (which has been deleted). 
 //
 
 

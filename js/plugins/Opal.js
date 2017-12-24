@@ -7,11 +7,11 @@
     var machine        = 'Other'                    //  Used in debug mode to configure environment for Gem
     var module_name    = 'Opal'
     var module_version = '0.0.31'
-    var watching       = 'Gem/Beryl/Boot.js'
-//  var watching       = 'js/plugins/Beryl.js'
+    var watching       = 'js/plugins/Beryl.js'
 //  var watching       = 'js/plugins/Silver.js'
 //  var watching       = 'js/plugins/Jasper.js'
 //  var watching       = 'js/plugins/Gem.js'
+    var watching_2     = 'Gem/Beryl/Boot.js'
 
     "use strict"
 
@@ -60,15 +60,20 @@
     //  Store our module name & version (on purpose: override anything there already)
     //  First: Close a previous watcher
     //
-    var module_path = path_join(main_module_directory, watching)
+    var module_path   = path_join(main_module_directory, watching)
+    var module_path_2 = path_join(main_module_directory, watching_2)
     var first_run   = ( ! P.version)
 
     function path_changed(event, path) {
         if (event != 'change') { return }
 
-        console.log(path)
-
         z();
+    }
+
+    function path_changed_2(event, path_2) {
+        if (event != 'change') { return }
+
+        z2();
     }
 
     P.name    = module_name
@@ -101,12 +106,22 @@
         //  The reason 'z' is chosen is it is easy to type & there will be no "suggestions" when it is
         //  entered into developer tools
         //
-        window.z = function reload () {
-            var script = P.Script || document.createElement('script')
+        window.z = function reload() {
+            var script = document.createElement('script')
+
+            console.log('Adding:', watching)
 
             script.src = watching
             document.body.appendChild(script)
-            return P
+        }
+
+        window.z2 = function reload_2() {
+            var script = document.createElement('script')
+
+            console.log('Adding:', watching_2)
+
+            script.src = watching_2
+            document.body.appendChild(script)
         }
 
         if (0) {
@@ -155,8 +170,10 @@
         }
     }
 
-    if (P.watcher) { P.watcher.close() }            //  Close any previous watcher first
-    P.watcher = FileSystem.watch(module_path, path_changed)
+    if (P.watcher)   { P.watcher  .close() }            //  Close any previous watcher first
+    if (P.watcher_2) { P.watcher_2.close() }            //  Close any previous watcher first
+    P.watcher   = FileSystem.watch(module_path,   path_changed)
+    P.watcher_2 = FileSystem.watch(module_path_2, path_changed_2)
 })();                                               //  End of Anonymous scope;  Also execute the anonymous function
 
 //  The full MIT License is available here: https://github.com/Rhodolite/Opal/blob/master/LICENSE

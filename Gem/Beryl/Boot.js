@@ -9,12 +9,13 @@ Gem.NodeWebKit.show_developer_tools()
 
 
 //
-//  Gem.constant:
+//  Gem.mutable:
 //      Initialize a global Gem mutable value.
 //
 //      Also in clarity mode adds an explanation of what the mutable value does.
 //
-Gem.codify_method(
+Gem.Beryl.codify_method.call(
+    Gem,
     'mutable',
     (
           'Initialize a global Gem mutable value.\n'
@@ -25,13 +26,13 @@ Gem.codify_method(
         //
         //  Imports
         //
-        var clarity                   = Gem.Configuration.clarity
-        var create_Object             = Object.create
-        var define_property           = Object.defineProperty
-        var visible_constant_property = Gem.visible_constant_property
+        var clarity                    = Gem.Configuration.clarity
+        var create_Object              = Object.create
+        var define_property            = Object.defineProperty
+        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
 
         if (clarity) {
-            var throw_type_error = Gem.throw_type_error
+            var throw_type_error = Gem.Beryl.throw_type_error
         }
 
 
@@ -46,6 +47,7 @@ Gem.codify_method(
                 null,
                 {
                 //  configurable : { value : false },       //  Default value, no need to set
+                    configurable : { value : true  },       //  TEMPORARY!
                     enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
                     writable     : { value : true  }//,     //  Mutable attribute (i.e.: writable)
                 }//,
@@ -70,9 +72,9 @@ Gem.codify_method(
                 delete visible_mutable_attribute.value
 
                 if (7) {
-                    visible_constant_property.value = $what
-                    define_property(this, who + '$', visible_constant_property)
-                    delete visible_constant_property.value
+                    visible_constant_attribute.value = $what
+                    define_property(this, who + '$', visible_constant_attribute)
+                    delete visible_constant_attribute.value
                 }
             }
         }
@@ -99,11 +101,12 @@ Gem.codify_method(
 //
 //  NOTE:
 //      A "bound method" is in some sense a "constant", thus this routine bears a lot of similiarity to
-//      `Gem.qualify_constant`.
+//      `Gem.Beryl.qualify_constant`.
 //
 //      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
 //
-Gem.codify_method(
+Gem.Beryl.codify_method.call(
+    Gem,
     'codify_bound_method',
     (
           'Codify a global Gem bound method.\n'
@@ -114,29 +117,13 @@ Gem.codify_method(
         //
         //  Imports
         //
-        var clarity                   = Gem.Configuration.clarity
-        var define_property           = Object.defineProperty
-        var visible_constant_property = Gem.visible_constant_property
+        var clarity                    = Gem.Configuration.clarity
+        var define_property            = Object.defineProperty
+        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
 
         if (clarity) {
-            var throw_type_error = Gem.throw_type_error
-
-
-            var throw_wrong_arguments = function throw_wrong_arguments(name, actual, expected) {
-                //  Throw a type error when a function receives wrong number of arguments
-
-                if (expected === 0) {
-                    var takes = 'takes no arguments'
-                } else if (expected == 1) {
-                    var takes = 'takes exactly 1 argument'
-                } else {
-                    var takes = 'takes exactly ' + expected.toString() + ' arguments'
-                }
-
-                var message = 'TypeError: function `' + name + '` ' + takes + ' (' + actual.toString() + ' given)'
-
-                throw new Error(message)
-            }
+            var throw_type_error      = Gem.Beryl.throw_type_error
+            var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
         }
 
         //
@@ -215,21 +202,21 @@ Gem.codify_method(
                         )
                 }
 
-                visible_constant_property.value = bound_method
-                define_property(this, who, visible_constant_property)
+                visible_constant_attribute.value = bound_method
+                define_property(this, who, visible_constant_attribute)
 
                 if (7) {
-                    visible_constant_property.value = this.$who + '.' + who
-                    define_property(bound_method, '$who', visible_constant_property)
+                    visible_constant_attribute.value = this.$who + '.' + who
+                    define_property(bound_method, '$who', visible_constant_attribute)
 
-                    visible_constant_property.value = $what
-                    define_property(bound_method, '$what', visible_constant_property)
+                    visible_constant_attribute.value = $what
+                    define_property(bound_method, '$what', visible_constant_attribute)
 
-                    visible_constant_property.value = $which
-                    define_property(bound_method, '$which', visible_constant_property)
+                    visible_constant_attribute.value = $which
+                    define_property(bound_method, '$which', visible_constant_attribute)
                 }
 
-                delete visible_constant_property.value
+                delete visible_constant_attribute.value
             }
         }
 
@@ -246,9 +233,9 @@ Gem.codify_method(
             //
             //  Ignores the `$what` & `$which` parameters, which are only used in clarity mode.
 
-            visible_constant_property.value = codifier()
-            define_property(this, who, visible_constant_property)
-            delete visible_constant_property.value
+            visible_constant_attribute.value = codifier()
+            define_property(this, who, visible_constant_attribute)
+            delete visible_constant_attribute.value
         }
     }//,
 )
@@ -256,18 +243,8 @@ Gem.codify_method(
 
 Gem.execute(
     function execute$setup__Gem_Beryl() {
-        Gem.Beryl = {
-            codify_bound_method : Gem.codify_bound_method,
-            codify_method       : Gem.codify_method,
-            constant            : Gem.constant,
-            method              : Gem.method,
-            mutable             : Gem.mutable//,
-        }
-
-        if (Gem.Configuration.clarity) {
-            Gem.Beryl.$who  = 'Gem.Beryl'
-            Gem.Beryl.$what = 'Exports of the Beryl module.'
-        }
+        Gem.Beryl.codify_bound_method = Gem.codify_bound_method
+        Gem.Beryl.mutable             = Gem.mutable
     }
 )
 
@@ -1125,7 +1102,7 @@ if (Gem.Configuration.clarity) {
 
 Gem.execute(
     function execute$Gem__clear__and__log_Gem() {
-        console.clear()
+        //console.clear()
         console.log('%o', Gem)
     }
 )
