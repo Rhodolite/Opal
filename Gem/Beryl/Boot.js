@@ -273,7 +273,7 @@ Gem.Beryl.mutable(
     //
     //  WARNING: Changing the following to `true` ... might, temporarily, turn your mind into a PRETZEL.
     //
-    false//,                                                //  Change to true to single step in Developer Tools ...
+    true //,                                                //  Change to true to single step in Developer Tools ...
 )
 
 
@@ -476,7 +476,8 @@ if (Gem.Beryl.has_bind) {
             //
             //  Imports
             //
-            var create_Object = Object.create
+            var create_Object       = Object.create
+            var single_step_binding = Gem.Beryl.single_step_binding
 
             if ( ! Gem.Beryl.single_step_binding) {
                 return create_Object.bind.bind(create_Object, Object)   //  One line quick & efficient implementation
@@ -532,10 +533,11 @@ if (Gem.Beryl.has_bind) {
             //  This "Pure" implementation -- does work, but way harder to understand
             //
 
-            //--------------------------------------------------------------+
-            //  WARNING: PRETZEL CODE AHEAD - Part 1                        |
-            //      Single step starts here, to "understand" this code ...  |
-            //--------------------------------------------------------------+
+                                //--------------------------------------------------------------+
+                                //  WARNING: PRETZEL CODE AHEAD - Part 1                        |
+                                //      Single step starts here, to "understand" this code ...  |
+                                //--------------------------------------------------------------+
+
             debugger                                    //  Call debugger to help single trace this PRETZEL code ...
 
                                 //-----------------------------------------------------------+
@@ -545,7 +547,7 @@ if (Gem.Beryl.has_bind) {
                                 //      Keep doing this until you hit the next ***README***  |
                                 //-----------------------------------------------------------+
 
-            Gem.Beryl.single_step_binding = 'STEP 1 - START'
+            single_step_binding = 'STEP 1 - START'
 
             var bind = Gem.Beryl.bind                   //  Our "internal" implementation of `Function.prototype.bind`
 
@@ -588,7 +590,7 @@ if (Gem.Beryl.has_bind) {
                                 //      bound arguments [for the nested] bind all                   |
                                 //------------------------------------------------------------------+
 
-            Gem.Beryl.single_step_binding = 'STEP 1 - COMPLETE'
+            single_step_binding = 'STEP 1 - COMPLETE'
 
                                 //------------------------------------------------------------------+
                                 //  ***README***                                                    |
@@ -699,15 +701,18 @@ Gem.execute(
             var next_segment__BoxOfPropertyDescriptors = null
         }
 
-        if ( ! Gem.Beryl.single_step_binding) {
+        var single_step_binding = Gem.Beryl.single_step_binding
+
+        if ( ! single_step_binding) {
             Gem.Beryl.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
             return
         }
 
-        //-----------------------------------------------------------------+
-        //  WARNING: PRETZEL CODE AHEAD -- PART #2                         |
-        //      Single step CONTINUES here, to "understand" this code ...  |
-        //-----------------------------------------------------------------+
+                            //-----------------------------------------------------------------+
+                            //  WARNING: PRETZEL CODE AHEAD -- PART #2                         |
+                            //      Single step CONTINUES here, to "understand" this code ...  |
+                            //-----------------------------------------------------------------+
+
         debugger                                    //  Call debugger to help single trace this PRETZEL code ...
 
                             //-----------------------------------------------------------+
@@ -717,7 +722,7 @@ Gem.execute(
                             //      Keep doing this until you hit the next ***README***  |
                             //-----------------------------------------------------------+
 
-        Gem.Beryl.single_step_binding = 'STEP 2 - START'
+        single_step_binding = 'STEP 2 - START'
 
         var create__BoxOfPropertyDescriptors
             = Gem.Beryl.create__BoxOfPropertyDescriptors
@@ -737,7 +742,7 @@ Gem.execute(
                             //      (i.e.: next_segment__BoxOfPropertyDescriptors)        |
                             //------------------------------------------------------------+
 
-        Gem.Beryl.single_step_binding = 'STEP 2 - COMPLETE'
+        single_step_binding = 'STEP 2 - COMPLETE'
 
                             //------------------------------------------------------------------+
                             //  ***README***                                                    |
@@ -761,18 +766,20 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             //
             //  Imports
             //
-            var bind_create_Object = Gem.Beryl.bind_create_Object
+            var bind_create_Object  = Gem.Beryl.bind_create_Object
+            var single_step_binding = Gem.Beryl.single_step_binding
 
             //
             //  Locals
             //
             var property__constructor = { enumerable  : true }
 
-            if (Gem.Beryl.single_step_binding) {
-                //-----------------------------------------------------------------+
-                //  WARNING: PRETZEL CODE AHEAD -- PART #3                         |
-                //      Single step CONTINUES here, to "understand" this code ...  |
-                //-----------------------------------------------------------------+
+            if (single_step_binding) {
+                            //-----------------------------------------------------------------+
+                            //  WARNING: PRETZEL CODE AHEAD -- PART #3                         |
+                            //      Single step CONTINUES here, to "understand" this code ...  |
+                            //-----------------------------------------------------------------+
+
                 debugger                                    //  Call debugger to help single trace this PRETZEL code ...
 
                             //-----------------------------------------------------------+
@@ -782,14 +789,14 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
                             //      Keep doing this until you hit the next ***README***  |
                             //-----------------------------------------------------------+
 
-                Gem.Beryl.single_step_binding = 'STEP 3 - START'
+                single_step_binding = 'STEP 3 - START'
             }
 
             var property_descriptors = Gem.Beryl.create__BoxOfPropertyDescriptors(
                     { constructor : { value : property__constructor, enumerable : true } }//,
                 )
 
-            if (Gem.Beryl.single_step_binding) {
+            if (single_step_binding) {
                             //-------------------------------------------------------+
                             //  ***README***                                         |
                             //      When single stepping:                            |
@@ -799,10 +806,10 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
                             //      This will show you it is a normal object with a  |
                             //      `__proto__` of `BoxOfPropertyDescriptors`        |
                             //                                                       |
-                            //      (i.e.: Success)                                  |
+                            //      Congratulations -- Success :)                    |
                             //-------------------------------------------------------+
 
-                Gem.Beryl.single_step_binding = 'SINGLE STEPPING COMPLETE'
+                single_step_binding = 'SINGLE STEPPING COMPLETE'
 
                             //---------------------------------------------------------------------+
                             //  ***README***                                                       |
