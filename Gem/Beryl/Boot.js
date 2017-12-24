@@ -533,7 +533,7 @@ if (Gem.Beryl.has_bind) {
 
             //
             //  Hmm, so there are five bind's here ...
-            //      
+            //
             //      ... which is correct ... As the comment about states "but way harder to understand" ...
             //
             //      The first bind, is to call the function `bind`.
@@ -673,7 +673,7 @@ Gem.Beryl.execute(
 
 
             var next_segment__BoxOfPropertyDescriptors = create_Object(
-                    null, 
+                    null,
                     { constructor : { value : BoxOfPropertyDescriptors, enumerable : true } }//,
                 )
         } else {
@@ -813,7 +813,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
                 //  The "class name" comes from the name of parameter `named_constructor`
                 //  (i.e.: `named_constructor.name`).'
 
-            
+
                 //
                 //  NOTE #2:
                 //      It is quite confusing in Javascript, but a function has two "prototype's":
@@ -1025,7 +1025,7 @@ Gem.Beryl.codify_method(
 
         var deep_copy_with_adjustments = function Gem__Beryl__deep_copy_with_adjustments(instance) {
             if (7) {
-                // 
+                //
                 //  JavaScript 5.0 does not have `Object.getOwnPropertyDescriptors` (with a trailing 's')
                 //      Hence use `get_property_names`, and we have to build our own `properties` object
                 //
@@ -1078,10 +1078,10 @@ if (Gem.Configuration.clarity) {
             //
             //  Now do callback's informing them that `Gem` has changed
             //
-            var clarity_mode__gem_changed = Gem._.Beryl.clarity_mode__gem_changed
+            var clarity_mode$global_variable_Gem_changed  = Gem._.Beryl.clarity_mode$global_variable_Gem_changed
 
-            for (var i = 0; i < clarity_mode__gem_changed.length; i ++) {
-                var callback = clarity_mode__gem_changed[i]
+            for (var i = 0; i < clarity_mode$global_variable_Gem_changed .length; i ++) {
+                var callback = clarity_mode$global_variable_Gem_changed [i]
 
                 callback()
             }

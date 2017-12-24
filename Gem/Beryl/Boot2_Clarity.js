@@ -21,7 +21,7 @@ Gem.Beryl.execute(
 //      Gem.Beryl.throw_must_be_a_string    - Throw a type error when a parameter is not a string.
 //      Gem.Beryl.throw_type_error          - Throw a type error (usually ... received invalid parameters).
 //      Gem.Beryl.throw_wrong_arguments     - Throw a type error when a method receives wrong number of arguments.
-//      
+//
 Gem.Beryl.execute(
     function execute$setup__Gem__throw_methods() {
         var throw_must_be_number = function Gem__Beryl__throw_must_be_number(name, v) {
@@ -161,6 +161,62 @@ Gem.Beryl.execute(
 )
 
 
+//
+//  Gem.Beryl.constant
+//      Store a global Gem constant.
+//
+//      Also in clarity mode adds an explanation of what the constant does.
+//
+Gem.Beryl.codify_method(
+    'constant',
+    (
+          'Store a global Gem constant.\n'
+        + '\n'
+        + 'Also in clarity mode adds an explanation of what the variable does.'
+    ),
+    function codifier$Gem__Beryl__constant() {
+        //
+        //  Imports
+        //
+        var define_property            = Object.defineProperty
+        var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
+        var throw_type_error           = Gem.Beryl.throw_type_error
+        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+
+
+        //
+        //  Implementation
+        //
+        return function Gem__Beryl__constant(who, $what, constant) {
+            //  Store a global Gem constant.
+            //
+            //  Also in clarity mode adds an explanation of what the constant does.
+
+            if (arguments.length !== 3) {
+                throw_wrong_arguments('Gem.Beryl.constant', 3, arguments.length)
+            }
+
+            if (typeof constant === 'undefined' || typeof constant === 'function') {
+                throw_type_error(
+                        'parameter `constant` must be a value; was instead',
+                        constant//,
+                    )
+            }
+
+            visible_constant_attribute.value = constant
+            define_property(this, who, visible_constant_attribute)
+
+            if (7) {
+                visible_constant_attribute.value = $what
+                define_property(this, who + '$', visible_constant_attribute)
+            }
+
+            delete visible_constant_attribute.value
+        }
+    }//,
+)
+
+
 Gem.Beryl.codify_method(
     'qualify_constant',
     (
@@ -177,9 +233,12 @@ Gem.Beryl.codify_method(
         var define_property            = Object.defineProperty
         var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
         var throw_type_error           = Gem.Beryl.throw_type_error
-        var visible_constant_attribute = Gem.visible_constant_attribute
+        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
 
 
+        //
+        //  Implementation
+        //
         return function Gem__Beryl__qualify_constant(who, $what, qualifier) {
             //  Qualify a global Gem variable.
             //
@@ -231,8 +290,9 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Script.load
-//      Load JavaScript code using a `<script>` tag.
+//  Push for a later callback, a recodify of:
+//      Gem.Script.load
+//          Load JavaScript code using a `<script>` tag.
 //
 Gem.Beryl.execute(
     function execute$push_to_execute_later$recodify$Gem__Script__load() {
@@ -262,6 +322,16 @@ Gem.Beryl.execute(
         //  Push the callback to be executed when global variable `Gem` is changed.
         //
         clarity_mode$global_variable_Gem_changed.push(callback$recodify$Gem__Script__load)
+    }
+)
+
+
+//
+//  Load Gem/Beryl/Boot.js
+//
+Gem.Beryl.execute(
+    function execute$load_next_script() {
+        Gem.Script.load('Gem/Beryl/Boot.js')
     }
 )
 
