@@ -193,6 +193,13 @@ Gem.codify_method(
                                   //
                                   (bound_method.name.length === 0) && ( ! ('prototype' in bound_method))
                               )
+                           || (
+                                  //
+                                  //  Our brower is so old it doesn't even have bound methods ...
+                                  //      ... So accept anything (presumably an emulation function) ...
+                                  //
+                                  ( ! Gem.Beryl.has_bind)
+                              )
                        )
                 ) {
                     //
@@ -253,6 +260,7 @@ Gem.execute(
             codify_bound_method : Gem.codify_bound_method,
             codify_method       : Gem.codify_method,
             constant            : Gem.constant,
+            method              : Gem.method,
             mutable             : Gem.mutable//,
         }
 
@@ -271,16 +279,19 @@ Gem.Beryl.mutable(
         + ' the backwards compatability implementation when `.bind` does not exist in the browser.'
     ),
     //
-    //  WARNING: Changing the following to `true` ... might, temporarily, turn your mind into a PRETZEL.
+    //  WARNING: Changing the following to `true` or `6` ... might, temporarily, turn your mind into a PRETZEL.
     //
-    true //,                                                //  Change to true to single step in Developer Tools ...
+    //      `true` means use real     Gem.Beryl.bind & single step through it
+    //      `6`    means use EMULATED Gem.Beryl.bind & single step through it
+    //
+    false//,                                        //  Change to `true` or `6` to single step in Developer Tools ...
 )
 
 
 Gem.Beryl.constant(
     'has_bind',
     '`Gem.Beryl.has_bind` is `true` when `Function.prototype.bind` exists (which it does in all modern browsers).',
-    ('bind' in Function)//,
+    ('bind' in Function) && (Gem.Beryl.single_step_binding !== 6)//,
 )
 
 
@@ -438,13 +449,13 @@ if (Gem.Beryl.has_bind) {
 //  Summary:
 //      A factory of factories.
 //
-//      The factories returned by `bind_create_Object` are named `create_*` (since they are factories, and factories,
-//      in general, begin with a "creation" verb like `create` and end with the name of what they create).
+//      The factories returned by `bind_create_Object` are named "create_*" (since they are factories, and factories,
+//      in general, begin with a "creation" verb like "create" and end with the name of what they create).
 //
 //  Details:
 //      Returns a bound create_Object (i.e.: a callable verion of `create_Object` with some of it's parameters bound).
 //
-//      In other words, `bind_create_objects` bind's some paramters to `create_object` and returns a callable function.
+//      In other words, `bind_create_Object` bind's some paramters to `create_object` and returns a callable function.
 //
 //      Since `create_object` is a factory then `bind_create_object` returns a factory with some of it's parameters
 //      bound.
@@ -457,15 +468,15 @@ if (Gem.Beryl.has_bind) {
 //
 //                  Thus this returns a factory that creates "AnonymousBox" objects
 //
-//                  This factory, is thus, appropriatly named `create_AnonymousBox`.
+//                  This factory, is thus, appropriatly named "create_AnonymousBox".
 //
 //          2.  `.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)`
 //
-//                  Binds `next_segment__BoxOfPropertyDescriptors` as the first paremater to `create_Object`.
+//                  Binds `next_segment__BoxOfPropertyDescriptors` as the first parameter to `create_Object`.
 //
 //                  Thus this returns a factory that creates "BoxOfPrototypeDescriptors" objects.
 //
-//                  This factory, is thus, appropriatly named `create__BoxOfPropertyDescriptors`
+//                  This factory, is thus, appropriatly named "create__BoxOfPropertyDescriptors".
 //
 if (Gem.Beryl.has_bind) {
     Gem.Beryl.codify_bound_method(
@@ -488,7 +499,7 @@ if (Gem.Beryl.has_bind) {
                 //
                 //          It means the same as the two alternate implementations below.
                 //
-                //      In other words we bind 'Object.create.bind', to create a bound function, with the same
+                //      In other words we bind `create_Object`, to create a bound function, with the same
                 //      behavior as the alternate implementation below (the bound function created, is itself
                 //      a binding function):
                 //
@@ -507,11 +518,12 @@ if (Gem.Beryl.has_bind) {
                 //          we "modify" a factory, then we are using `bind` to create a "modified" factory ...
                 //
                 //      ... Since we are using `bind` on `create_Object` (which is is a factory that creates Objects),
-                //          then, in some sense, we are using `bind` to creat a "modified" factory.
+                //          then, in some sense, we are using `bind` to create a "modified" factory.
                 //
                 //      So once again, since we are creating a "factory of factories" (using `create_Object` as the
-                //      underlying factory), and "`bind` is in some sense, a used as a factory" & we need to call
-                //      it `bind` twice.
+                //          underlying factory), and "`bind` is, in some sense, a used as a factory" ...
+                //
+                //      ... we need to call `bind` twice.
                 //
                 //      (Thanks for reading this long comment, lol).
                 //
@@ -519,8 +531,8 @@ if (Gem.Beryl.has_bind) {
 
             //
             //  NOTE #4:
-            //      We deliberately did *NOT* use the previously defined `Gem.Beryl.bind` above, since that is very
-            //      confusing.
+            //      We deliberately did *NOT* use the previously defined `Gem.Beryl.bind` above, since that is way
+            //      harder to understand.
             //
             //      You can see the "Pure" implementation below for really using `Gem.Beryl.Bind` and why
             //      it is even more confusing.
@@ -567,10 +579,10 @@ if (Gem.Beryl.has_bind) {
             //
             //      The fifth bind is the `bound_this` of `bound_f` of the nested bind function being called.
             //
-            //      After that follow the third & fourth argument of the nested bind function being called
+            //      After that are the third & fourth argument of the nested bind function being called
             //      (i.e.: `create_Object` & `Object`).
             //
-            var result = bind(                //  First `bind`
+            var result = bind(          //  First `bind`
                 bind, bind,             //  Second & third  `bind`: `bound_f` & `bound_this` (i.e.: binding `bind`)
                 bind, bind,             //  Fourth & fourth `bind`: [nested] `bound_f` & `bound_this`
                 create_Object,
@@ -761,7 +773,11 @@ Gem.execute(
 if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
     Gem.Beryl.codify_method(
         'produce_create_Box',
-        'A factory of factories.  The created factories each creates a Box -- an Object with a "class name".',
+        (
+              'A factory of factories.  The created factories each creates a Box -- an Object with a "class name".\n'
+            + '\n'
+            + 'The "class name" comes from the name of parameter `named_constructor` (i.e.: `named_constructor.name`).'
+        ),
         function codifier__Gem__Beryl__produce_create_Box() {
             //
             //  Imports
@@ -826,6 +842,9 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
 
             return function Gem__Beryl__produce_create_Box(named_constructor) {
                 //  A factory of factories.  The created factories each creates a Box -- an Object with a "class name".
+                //
+                //  The "class name" comes from the name of parameter `named_constructor`
+                //  (i.e.: `named_constructor.name`).'
 
             
                 //
@@ -866,7 +885,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
         function codifier__Gem__Beryl__produce_create_Box() {
             var create_AnonymousBox = Gem.Beryl.bind_create_Object(null)
 
-            return function Gem__Beryl__produce_create_Box(/*fake_constructor*/) {
+            return function Gem__Beryl__produce_create_Box(/*named_constructor*/) {
                 //      A factory of factories.
                 //
                 //      Since this is non clarity mode, in this simplified version, each created factory is really
@@ -888,8 +907,6 @@ Gem.Beryl.codify_bound_method(
     'Create an object with a "class name" of "Box" in Developer Tools.',
     'A binding of `create_Object` to `Box` (i.e.: A binding of `Object.create` to `Box`).',
     function codifier__Gem__Beryl__create_Box() {
-        debugger
-
         function Box() {
             //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
             //  of an instance using this prototype as 'Box'
@@ -981,8 +998,6 @@ Gem.Beryl.codify_method(
         //
         //      For example `Gem.Script.script_map['Gem/Beryl/Boot.js']` has a prototype of `HTMLScriptELement`,
         //      this prototype is meaningful & necessary, and therefore is not removed.
-
-        debugger
 
         var create_Box        = Gem.Beryl.create_Box
         var object__prototype = Object.prototype
