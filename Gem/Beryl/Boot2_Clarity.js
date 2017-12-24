@@ -22,143 +22,145 @@ Gem.Beryl.execute(
 //      Gem.Beryl.throw_type_error          - Throw a type error (usually ... received invalid parameters).
 //      Gem.Beryl.throw_wrong_arguments     - Throw a type error when a method receives wrong number of arguments.
 //
-Gem.Beryl.execute(
-    function execute$setup__Gem__throw_methods() {
-        var throw_must_be_number = function Gem__Beryl__throw_must_be_number(name, v) {
-            //  Throw a type error when a parameter is not a number.
+if (Gem.Configuration.clarity) {
+    Gem.Beryl.execute(
+        function execute$setup__Gem__throw_methods() {
+            var throw_must_be_number = function Gem__Beryl__throw_must_be_number(name, v) {
+                //  Throw a type error when a parameter is not a number.
 
-            if (7) {
-                if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.throw_must_be_number', 2, arguments.length)
+                if (7) {
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.throw_must_be_number', 2, arguments.length)
+                    }
+
+                    if (typeof name !== 'string') { throw_must_be_string('name', name) }
+                    //  `v` can by any type (though obviously is not a string)
                 }
 
-                if (typeof name !== 'string') { throw_must_be_string('name', name) }
-                //  `v` can by any type (though obviously is not a string)
+                throw_type_error('parameter `' + name + '` must be a number; was instead', v)
             }
 
-            throw_type_error('parameter `' + name + '` must be a number; was instead', v)
-        }
 
+            var throw_must_be_string = function Gem__Beryl__throw_must_be_string(name, v) {
+                //  Throw a type error when a parameter is not a string.
 
-        var throw_must_be_string = function Gem__Beryl__throw_must_be_string(name, v) {
-            //  Throw a type error when a parameter is not a string.
+                if (7) {
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.throw_must_be_string', 2, arguments.length)
+                    }
 
-            if (7) {
-                if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.throw_must_be_string', 2, arguments.length)
+                    if (typeof name !== 'string') { throw_must_be_string('name', name) }
+                    //  `v` can by any type (though obviously is not a number)
                 }
 
-                if (typeof name !== 'string') { throw_must_be_string('name', name) }
-                //  `v` can by any type (though obviously is not a number)
+                throw_type_error('parameter `' + name + '` must be a string; was instead', v)
             }
 
-            throw_type_error('parameter `' + name + '` must be a string; was instead', v)
-        }
 
+            var throw_type_error = function Gem__Beryl__throw_type_error(prefix, v) {
+                //  Throw a type error (usually used when a method received invalid parameters).
 
-        var throw_type_error = function Gem__Beryl__throw_type_error(prefix, v) {
-            //  Throw a type error (usually used when a method received invalid parameters).
+                if (7) {
+                    if (arguments.length !== 2) {
+                        throw_wrong_arguments('Gem.Beryl.throw_type_error', 2, arguments.length)
+                    }
 
-            if (7) {
-                if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.throw_type_error', 2, arguments.length)
+                    if (typeof prefix !== 'string') { throw_must_be_string(prefix, 'prefix') }
+                    //  `v` handled below
                 }
 
-                if (typeof prefix !== 'string') { throw_must_be_string(prefix, 'prefix') }
-                //  `v` handled below
-            }
-
-            if (typeof v === 'function') {
-                if (v.name.length) {
-                    var suffix = ' a function named `' + v.name + '`'
+                if (typeof v === 'function') {
+                    if (v.name.length) {
+                        var suffix = ' a function named `' + v.name + '`'
+                    } else {
+                        var suffix = ' an unnamed function'
+                    }
                 } else {
-                    var suffix = ' an unnamed function'
+                    if (typeof v === 'undefined') {
+                        var suffix = ' `undefined`'
+                    } else {
+                        var suffix = ' the value: ' + v.toString()
+                    }
                 }
-            } else {
-                if (typeof v === 'undefined') {
-                    var suffix = ' `undefined`'
+
+                var message = 'TypeError: ' + prefix + suffix
+
+                throw new Error(message)
+            }
+
+
+            var throw_wrong_arguments = function Gem__Beryl__throw_wrong_arguments(name, actual, expected) {
+                //  Throw a type error when a method receives wrong number of arguments.
+
+                if (7) {
+                    if (arguments.length !== 3) {
+                        throw_wrong_arguments('Gem.Beryl.throw_wrong_arguments', 3, arguments.length)
+                    }
+
+                    if (typeof name     !== 'string') { throw_must_be_string('name',     name)     }
+                    if (typeof actual   !== 'number') { throw_must_be_number('actual',   actual)   }
+                    if (typeof expected !== 'number') { throw_must_be_number('expected', expected) }
+                }
+
+                if (expected === 0) {
+                    var takes = 'takes no arguments'
+                } else if (expected == 1) {
+                    var takes = 'takes exactly 1 argument'
                 } else {
-                    var suffix = ' the value: ' + v.toString()
-                }
-            }
-
-            var message = 'TypeError: ' + prefix + suffix
-
-            throw new Error(message)
-        }
-
-
-        var throw_wrong_arguments = function Gem__Beryl__throw_wrong_arguments(name, actual, expected) {
-            //  Throw a type error when a method receives wrong number of arguments.
-
-            if (7) {
-                if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.throw_wrong_arguments', 3, arguments.length)
+                    var takes = 'takes exactly ' + expected.toString() + ' arguments'
                 }
 
-                if (typeof name     !== 'string') { throw_must_be_string('name',     name)     }
-                if (typeof actual   !== 'number') { throw_must_be_number('actual',   actual)   }
-                if (typeof expected !== 'number') { throw_must_be_number('expected', expected) }
+                var message = 'TypeError: function `' + name + '` ' + takes + ' (' + actual.toString() + ' given)'
+
+                throw new Error(message)
             }
 
-            if (expected === 0) {
-                var takes = 'takes no arguments'
-            } else if (expected == 1) {
-                var takes = 'takes exactly 1 argument'
-            } else {
-                var takes = 'takes exactly ' + expected.toString() + ' arguments'
-            }
 
-            var message = 'TypeError: function `' + name + '` ' + takes + ' (' + actual.toString() + ' given)'
+            //
+            //  Gem.Beryl.throw_must_be_number
+            //      Throw a type error when a parameter is not a number.
+            //
+            Gem.Beryl.method(
+                'throw_must_be_number',
+                'Throw a type error when a parameter is not a number.',
+                throw_must_be_number//,
+            )
 
-            throw new Error(message)
+
+            //
+            //  Gem.Beryl.throw_must_be_string
+            //      Throw a type error when a parameter is not a string.
+            //
+            Gem.Beryl.method(
+                'throw_must_be_string',
+                'Throw a type error when a parameter is not a string.',
+                throw_must_be_string//,
+            )
+
+
+            //
+            //  Gem.Beryl.throw_type_error
+            //      Throw a type error (usually used when a method received invalid parameters).
+            //
+            Gem.Beryl.method(
+                'throw_type_error',
+                'Throw a type error (usually used when a method received invalid parameters).',
+                throw_type_error//,
+            )
+
+
+            //
+            //  Gem.Beryl.throw_wrong_arguments
+            //      Throw a type error when a method receives wrong number of arguments.
+            //
+            Gem.Beryl.method(
+                'throw_wrong_arguments',
+                'Throw a type error when a method receives wrong number of arguments.',
+                throw_wrong_arguments//,
+            )
         }
-
-
-        //
-        //  Gem.Beryl.throw_must_be_number
-        //      Throw a type error when a parameter is not a number.
-        //
-        Gem.Beryl.method(
-            'throw_must_be_number',
-            'Throw a type error when a parameter is not a number.',
-            throw_must_be_number//,
-        )
-
-
-        //
-        //  Gem.Beryl.throw_must_be_string
-        //      Throw a type error when a parameter is not a string.
-        //
-        Gem.Beryl.method(
-            'throw_must_be_string',
-            'Throw a type error when a parameter is not a string.',
-            throw_must_be_string//,
-        )
-
-
-        //
-        //  Gem.Beryl.throw_type_error
-        //      Throw a type error (usually used when a method received invalid parameters).
-        //
-        Gem.Beryl.method(
-            'throw_type_error',
-            'Throw a type error (usually used when a method received invalid parameters).',
-            throw_type_error//,
-        )
-
-
-        //
-        //  Gem.Beryl.throw_wrong_arguments
-        //      Throw a type error when a method receives wrong number of arguments.
-        //
-        Gem.Beryl.method(
-            'throw_wrong_arguments',
-            'Throw a type error when a method receives wrong number of arguments.',
-            throw_wrong_arguments//,
-        )
-    }
-)
+    )
+}
 
 
 //
@@ -178,7 +180,29 @@ Gem.Beryl.codify_method(
         //
         //  Imports
         //
-        var define_property            = Object.defineProperty
+        var simple          = ( ! Gem.Configuration.clarity)
+        var define_property = Object.defineProperty
+
+
+        //
+        //  Implementation: Simple version
+        //
+        if (simple) {
+            return function Gem__Beryl__constant(who, $what, constant) {
+                //  Store a global Gem constant.
+                //
+                //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                visible_constant_attribute.value = constant
+                define_property(this, who, visible_constant_attribute)
+                delete visible_constant_attribute.value
+            }
+        }
+
+
+        //
+        //  Implementation: Clarity version
+        //
         var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
         var throw_type_error           = Gem.Beryl.throw_type_error
         var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
@@ -217,6 +241,14 @@ Gem.Beryl.codify_method(
 )
 
 
+//  
+//  Gem.Beryl.qualify_constant
+//      Qualify a global Gem constant.
+//
+//      The `qualifier` argument is a function that returns the value of the constant.
+//
+//      Also in clarity mode adds an explanation of what the variable does.
+//
 Gem.Beryl.codify_method(
     'qualify_constant',
     (
@@ -230,15 +262,36 @@ Gem.Beryl.codify_method(
         //
         //  Imports
         //
+        var simple                     = ( ! Gem.Configuration.clarity)
         var define_property            = Object.defineProperty
-        var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error           = Gem.Beryl.throw_type_error
         var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
 
 
         //
-        //  Implementation
+        //  Implementation: Simple version
         //
+        if (simple) {
+            return function Gem__Beryl__qualify_constant(who, $what, qualifier) {
+                //  Qualify a global Gem constant.
+                //
+                //  The `qualifier` argument is a function that returns the value of the constant.
+                //
+                //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                visible_constant_attribute.value = qualifier()
+                define_property(this, who, visible_constant_attribute)
+                delete visible_constant_attribute.value
+            }
+        }
+
+
+        //
+        //  Implementation: Clarity version
+        //
+        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_type_error      = Gem.Beryl.throw_type_error
+
+
         return function Gem__Beryl__qualify_constant(who, $what, qualifier) {
             //  Qualify a global Gem variable.
             //
@@ -296,6 +349,8 @@ Gem.Beryl.codify_method(
 //
 Gem.Beryl.execute(
     function execute$push_to_execute_later$recodify$Gem__Script__load() {
+        debugger
+
         //  Imports
         var clarity_mode$global_variable_Gem_changed = Gem._.Beryl.clarity_mode$global_variable_Gem_changed
         var codify_method_load                       = Gem.Script.codify_method_load

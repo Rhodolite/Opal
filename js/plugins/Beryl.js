@@ -419,7 +419,7 @@ Gem.Beryl.execute(
         //  Gem.Beryl.constant:
         //      Store a global Gem constant.
         //
-        //      Ignores the `$what` parameter, which is only used in clarity mode.
+        //      Simplified temporary version -- See "Gem/Beryl/Boot2_Clarity.js" for the real version.
         //
         Gem.Beryl.method(
             'constant',
@@ -427,34 +427,19 @@ Gem.Beryl.execute(
             function Gem__Beryl__constant(who, $what, constant) {
                 //  Store a global Gem constant.
                 //
-                //  Ignores the `$what` parameter, which is only used in clarity mode.
+                //  Simplified temporary version -- See "Gem/Beryl/Boot2_Clarity.js" for the real version.
 
                 visible_constant_attribute.value = constant
                 define_property(this, who, visible_constant_attribute)
+
+                if (clarity) {
+                    visible_constant_attribute.value = $what
+                    define_property(this, who + '$', visible_constant_attribute)
+                }
+
                 delete visible_constant_attribute.value
             }
         )
-
-
-        if (clarity) {
-            var simple$constant = Gem.Beryl.constant
-
-            Gem.Beryl.method(
-                'constant',
-                null,
-                function Gem__Beryl__constant(who, $what, qualifier) {
-                    //  Brief temporary version --  See "Gem/Beryl/Boot2_Clarity.js" for the real version.
-
-                    simple$constant.call(this, who, $what, qualifier)
-
-                    if (7) {
-                        visible_constant_attribute.value = $what
-                        define_property(this, who + '$', visible_constant_attribute)
-                        delete visible_constant_attribute.value
-                    }
-                }
-            )
-        }
 
 
         //
@@ -1075,80 +1060,66 @@ Gem.Beryl.codify_method.call(
 
 
 //
-//  Execute a codify of:
-//      Gem.Script.load
-//          Load JavaScript code using a `<script>` tag.
-//
-//  NOTE:
-//      Also does cleanup of `Gem.Script.codify_method_load` if not in clarity mode.
+//  Finish:
+//      1.  Codify Gem.Script.load;
+//      2.  Cleanup unused attributes;
+//      3.  Protect this file from garbage collection (debug mode only);
+//      4.  Load next script file: "Gem/Beryl/Boot2_Clarity.js"
 //
 Gem.Beryl.execute(
-    function execute$execute_and_cleanup$codify_method_load() {
-        //  Imports
-        var clarity            = Gem.Configuration.clarity
-        var codify_method_load = Gem.Script.codify_method_load
+    function execute$finish() {
+        //
+        //  Execute a codify of:
+        //      Gem.Script.load
+        //
+        //  NOTE:
+        //      Also does cleanup of `Gem.Script.codify_method_load` if not in clarity mode.
+        //          Load JavaScript code using a `<script>` tag.
+        if (7) {
+            //
+            //  Imports
+            //
+            var clarity            = Gem.Configuration.clarity
+            var codify_method_load = Gem.Script.codify_method_load
 
-        codify_method_load()                                //  Call first time here ...
+            codify_method_load()                                //  Call first time here ...
 
-        if (clarity) {
-            //  Clarity mode will call `codify_method_load` again later.
-        } else {
-            delete Gem.Script.codify_method_load            //  Not clarity mode -- don't need to keep this around
+            if (clarity) {
+                //  Clarity mode will call `codify_method_load` again later.
+            } else {
+                delete Gem.Script.codify_method_load            //  Not clarity mode -- don't need to keep this around
+            }
         }
-    }
-)
 
 
-//
-//  Cleanup
-//
-Gem.Beryl.execute(
-    function execute$cleanup__Gem() {
-        delete Gem.Configuration.show_alert
-        delete Gem.Script       .event_list
-    }
-)
+        //
+        //  Cleanup unused attributes
+        // 
+        if (7) {
+            delete Gem.Configuration.show_alert
+            delete Gem.Script       .event_list
+        }
 
 
-//
-//  The "sources" tab of Developer tools shows what has been loaded into the HTML page:
-//
-//      However, for a JavaScript file to appear under "sources" it must have at least one function that has not
-//      been garbage collected.
-//
-//      In debug mode, `Gem.sources` is used to make sure that there is least once such function from each JavaScript
-//      file that has been loaded in.
-//
-if (Gem.Configuration.debug) {
-    Gem.Beryl.execute(
-        function execute$reference_at_least_one_function_to_avoid_garbage_collection_of_this_source_file() {
+        //
+        //  The "sources" tab of Developer tools shows what has been loaded into the HTML page:
+        //
+        //      However, for a JavaScript file to appear under "sources" it must have at least one function that has
+        //      not been garbage collected.
+        //
+        //      In debug mode, `Gem.sources` is used to make sure that there is least once such function from each
+        //      JavaScript file that has been loaded in.
+        //
+        if (Gem.Configuration.debug) {
             Gem.Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
         }
-    )
-}
-
-
-//
-//  Load either:
-//      Gem/Beryl/Boot2_Clarity.js      -- Clairty mode
-//      Gem/Beryl/Boot.js               -- Non Clarity mode
-//
-Gem.Beryl.execute(
-    function execute$load_next_script() {
-        //
-        //  Imports
-        var clarity = Gem.Configuration.clarity
 
 
         //
         //  Load next script
         //
-        if (clarity) {
-            Gem.Script.load('Gem/Beryl/Boot2_Clarity.js')
-        } else {
-            Gem.Script.load('Gem/Beryl/Boot.js')
-        }
-    }
+        Gem.Script.load('Gem/Beryl/Boot2_Clarity.js')
+    }//,
 )
 
 
