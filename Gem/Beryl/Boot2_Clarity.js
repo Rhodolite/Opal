@@ -164,6 +164,44 @@ if (Gem.Configuration.clarity) {
 
 
 //
+//  Gem.Beryl.visible_mutable_attribute
+//
+//      A visible mutable attribute (i.e.: a normal member).
+//
+//      Read 'visible' to mean 'enumerable'.
+//
+//  NOTE:
+//      Enumerable properties are shown better in Developer Tools (at the top of the list, and not grayed out),
+//      for this reason `$what`, `$which`, `$who`, and '*$' are all shown as visibile instead of invisible.
+//
+Gem.Beryl.qualify_constant(
+    'visible_mutable_attribute',
+    (
+          'A visible mutable attribute (i.e.: a normal member).\n'
+        + '\n'
+        + "Read 'visible' to mean 'enumerable'."
+    ),
+    function qualifier$Gem__Beryl__visible_mutable_attribute() {
+        //
+        //  Imports
+        //
+        var create_Object = Object.create
+
+        return create_Object(
+                null,
+                {
+                //  configurable : { value : false },       //  Default value, no need to set
+                    configurable : { value : true  },       //  TEMPORARY!
+                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+                    writable     : { value : true  }//,     //  Mutable attribute (i.e.: writable)
+                }
+            )
+    }//,
+)
+
+
+
+//
 //  Gem.Beryl.clarity_note
 //      Add a note to a variable or set of variables (clarity mode only).
 //
@@ -190,6 +228,7 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
+        var throw_must_be_string       = Gem.Beryl.throw_must_be_string
         var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
         var throw_type_error           = Gem.Beryl.throw_type_error
         var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
@@ -212,6 +251,155 @@ Gem.Beryl.codify_method(
             delete visible_constant_attribute.value
         }
     }
+)
+
+
+//
+//  Gem.Beryl.codify_bound_method:
+//      Codify a global Gem bound method.
+//
+//      Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.
+//
+//  NOTE:
+//      A "bound method" is in some sense a "constant", thus this routine bears a lot of similiarity to
+//      `Gem.Beryl.qualify_constant`.
+//
+//      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
+//
+Gem.Beryl.codify_method(
+    'codify_bound_method',
+    (
+          'Codify a global Gem bound method.\n'
+        + '\n'
+        + 'Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.'
+    ),
+    function codifier$Gem__Beryl__codify_bound_method() {
+        //
+        //  Imports
+        //
+        var simple                     = ( ! Gem.Configuration.clarity)
+        var define_property            = Object.defineProperty
+        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+
+
+        //
+        //  Implementation: Simple version
+        //
+        if (simple) {
+            //
+            //  NOTE:
+            //      The implementation of this method is identical to `Gem.codify_constant`.
+            //
+            //      (Although this method has an extra `$which` parameter, so we can't substitute
+            //      `Gem.codify_constant` for this method).
+            //
+            return function Gem__Beryl__codify_bound_method(who, $what, $which, codifier) {
+                //  Codify a global Gem bound method.
+                //
+                //  Ignores the `$what` & `$which` parameters, which are only used in clarity mode.
+
+                visible_constant_attribute.value = codifier()
+                define_property(this, who, visible_constant_attribute)
+                delete visible_constant_attribute.value
+            }
+        }
+
+
+        //
+        //  Implementation: Clarity version
+        //
+        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
+        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_type_error      = Gem.Beryl.throw_type_error
+
+
+        return function Gem__Beryl__codify_bound_method(who, $what, $which, codifier) {
+            //  Codify a global Gem bound method.
+            //
+            //  Also in clarity mode adds a `.$who` and `.$what` attributes to the bound method.
+
+            /*arguments*/ {
+                if (arguments.length !== 4) {
+                    throw_wrong_arguments('Gem.Beryl.codify_bound_method', 4, arguments.length)
+                }
+
+                if (typeof who    !== 'string') { throw_must_be_string('who',    who)   }
+                if (typeof $what  !== 'string') { throw_must_be_string('$what',  $what) }
+                if (typeof $which !== 'string') { throw_must_be_string('$which', $which) }
+
+                /*codifier*/ {
+                    var codifier_name = 'codifier$' + this.$who.replace('.', '__') + '__' + who
+
+                    if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
+                        throw_type_error(
+                                (
+                                      'parameter `codifier` must be a function named `' + codifier_name + '`'
+                                    + '; was instead'
+                                ),
+                                codifier//,
+                            )
+                    }
+                }
+            }
+
+            var bound_method = codifier()
+
+            /*verify*/ {
+                if (
+                       typeof bound_method === 'function'
+                    && (
+                              (
+                                  //
+                                  //  JavaScript 6.0: Bound methods begin with the the prefix "bound "
+                                  //
+                                  bound_method.name.startsWith('bound ')
+                              )
+                           || (
+                                  //
+                                  //  JavaScript 5.0: Bound methods have a blank name & also do not have a `prototype`
+                                  //
+                                  (bound_method.name.length === 0) && ( ! ('prototype' in bound_method))
+                              )
+                           || (
+                                  //
+                                  //  Our brower is so old it doesn't even have bound methods ...
+                                  //      ... So accept anything (presumably an emulation function) ...
+                                  //
+/*FIX THIS*/                      ( ! Gem.Beryl.has_bind)
+                              )
+                       )
+                ) {
+                    //
+                    //  ... It kind of looks like a bound method (to the best of our abilities to determine) ...
+                    //      so we'll accept it ...
+                    //
+                    //  ... Unfortunatly there is no way to really determine if it is a bound method or not ...
+                    //
+                } else {
+                    throw_type_error(
+                            'codifier `' + codifier_name + '`' + ' must return a bound method; instead returned',
+                            bound_method//,
+                        )
+                }
+            }
+
+            visible_constant_attribute.value = bound_method
+            define_property(this, who, visible_constant_attribute)
+
+            /*clarity*/ {
+                visible_constant_attribute.value = this.$who + '.' + who
+                define_property(bound_method, '$who', visible_constant_attribute)
+
+                visible_constant_attribute.value = $what
+                define_property(bound_method, '$what', visible_constant_attribute)
+
+                visible_constant_attribute.value = $which
+                define_property(bound_method, '$which', visible_constant_attribute)
+            }
+
+            delete visible_constant_attribute.value
+        }
+    }//,
 )
 
 
@@ -256,9 +444,9 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error           = Gem.Beryl.throw_type_error
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
+        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_type_error      = Gem.Beryl.throw_type_error
 
 
         return function Gem__Beryl__codify_method(who, $what, codifier) {
@@ -446,9 +634,9 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error           = Gem.Beryl.throw_type_error
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
+        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_type_error      = Gem.Beryl.throw_type_error
 
 
         return function Gem__Beryl__method(who, $what, method) {
@@ -496,8 +684,89 @@ Gem.Beryl.codify_method(
 )
 
 
+//
+//  Gem.Beryl.mutable:
+//      Initialize a global Gem mutable value.
+//
+//      Also in clarity mode adds an explanation of what the mutable value does.
+//
+Gem.Beryl.codify_method(
+    'mutable',
+    (
+          'Initialize a global Gem mutable value.\n'
+        + '\n'
+        + 'Also in clarity mode adds an explanation of what the value does.'
+    ),
+    function codifier$Gem__Beryl__mutable() {
+        //
+        //  Imports
+        //
+        var define_property            = Object.defineProperty
+        var simple                     = ( ! Gem.Configuration.clarity)
+        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var visible_mutable_attribute  = Gem.Beryl.visible_mutable_attribute
 
-//  
+
+        //
+        //  Implementation: Simple version
+        //
+        if (simple) {
+            return function Gem__Beryl__mutable(who, $what, value) {
+                //  Initialize a global Gem mutable value.
+                //
+                //  Ignores the `$what` parameter, which is only used in clarity mode.
+
+                visible_mutable_attribute.value = value
+                define_property(this, who, visible_mutable_attribute)
+                delete visible_mutable_attribute.value
+            }
+        }
+
+
+        //
+        //  Implementation: Clarity version
+        //
+        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
+        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_type_error      = Gem.Beryl.throw_type_error
+
+
+        return function Gem__Beryl__mutable(who, $what, value) {
+            //  Initialize a global Gem mutable value.
+            //
+            //  Also in clarity mode adds an explanation of what the mutable value does.
+
+            /*arguments*/ {
+                if (arguments.length !== 3) {
+                    throw_wrong_arguments('Gem.Beryl.mutable', 3, arguments.length)
+                }
+
+                if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
+                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+
+                if (typeof value === 'undefined' || typeof value === 'function') {
+                    throw_type_error(
+                            'parameter `value` must be a value; was instead',
+                            value//,
+                        )
+                }
+            }
+
+            visible_mutable_attribute.value = value
+            define_property(this, who, visible_mutable_attribute)
+            delete visible_mutable_attribute.value
+
+            /*clarity*/ {
+                visible_constant_attribute.value = $what
+                define_property(this, who + '$', visible_constant_attribute)
+                delete visible_constant_attribute.value
+            }
+        }
+    }//,
+)
+
+
+//
 //  Gem.Beryl.qualify_constant
 //      Qualify a global Gem constant.
 //

@@ -5,9 +5,6 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-debugger
-
-
 //
 //  Create global variable `Gem`
 //
@@ -17,7 +14,7 @@ debugger
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         box_name      : true,                               //      Name 'box' instances 'Box' in Developer Tools.
-        capture_error : false,                              //      Try to capture errors
+        capture_error : true,                               //      Try to capture errors
         clarity       : true,                               //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors
@@ -538,7 +535,7 @@ if (Gem.Script.handle_errors) {
                     return
                 }
 
-                error(source_attribute(tag) + '#' + e.lineno + ': ' + e.error)
+                error(e.error.stack)
             }
 
 
