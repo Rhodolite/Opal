@@ -7,11 +7,12 @@
     var machine        = 'Other'                    //  Used in debug mode to configure environment for Gem
     var module_name    = 'Opal'
     var module_version = '0.0.31'
-    var watching       = 'js/plugins/Beryl.js'
+//  var watching       = 'js/plugins/Beryl.js'
 //  var watching       = 'js/plugins/Silver.js'
 //  var watching       = 'js/plugins/Jasper.js'
 //  var watching       = 'js/plugins/Gem.js'
-    var watching_2     = 'Gem/Beryl/Boot2_Clarity.js'
+    var watching       = 'Gem/Beryl/Boot2_Clarity.js'
+    var watching_2     = 'Gem/Beryl/Boot3_Methods.js'
 
     "use strict"
 

@@ -5,10 +5,6 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-debugger
-
-
-Gem.NodeWebKit.show_developer_tools()
 
 
 Gem.Beryl.mutable(
@@ -656,62 +652,6 @@ Gem.Beryl.codify_bound_method(
 )
 
 
-//
-//  In Gem "clarity" mode, *every* object created has a `.$who` and `.$what` member to help introspect the object
-//  in developer tools:
-//
-//      This makes it a lot clearer what the object is used for.
-//
-//      All "clarity" objects begin with `$` (see below for an exeption, when instead `.$$who`
-//      or `.$$what` is used to avoid conflicts).  //
-//      Also each module appears in `Gem.$.ModuleName`, with each member of that module having a
-//      `.$who` & `.$what` members.
-//
-//      By *every* object this includes all closure objects that are used.  This make it very easy to examine
-//      the `.[[Scopes]]` member of a function and introspect the value of each of it's closure objects.
-//
-//      When an object uses `.$who` or `.$what` members for it's own purposes, then the extra members created
-//      are named `.$$who` and `.$$what` to avoid conflicts.
-//
-if (Gem.Configuration.clarity) {
-    Gem.Beryl.execute(
-        function execute$Gem__add_clarity() {
-            var create_Box = Gem.Beryl.create_Box
-
-            if ( ! ('$' in Gem)) {
-                Gem.$ = create_Box({                                //  Map of introspection of all the Gem modules
-                    $who  : { value : 'Gem.$' },
-                    $what : { value : 'Map of introspection of all the Gem modules.' },
-                    Beryl : {
-                        value : create_Box({
-                            $who  : { value : 'Gem.$.Beryl' },
-                            $what : { value : 'An introspection of the Beryl module.' }//,
-                        })//,
-                    }//,
-                })
-            }
-
-            Gem.Configuration.$who  = 'Gem.Configuration'
-            Gem.Configuration.$what = 'Gem Configuration values'
-
-            Gem.Script.script_map.$who  = 'Gem.Script.script_map'
-            Gem.Script.script_map.$what = 'Map of all the scripts loaded (or loading).'
-
-            Gem.Source.$who  = 'Gem.Source'
-            Gem.Source.$what = 'A map, for each `<script>` tag, a function from the source file to "hold onto"'
-                             + ' to avoid garbage collection of all functions from that source file,'
-                             + ' which causes the source file to disappear from the "Sources" tab of Developer Tools'
-
-            Gem._.$who  = 'Gem._'
-            Gem._.$what = 'Private members & methods of all Gem modules.'
-
-            Gem._.Beryl.$who  = 'Gem._.Beryl'
-            Gem._.Beryl.$what = 'Private members & methods of the Beryl module.'
-        }
-    )
-}
-
-
 Gem.Beryl.codify_method(
     'deep_copy_with_adjustments',
     (
@@ -864,6 +804,7 @@ if (Gem.Configuration.clarity) {
 
 Gem.Beryl.execute(
     function execute$Gem__clear__and__log_Gem() {
+        Gem.NodeWebKit.show_developer_tools()
         //console.clear()
         console.log('%o', Gem)
     }

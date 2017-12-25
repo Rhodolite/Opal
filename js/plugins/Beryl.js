@@ -822,7 +822,9 @@ Gem.Beryl.codify_method.call(
 //      1.  Codify Gem.Script.load;
 //      2.  Cleanup unused attributes;
 //      3.  Protect this file from garbage collection (debug mode only);
-//      4.  Load next script file: "Gem/Beryl/Boot2_Clarity.js"
+//      4.  Load next script file:
+//                  "Gem/Beryl/Boot2_Clarity.js"        - Clarity mode
+//                  "Gem/Beryl/Boot3_Methods.js"        - Simple Mode
 //
 Gem.Beryl.execute(
     function execute$finish() {
@@ -880,7 +882,7 @@ Gem.Beryl.execute(
         //
         //  Load next script
         //
-        Gem.Script.load('Gem/Beryl/Boot2_Clarity.js')
+        Gem.Script.load(clarity ?  'Gem/Beryl/Boot2_Clarity.js' : 'Gem/Beryl/Boot3_Methods.js')
     }//,
 )
 
