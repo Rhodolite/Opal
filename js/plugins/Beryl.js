@@ -5,6 +5,9 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
+debugger
+
+
 //
 //  Create global variable `Gem`
 //
@@ -39,8 +42,6 @@ window.Gem = {
         //  constant              : Function                //      Store a global Gem constant.
         //  method                : Function                //      Define a Gem method.
         //  qualify_constant      : Function                //      Qualify a global Gem constant.
-        //  throw_type_error      : Function                //      Throw a type error (wrong argument).
-        //  throw_wrong_arguments : Function                //      Throw a type error (wrong number of arguments).
     },
 
     NodeWebKit: {                                           //  Node WebKit members & methods.
@@ -75,7 +76,7 @@ window.Gem = {
 
     _ : {                                                   //  Private members & methods of all Gem modules.
         Beryl : {                                           //      Private members & methods of module Beryl.
-        //  clarity_mode$global_variable_Gem_changed : []//,//      Callbacks to call when `Gem` is changed.
+        //  clarity_mode$global_variable_Gem_changed : []   //      Callbacks to call when `Gem` is changed.
         }//,
     },
 
@@ -83,9 +84,11 @@ window.Gem = {
 
 
 //
-//  Gem.Beryl.{clarity_note,codify_method,constant,method,qualify_constant}
+//  Stubs for:
+//      Gem.Beryl.{clarity_note,codify_method,constant,method,qualify_constant}
 //
-//  OLD NOTE: can be executed twice in clarity mode.  (Need this?)
+//  Also:
+//      Gem.Beryl.visible_constant_attribute
 //
 Gem.Beryl.execute(
     function execute$setup__Gem() {
@@ -116,28 +119,20 @@ Gem.Beryl.execute(
 
 
         if (clarity) {
-            //
-            //  `if (7)` means "always".
-            //
-            //      Used to enclose a section of code in '{' ... '}' to make it group the statements together, and
-            //      make the code easier to read.
-            //
-            if (7) {
-                function who_what(module, $who, $what) {
-                    visible_constant_attribute.value = $who
-                    define_property(module, '$who', visible_constant_attribute)
+            function who_what(module, $who, $what) {
+                visible_constant_attribute.value = $who
+                define_property(module, '$who', visible_constant_attribute)
 
-                    visible_constant_attribute.value = $what
-                    define_property(module, '$what', visible_constant_attribute)
+                visible_constant_attribute.value = $what
+                define_property(module, '$what', visible_constant_attribute)
 
-                    delete visible_constant_attribute.value
-                }
-
-                who_what(Gem,            'Gem',            'The only global variable used by Gem.')
-                who_what(Gem.Beryl,      'Gem.Beryl',      'Exports of the Beryl module.')
-                who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
-                who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
+                delete visible_constant_attribute.value
             }
+
+            who_what(Gem,            'Gem',            'The only global variable used by Gem.')
+            who_what(Gem.Beryl,      'Gem.Beryl',      'Exports of the Beryl module.')
+            who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
+            who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
         }
 
 
@@ -154,7 +149,7 @@ Gem.Beryl.execute(
         //
         //      ... Thus, the full implementation, was moved to a separate file, for readability ...
         //
-        //      ... Even though unforunatly this
+        //      ... Even though unforunatly this:
         //
         //              1.  *BAD*   Violates the DRY principle ("Do not Repeat Yourself); AND
         //
@@ -409,7 +404,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 Gem.Beryl.constant.call(
     Gem.Script,
     'handle_errors',
-    '`true` if handling `<script>` errors.',
+    '`Gem.Beryl.handle_errors` is `true` if handling `<script>` errors.',
     (
            Gem.Configuration.capture_error                  //  1.  Configured to capture errors;
         && ('Utils' in window) && Utils.isNwjs()            //  2.  This is running under nw.js;
@@ -420,64 +415,65 @@ Gem.Beryl.constant.call(
 )
 
 
-//
-//  Gem.Script.source_attribute
-//      Get an unmodified `.src` attribute from a DOM (domain object model) element.
-//
-//  NOTE:
-//      On nw.js:
-//          Doing `tag.getAttribute('src')` returns the unmodified `.src` attribute
-//
-//          However `tag.src` returns the modified `.src` attribute, prefixed with the "origin".
-//
-//          Yes, its CRAZY, that these two [theoretically identical] ways of accessing `.src` return different values.
-//
-//      Anyway, if we can use `.getAttribute('src')` we do so; otherwise we do it the crazy backwards compatiable
-//      way.
-//
 if (Gem.Script.handle_errors) {
-    if ('getAttribute' in document.head) {
-        Gem.Beryl.method.call(
-            Gem.Script,
-            'source_attribute',
-            'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
-            function Gem__Script__source_attribute(tag) {
-                //  Get unmodified `.src` attribute
-
-                return tag.getAttribute('src')          //  Get unmodified `.src` attribute
-            }
-        )
-    } else {
-        Gem.Beryl.codify_method.call(
-            Gem.Script,
-            'source_attribute',
-            'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
-            function codifier$Gem__Script__source_attribute() {
-                var origin_slash = location.origin + '/'
-
-
+    //
+    //  Gem.Script.source_attribute
+    //      Get an unmodified `.src` attribute from a DOM (domain object model) element.
+    //
+    //  NOTE:
+    //      On nw.js:
+    //          Doing `tag.getAttribute('src')` returns the unmodified `.src` attribute
+    //
+    //          However `tag.src` returns the modified `.src` attribute, prefixed with the "origin".
+    //
+    //          Yes, its CRAZY, that these two [theoretically identical] ways of accessing `.src` return different
+    //          values.
+    //
+    //      Anyway, if we can use `.getAttribute('src')` we do so; otherwise we do it the crazy backwards compatiable
+    //      way.
+    //
+    Gem.Beryl.codify_method.call(
+        Gem.Script,
+        'source_attribute',
+        'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
+        function codifier$Gem__Script__source_attribute(tag) {
+            //
+            //  Modern Browser version
+            //
+            if ('getAttribute' in document.head) {
                 return function Gem__Script__source_attribute(tag) {
                     //  Get unmodified `.src` attribute
 
-                    var source = tag.src                    //  OLD WAY: get [possibly modified] `.src` attribute
-
-                    if (typeof source === 'string' && source.startsWith(origin_slash)) {
-                        return source.substring(origin_slash.length)    //  Restore `.src` attribute to original value
-                    }
-
-                    return source                           //  Return [ummodified] `.src` attribute
+                    return tag.getAttribute('src')          //  Get unmodified `.src` attribute
                 }
             }
-        )
-    }
-}
 
 
-//
-//  Gem.Script.error
-//      Show an error (either with `alert` or `console.error`).
-//
-if (Gem.Script.handle_errors) {
+            //
+            //  Ancient Browser version
+            //
+            var origin_slash = location.origin + '/'
+
+
+            return function Gem__Script__source_attribute(tag) {
+                //  Get unmodified `.src` attribute
+
+                var source = tag.src                    //  OLD WAY: get [possibly modified] `.src` attribute
+
+                if (typeof source === 'string' && source.startsWith(origin_slash)) {
+                    return source.substring(origin_slash.length)    //  Restore `.src` attribute to original value
+                }
+
+                return source                           //  Return [ummodified] `.src` attribute
+            }
+        }
+    )
+
+
+    //
+    //  Gem.Script.error
+    //      Show an error (either with `alert` or `console.error`).
+    //
     Gem.Beryl.codify_method.call(
         Gem.Script,
         'error',
@@ -505,19 +501,17 @@ if (Gem.Script.handle_errors) {
             }
 
             return function Gem__Script__error(message) {
-                console_error(message)
                 show_developer_tools()
+                console_error(message)
             }
         }//,
     )
-}
 
 
-//
-//  Gem.Script.handle_global_error
-//      Handle errors when executing a `<script>` tag.
-//
-if (Gem.Script.handle_errors) {
+    //
+    //  Gem.Script.handle_global_error
+    //      Handle errors when executing a `<script>` tag.
+    //
     Gem.Beryl.codify_method.call(
         Gem.Script,
         'handle_global_error',
@@ -553,14 +547,12 @@ if (Gem.Script.handle_errors) {
             return Gem__Script__handle_global_error
         }
     )
-}
 
 
-//
-//  Gem.Script.handle_event
-//      Handle events of `<script>` tags.
-//
-if (Gem.Script.handle_errors) {
+    //
+    //  Gem.Script.handle_event
+    //      Handle events of `<script>` tags.
+    //
     Gem.Beryl.codify_method.call(
         Gem.Script,
         'handle_event',
@@ -648,8 +640,7 @@ Gem.Beryl.qualify_constant.call(
 //      This routine can be called multiple times:
 //
 //          1.  Here;
-//          2.  Again, in clarity mode in 'Gem/Beryl/Boot2_Clarity.js' (REALLY -- VERIFY THIS?)
-//          3.  Again, in clarity mode, after `Gem` is replaced.
+//          2.  Again, in clarity mode, after `Gem` is replaced.
 //
 Gem.Beryl.codify_method.call(
     Gem.Script,
@@ -683,7 +674,7 @@ Gem.Beryl.codify_method.call(
             var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
         } else {
             var append_child = function OLD_WAY__append_child(tag) {
-                gem_scripts.appendChild(tag)                       //  Old way: Append to `gem_scripts`
+                gem_scripts.appendChild(tag)                                //  Old way: Append to `gem_scripts`
             }
         }
 
@@ -710,8 +701,7 @@ Gem.Beryl.codify_method.call(
         //      This routine can be called multiple times:
         //
         //          1.  Here;
-        //          2.  Again, in clarity mode in 'Gem/Beryl/Boot2_Clarity.js' (REALLY -- VERIFY THIS?)
-        //          3.  Again, in clarity mode, after `Gem` is replaced.
+        //          2.  Again, in clarity mode, after `Gem` is replaced.
         //
         if (handle_errors) {
             return function Gem__Script__codify_method_load() {
@@ -843,10 +833,14 @@ Gem.Beryl.execute(
         //  Execute a codify of:
         //      Gem.Script.load
         //
-        //  NOTE:
+        //  NOTE #1:
         //      Also does cleanup of `Gem.Script.codify_method_load` if not in clarity mode.
         //          Load JavaScript code using a `<script>` tag.
-        if (7) {
+        //
+        //  NOTE #2:
+        //      Read `/*section*/` as just enclosing a set of common code together
+        //
+        /*section*/ {
             //
             //  Imports
             //
@@ -866,7 +860,7 @@ Gem.Beryl.execute(
         //
         //  Cleanup unused attributes
         // 
-        if (7) {
+        /*section*/ {
             delete Gem.Configuration.show_alert
             delete Gem.Script       .event_list
         }
