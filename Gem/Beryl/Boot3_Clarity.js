@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot2_Clarity: Boot - Phase 2 - Add Clarity
+//  Boot3_Clarity: Boot - Phase 3 - Add Clarity
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
@@ -27,8 +27,6 @@
 //
 Gem.Beryl.execute(
     function execute$Gem__add_clarity() {
-        var create_Box = Gem.Beryl.create_Box
-
         if ( ! ('$' in Gem)) {
             Gem.$ = {                                           //  Map of introspection of all the Gem modules
                 $who  : 'Gem.$',
@@ -249,16 +247,6 @@ Gem.Beryl.execute(
         //  Push the callback to be executed when global variable `Gem` is changed.
         //
         clarity_mode$global_variable_Gem_changed.push(callback$recodify$Gem__Script__load)
-    }
-)
-
-
-//
-//  Load Gem/Beryl/Boot3_Methods.js
-//
-Gem.Beryl.execute(
-    function execute$load_next_script() {
-        Gem.Script.load('Gem/Beryl/Boot3_Methods.js')
     }
 )
 

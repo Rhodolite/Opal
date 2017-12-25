@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot3_Methods: Boot - Phase 3 - Add Methods
+//  Boot4_Methods: Boot - Phase 4 - Add Methods
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
@@ -715,16 +715,6 @@ Gem.Beryl.codify_method(
 
             delete visible_constant_attribute.value
         }
-    }
-)
-
-
-//
-//  Load Gem/Beryl/Boot.js
-//
-Gem.Beryl.execute(
-    function execute$load_next_script() {
-        Gem.Script.load('Gem/Beryl/Boot7.js')
     }
 )
 
