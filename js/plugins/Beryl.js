@@ -138,132 +138,80 @@ Gem.Beryl.execute(
                 who_what(Gem.Script,     'Gem.Script',     '`<script>` handling')
                 who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
             }
-
-
-            var throw_must_be_number = function Gem__Beryl__throw_must_be_number(name, v) {
-                //  Throw a type error when a parameter is not a number.
-
-                if (7) {
-                    if (arguments.length !== 2) {
-                        throw_wrong_arguments('Gem.Beryl.throw_must_be_number', 2, arguments.length)
-                    }
-
-                    if (typeof name !== 'string') { throw_must_be_string('name', name) }
-                    //  `v` can by any type (though obviously is not a string)
-                }
-
-                throw_type_error('parameter `' + name + '` must be a number; was instead', v)
-            }
-
-
-            var throw_must_be_string = function Gem__Beryl__throw_must_be_string(name, v) {
-                //  Throw a type error when a parameter is not a string.
-
-                if (7) {
-                    if (arguments.length !== 2) {
-                        throw_wrong_arguments('Gem.Beryl.throw_must_be_string', 2, arguments.length)
-                    }
-
-                    if (typeof name !== 'string') { throw_must_be_string('name', name) }
-                    //  `v` can by any type (though obviously is not a number)
-                }
-
-                throw_type_error('parameter `' + name + '` must be a string; was instead', v)
-            }
-
-
-            var throw_type_error = function Gem__Beryl__throw_type_error(prefix, v) {
-                //  Throw a type error (usually used when a method received invalid parameters).
-
-                if (7) {
-                    if (arguments.length !== 2) {
-                        throw_wrong_arguments('Gem.Beryl.throw_type_error', 2, arguments.length)
-                    }
-
-                    if (typeof prefix !== 'string') { throw_must_be_string(prefix, 'prefix') }
-                    //  `v` handled below
-                }
-
-                if (typeof v === 'function') {
-                    if (v.name.length) {
-                        var suffix = ' a function named `' + v.name + '`'
-                    } else {
-                        var suffix = ' an unnamed function'
-                    }
-                } else {
-                    if (typeof v === 'undefined') {
-                        var suffix = ' `undefined`'
-                    } else {
-                        var suffix = ' the value: ' + v.toString()
-                    }
-                }
-
-                var message = 'TypeError: ' + prefix + suffix
-
-                throw new Error(message)
-            }
-
-
-            var throw_wrong_arguments = function Gem__Beryl__throw_wrong_arguments(name, actual, expected) {
-                //  Throw a type error when a method receives wrong number of arguments.
-
-                if (7) {
-                    if (arguments.length !== 3) {
-                        throw_wrong_arguments('Gem.Beryl.throw_wrong_arguments', 3, arguments.length)
-                    }
-
-                    if (typeof name     !== 'string') { throw_must_be_string('name',     name)     }
-                    if (typeof actual   !== 'number') { throw_must_be_number('actual',   actual)   }
-                    if (typeof expected !== 'number') { throw_must_be_number('expected', expected) }
-                }
-
-                if (expected === 0) {
-                    var takes = 'takes no arguments'
-                } else if (expected == 1) {
-                    var takes = 'takes exactly 1 argument'
-                } else {
-                    var takes = 'takes exactly ' + expected.toString() + ' arguments'
-                }
-
-                var message = 'TypeError: function `' + name + '` ' + takes + ' (' + actual.toString() + ' given)'
-
-                throw new Error(message)
-            }
         }
 
 
+//  <stubs>                                                 //  Start of stubs
         //
-        //  Gem.Beryl.method
-        //      Store a Gem Method.
+        //  Stubs:
+        //      See "Gem/Beryl/Boot2_Methods.js" for full implementation
         //
-        //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
+        //  NOTE:
+        //      These stubs are ~100 lines long ...
         //
-        if (clarity) {
-            var method = function Gem__Beryl__method(who, $what, method) {
-                //  Store a Gem Method.
-                //
-                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
+        //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~100 lines
+        //          of extra error handling code) in "Gem/Beryl/Boot2_Methods.js ...
+        //
+        //      ... Thus, the full implementation, was moved to a separate file, for readability ...
+        //
+        //      ... Even though unforunatly this
+        //
+        //              1.  *BAD*   Violates the DRY principle ("Do not Repeat Yourself); AND
+        //
+        //              2.  *BAD*   This is the WET coding pratice ("Write Everything Twice") ...
+        //
+        //      ... In this special case, as boot code, it was decided to do this both for initial readability and
+        //          to shorten the boot code in thie file ...
+        //
+        //      (Was not an easy choice, hopefully was the right one).
+        //
+        var method = function Gem__Beryl__method(who, $what, method) {
+            visible_constant_attribute.value = method
+            define_property(this, who, visible_constant_attribute)
 
-                if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.method', 3, arguments.length)
+            if (clarity) {
+                visible_constant_attribute.value = this.$who + '.' + who
+                define_property(method, '$who', visible_constant_attribute)
+
+                visible_constant_attribute.value = $what
+                define_property(method, '$what', visible_constant_attribute)
+            }
+
+            delete visible_constant_attribute.value
+        }
+
+
+        method.call(                                        //   Use `method` on itself ...
+            Gem.Beryl,
+            'method',
+            'Temporary stub for Gem.Beryl.method',
+            method//,
+        )
+
+
+        Gem.Beryl.method(
+            'clarity_note',
+            'Temporary stub for Gem.Beryl.clarity_note',
+            function Gem__Beryl__clarity_note(who, $what) {
+                if (clarity) {
+                    visible_constant_attribute.value = $what
+                    define_property(this, who + '$NOTE', visible_constant_attribute)
+                    delete visible_constant_attribute.value
                 }
+            }
+        )
 
-                var method_name = this.$who.replace('.', '__') + '__' + who
 
-                if (typeof method !== 'function' || method_name !== method.name) {
-                    throw_type_error(
-                            (
-                                  'parameter `method` must be a function named `' + method_name + '`'
-                                + '; was instead'
-                            ),
-                            method//,
-                        )
-                }
+        Gem.Beryl.method(
+            'codify_method',
+            'Temporary stub for Gem.Beryl.codify_method',
+            function Gem__Beryl__codify_method(who, $what, codifier) {
+                var method = codifier()
 
                 visible_constant_attribute.value = method
                 define_property(this, who, visible_constant_attribute)
 
-                if (7) {
+                if (clarity) {
                     visible_constant_attribute.value = this.$who + '.' + who
                     define_property(method, '$who', visible_constant_attribute)
 
@@ -273,162 +221,13 @@ Gem.Beryl.execute(
 
                 delete visible_constant_attribute.value
             }
+        )
 
 
-            //
-            //   Use `method` on itself ...
-            //
-            method.call(
-                Gem.Beryl,
-                'method',
-                (
-                       'Store a Gem Method.\n'
-                     + '\n'
-                     + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the method.'
-                ),
-                method//,
-            )
-        } else {
-            var method = function Gem__Beryl__method(who, $what, method) {
-                //  Store a Gem Method.
-                //
-                //  Ignores the `$what` parameter, which is only used in clarity mode.
-
-                visible_constant_attribute.value = method
-                define_property(this, who, visible_constant_attribute)
-                delete visible_constant_attribute.value
-            }
-
-            method.call(Gem.Beryl, 'method', null, method)  //   Use `method` on itself ...
-        }
-
-
-        //
-        //  Gem.Beryl.clarity_note
-        //      Add a note to a variable or set of variables (clarity mode only).
-        //
-        if (Gem.Configuration.clarity) {
-            Gem.Beryl.method(
-                'clarity_note',
-                'Add a note to a variable or set of variables (clarity mode only).',
-                function Gem__Beryl__clarity_note(who, $what) {
-                    //  Add a note to a variable or set of variables (clarity mode only)
-
-                    if (arguments.length !== 2) {
-                        throw_wrong_arguments('Gem.Beryl.clarity_note', 2, arguments.length)
-                    }
-
-                    visible_constant_attribute.value = $what
-                    define_property(this, who + '$NOTE', visible_constant_attribute)
-                    delete visible_constant_attribute.value
-                }
-            )
-        } else {
-            Gem.Beryl.method(
-                'clarity_note',
-                'Empty function -- nothing to do, not in clarity mode',
-                function Gem__Beryl__clarity_note(/*who, $what*/) {
-                    //  Nothing to do, not in clarity mode
-                }
-            )
-        }
-
-
-        //
-        //  Gem.Beryl.codify_method:
-        //      Create the code for a method as a closure to avoid the use of any global variables.
-        //
-        //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-        //
-        if (clarity) {
-            Gem.Beryl.method(
-                'codify_method',
-                (
-                      'Create the code for a method as a closure to avoid the use of any global variables.\n'
-                    + '\n'
-                    + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
-                ),
-                function Gem__Beryl__codify_method(who, $what, codifier) {
-                    //  Create the code for a method as a closure to avoid the use of any global variables.
-                    //
-                    //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-
-                    var middle        = this.$who.replace('.', '__')
-                    var codifier_name = 'codifier$' + middle + '__' + who
-                    var method_name   =                middle + '__' + who
-
-                    if (arguments.length !== 3) {
-                        throw_wrong_arguments('Gem.Beryl.codify_method', 3, arguments.length)
-                    }
-
-                    if (typeof codifier !== 'function' || codifier_name !== codifier.name) {
-                        throw_type_error(
-                                (
-                                      'parameter `codifier` must be a function named `' + codifier_name + '`'
-                                    + '; was instead'
-                                ),
-                                codifier//,
-                            )
-                    }
-
-                    var method = codifier()
-
-                    if (typeof method !== 'function' || method_name !== method.name) {
-                        throw_type_error(
-                                (
-                                      'codifier `' + codifier_name + '`'
-                                    + ' must return a function named `'  + method_name + '`'
-                                    + '; instead returned'
-                                ),
-                                method//,
-                            )
-                    }
-
-                    visible_constant_attribute.value = method
-                    define_property(this, who, visible_constant_attribute)
-
-                    if (7) {
-                        visible_constant_attribute.value = this.$who + '.' + who
-                        define_property(method, '$who', visible_constant_attribute)
-
-                        visible_constant_attribute.value = $what
-                        define_property(method, '$what', visible_constant_attribute)
-                    }
-
-                    delete visible_constant_attribute.value
-                }
-            )
-        } else {
-            Gem.Beryl.method(
-                'codify_method',
-                null,
-                function Gem__Beryl__codify_method(who, $what, codifier) {
-                    //  Create the code for a method as a closure to avoid the use of any global variables.
-                    //
-                    //  Ignores the `$what` parameter, which is only used in clarity mode.
-
-                    visible_constant_attribute.value = codifier()
-                    define_property(this, who, visible_constant_attribute)
-                    delete visible_constant_attribute.value
-                }
-            )
-        }
-
-
-        //
-        //  Gem.Beryl.constant:
-        //      Store a global Gem constant.
-        //
-        //      Simplified temporary version -- See "Gem/Beryl/Boot2_Clarity.js" for the real version.
-        //
         Gem.Beryl.method(
             'constant',
-            null,
+            'Temporary stub for Gem.Beryl.constant',
             function Gem__Beryl__constant(who, $what, constant) {
-                //  Store a global Gem constant.
-                //
-                //  Simplified temporary version -- See "Gem/Beryl/Boot2_Clarity.js" for the real version.
-
                 visible_constant_attribute.value = constant
                 define_property(this, who, visible_constant_attribute)
 
@@ -442,50 +241,22 @@ Gem.Beryl.execute(
         )
 
 
-        //
-        //  Gem.Beryl.qualify_constant
-        //      Qualify a global Gem constant.
-        //
-        //      The `qualifier` argument is a function that returns the value of the constant.
-        //
-        //      Ignores the `$what` parameter, which is only used in clarity mode.
-        //
         Gem.Beryl.method(
             'qualify_constant',
-            null,
+            'Temporary stub for Gem.Beryl.qualify_constant',
             function Gem__Beryl__qualify_constant(who, $what, qualifier) {
-                //  Qualify a global Gem constant.
-                //
-                //  The `qualifier` argument is a function that returns the value of the constant.
-                //
-                //  Ignores the `$what` parameter, which is only used in clarity mode.
-
                 visible_constant_attribute.value = qualifier()
                 define_property(this, who, visible_constant_attribute)
+
+                if (clarity) {
+                    visible_constant_attribute.value = $what
+                    define_property(this, who + '$', visible_constant_attribute)
+                }
+
                 delete visible_constant_attribute.value
             }
         )
-
-
-        if (clarity) {
-            var simple$qualify_constant = Gem.Beryl.qualify_constant
-
-            Gem.Beryl.method(
-                'qualify_constant',
-                null,
-                function Gem__Beryl__qualify_constant(who, $what, qualifier) {
-                    //  Brief temporary version --  See "Gem/Beryl/Boot2_Clarity.js" for the real version.
-
-                    simple$qualify_constant.call(this, who, $what, qualifier)
-
-                    if (7) {
-                        visible_constant_attribute.value = $what
-                        define_property(this, who + '$', visible_constant_attribute)
-                        delete visible_constant_attribute.value
-                    }
-                }
-            )
-        }
+//  </stubs>                                                //   End of stubs
 
 
         //
