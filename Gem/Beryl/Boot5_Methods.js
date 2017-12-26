@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot4_Methods: Boot - Phase 4 - Add Methods
+//  Boot5_Methods: Boot - Phase 5 - Add Methods
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 

@@ -5,9 +5,9 @@ BERYL_FILES = \
 	../js/plugins/Beryl.js \
 	../js/plugins/Beryl1.js \
 	../Gem/Beryl/Boot2_Manifest.js \
-	../Gem/Beryl/Boot3_Clarity.js \
-	../Gem/Beryl/Boot4_Methods.js \
-	../Gem/Beryl/Boot5_Module.js \
+	../Gem/Beryl/Boot4_Clarity.js \
+	../Gem/Beryl/Boot5_Methods.js \
+	../Gem/Beryl/Boot6_Module.js \
 	../Gem/Beryl/Boot7.js
 #../Gem/Clarity/DomainObjectModel.js \
 
@@ -43,7 +43,7 @@ FILES = \
 all: clean files links
 
 clean:
-	rm -f b.js b1.js b2.js b3.js b4.js b5.js b7.js bs.js
+	rm -f b.js b1.js b2.js b3.js b4.js b5.js b6.js b7.js bs.js
 	rm -f c.js cd.js
 	rm -f files files.new
 	rm -f g.js
@@ -64,9 +64,9 @@ links:
 	ln -s ../js/plugins/Beryl.js     	        b.js
 	ln -s ../js/plugins/Beryl1.js     	        b1.js
 	ln -s ../Gem/Beryl/Boot2_Manifest.js     	b2.js
-	ln -s ../Gem/Beryl/Boot3_Clarity.js      	b3.js
-	ln -s ../Gem/Beryl/Boot4_Methods.js      	b4.js
-	ln -s ../Gem/Beryl/Boot5_Module.js       	b5.js
+	ln -s ../Gem/Beryl/Boot4_Clarity.js      	b4.js
+	ln -s ../Gem/Beryl/Boot5_Methods.js      	b5.js
+	ln -s ../Gem/Beryl/Boot6_Module.js       	b6.js
 	ln -s ../Gem/Beryl/Boot7.js      	        b7.js
 	ln -s ../js/plugins/Bloodstone.js	        bs.js
 	ln -s ../Junk/Crystal.js	    	        c.js

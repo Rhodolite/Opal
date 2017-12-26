@@ -7,9 +7,9 @@
 
 //
 //  Load next scripts:
-//      "Gem/Beryl/Boot3_Clarity.js"    - Add `.$who`, and `.$what`, prepare to reload `Gem` (only in clarity mode)
-//      "Gem/Beryl/Boot4_Methods.js"    - Initial Methods
-//      "Gem/Beryl/Boot5_Module.js"     - Method to define a module
+//      "Gem/Beryl/Boot4_Clarity.js"    - Add `.$who`, and `.$what`, prepare to reload `Gem` (only in clarity mode)
+//      "Gem/Beryl/Boot5_Methods.js"    - Initial Methods
+//      "Gem/Beryl/Boot6_Module.js"     - Method to define a module
 //      "Gem/Beryl/Boot7.js"            - Rest of code under development
 //
 Gem.Core.execute(
@@ -22,10 +22,10 @@ Gem.Core.execute(
 
 
         //
-        //  Load "Gem/Beryl/Boot3_Clarity.js" (clarity mode only)
+        //  Load "Gem/Beryl/Boot4_Clarity.js" (clarity mode only)
         //
         if (clarity) {
-            load('Gem/Beryl/Boot3_Clarity.js')
+            load('Gem/Beryl/Boot4_Clarity.js')
         }
 
 
@@ -33,8 +33,8 @@ Gem.Core.execute(
         //  Load rest of scripts
         //
         var manifest_list = [
-                'Gem/Beryl/Boot4_Methods.js',
-                'Gem/Beryl/Boot5_Module.js',
+                'Gem/Beryl/Boot5_Methods.js',
+                'Gem/Beryl/Boot6_Module.js',
                 'Gem/Beryl/Boot7.js'//,
             ]
 

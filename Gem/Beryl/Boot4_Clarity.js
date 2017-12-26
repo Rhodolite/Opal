@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot3_Clarity: Boot - Phase 3 - Add Clarity
+//  Boot4_Clarity: Boot - Phase 4 - Add Clarity
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
@@ -220,7 +220,7 @@ Gem.Core.execute(
 //
 //  NOTE:
 //      See "js/plugin/Beryl.js" for an explanation of why stub's are used.
-//      See "Gem/Beryl/Boot4_Methods.js" for full implementation
+//      See "Gem/Beryl/Boot5_Methods.js" for full implementation
 //
 Gem.Core.codify_method(
     'codify_bound_method',

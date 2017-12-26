@@ -134,13 +134,13 @@ Gem.Core.execute(
 //  <stubs>                                                 //  Start of stubs
         //
         //  Stubs:
-        //      See "Gem/Beryl/Boot4_Methods.js" for full implementation
+        //      See "Gem/Beryl/Boot5_Methods.js" for full implementation
         //
         //  NOTE:
         //      These stubs are ~100 lines long ...
         //
         //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~200 lines
-        //          of extra error handling code) in "Gem/Beryl/Boot4_Methods.js ...
+        //          of extra error handling code) in "Gem/Beryl/Boot5_Methods.js ...
         //
         //      ... Thus, the full implementation, was moved to a separate file, for readability ...
         //
