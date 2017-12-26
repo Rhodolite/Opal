@@ -234,6 +234,28 @@ Gem.Core.execute(
             }
 
 
+            Trace.portray_function = function Gem__Trace__portray_function(f) {
+                if (f.name === '') {
+                    return 'unnamed function ()'
+                }
+
+                var s = f.toString()
+
+                if (s.substr(-18) === ' { [native code] }') {               //  `substr` allows negative indexes
+                    return s
+                }
+
+                var newline    = s.indexOf('\n')
+                var newline_m2 = newline - 2
+
+                if (newline_m2 >= 0 && s.substring(newline_m2, newline) == ' {' /*}*/) {
+                    return s.substring(0, newline_m2)
+                }
+
+                return 'function ' + code.name + '()'
+            }
+
+
             if (trace_myself)  { trace_stop() }
             if (trace_execute) { trace_stop() }
         }
@@ -256,9 +278,10 @@ if (Gem.Configuration.trace) {
             var Trace   = Gem.Trace
             var Tracing = Gem.Tracing
 
-            var trace_line  = Trace.trace_line
-            var trace_start = Trace.trace_start
-            var trace_stop  = Trace.trace_stop
+            var trace_portray_function = Trace.portray_function
+            var trace_line             = Trace.trace_line
+            var trace_start            = Trace.trace_start
+            var trace_stop             = Trace.trace_stop
 
             var execute_name = 'Gem.Core.execute'               //  NOTE: Also traces `traced$Gem.Core.execute`
             var my_name      = 'execute$codify$traced$Gem__Core__execute'   //  NOTE: 'traced' (with a 'd') on purpose.
@@ -279,29 +302,7 @@ if (Gem.Configuration.trace) {
             Gem.Core.execute = function traced$Gem__Core__execute(code) {
                 var trace_code = (code.name in Tracing)
 
-                if (trace_execute) {
-                    var s       = code.toString()
-                    var newline = s.indexOf('\n')
-
-                    if (newline == -1) {
-                        trace_start('Gem.Core.execute(%s)', code.name)
-                    } else {
-                        var newline_m1 = newline - 1
-
-                        if (newline_m1 >= 0 && s[newline_m1] == '{') {
-                            newline    = newline_m1
-                            newline_m1 = newline - 1
-
-                            if (newline_m1 >= 0 && s[newline_m1] == ' ') {
-                                newline = newline_m1
-                            }
-                        }
-
-                        trace_start('Gem.Core.execute(%s)', s.substring(0, newline))
-                    }
-                }
-
-
+                if (trace_execute) { trace_start('Gem.Core.execute(function %s)', trace_portray_function(code)) }
                 if (trace_code)    { trace_start('%s()', code.name) }
 
                 code()
