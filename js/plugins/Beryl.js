@@ -18,21 +18,13 @@ window.Gem = {
         clarity       : true,                               //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors
+        trace         : true,                               //      Trace function, method & bound method calls.
     },
 
     Core : {                                                //  Basic support code for the Core Gem module.
-        //
-        //  Gem.Core.execute:
-        //      Execute code inside a function (to allow local variables)
-        //
-        //  NOTE:
-        //      The reason the function is named `Gem__Core__execute` (meaning `Gem.Core.execute`) is so that it
-        //      shows up in stack traces as the full name `Gem__Core__execute` instead of shorter name `execute`
-        //      (this is really really helpful when reading stack traces).
-        //
-        execute : function Gem__Core__execute(code) {
+        execute : function Gem__Core__execute(code) {       //      Stub#1 for Gem.Core.execute
             code()
-        }//,
+        }
 
         //  codify_method    : Function                     //      Create the code for a method as a closure.
         //  clarity_note     : Function                     //      Add a note to a variable or set of variables.
@@ -70,11 +62,81 @@ window.Gem = {
         //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'>
     },
 
+    Trace : {                                               //  Map of functions, methods & bound_methods being traced.
+        depth : 0,                                          //      Current tracing depth.
+    },
+
+    Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
+        //  Defined below to allow quoted strings to be used in JavaScript 5.0
+    },
+
     _ : {                                                   //  Private members & methods of all Gem modules.
         Core : {                                            //      Private members & methods of the Core Gem module.
         //  clarity_mode$global_variable_Gem_changed : []   //      Callbacks to call when `Gem` is changed.
         }//,
     }//,
+}
+
+
+Gem.Core.execute(
+    function execute$setup_Tracing() {
+        //
+        //  Configure Tracing
+        //
+        var Tracing = Gem.Tracing
+
+        Tracing['Gem.Core.execute']   = 7
+        Tracing.execute$setup_Tracing = 7
+        Tracing.execute$setup_Gem     = 7
+
+        //
+        //  Trace myself
+        //
+        if (Gem.Configuration.trace) {
+            var Trace = Gem.Trace
+
+            var execute_name = 'Gem.Core.execute'
+            var my_name      = 'execute$setup_Tracing'
+
+            if (execute_name in Tracing) { Trace.depth += 1; console.groupCollapsed('%s(%s)', execute_name, my_name) }
+            if (my_name in Tracing)      { console.log('%s()', my_name) }
+            if (execute_name in Tracing) { console.groupEnd() }
+        }
+    }
+)
+
+
+//
+//  Gem.Core.execute:
+//      Execute code inside a function (to allow local variables)
+//
+//  NOTE:
+//      The reason the function is named `Gem__Core__execute` (meaning `Gem.Core.execute`) is so that it
+//      shows up in stack traces as the full name `Gem__Core__execute` instead of shorter name `execute`
+//      (this is really really helpful when reading stack traces).
+//
+Gem.Core.execute = function Gem__Core__execute(code) {
+    debugger
+
+    if (Gem.Configuration.trace) {
+        var Trace   = Gem.Trace
+        var Tracing = Gem.Tracing
+
+        var trace_myself = ('Gem__Core__execute' in Tracing)
+        var trace_code   = (code.name            in Tracing)
+
+        if (trace_myself) { Trace.depth += 1; console.group_start('Gem.Core.execute(%s)', code.name) }
+        if (trace_code)   { Trace.depth += 1; console.group_start('%s', code.name)                   }
+
+        code()
+
+        if (trace_code)   { console.group_end(); Trace.depth -= 1 }
+        if (trace_myself) { console.group_end(); Trace.depth -= 1 }
+
+        return
+    }
+
+    code()
 }
 
 
@@ -87,6 +149,7 @@ window.Gem = {
 //
 Gem.Core.execute(
     function execute$setup__Gem() {
+        //
         //
         //  Imports
         //

@@ -10,15 +10,11 @@
 //
 Gem.Core.execute(
     function execute$Gem__add_tracing() {
-        if ( ! ('Trace' in Gem)) {
-            Gem.Trace = {                                   //  Map of functions, methods & bound_methods being traced.
-            }
-        }
+        var Trace   = Gem.Trace
+        var Tracing = Gem.Tracing
 
-       
-        var Trace = Gem.Trace
 
-        Trace.identifier_test = 7
+        Tracing.identifier_test = 7
 
 
         Gem.Core.method(
