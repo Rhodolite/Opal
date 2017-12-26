@@ -96,7 +96,7 @@ Gem.Core.execute(
         Tracing.execute$setup_Gem                        = 7
 
         //
-        //  Define trace funtions & trace myself
+        //  Define trace functions & trace myself
         //
         if (Gem.Configuration.trace) {
             var Trace = Gem.Trace
@@ -279,7 +279,29 @@ if (Gem.Configuration.trace) {
             Gem.Core.execute = function traced$Gem__Core__execute(code) {
                 var trace_code = (code.name in Tracing)
 
-                if (trace_execute) { trace_start('Gem.Core.execute(%s)', code.name) }
+                if (trace_execute) {
+                    var s       = code.toString()
+                    var newline = s.indexOf('\n')
+
+                    if (newline == -1) {
+                        trace_start('Gem.Core.execute(%s)', code.name)
+                    } else {
+                        var newline_m1 = newline - 1
+
+                        if (newline_m1 >= 0 && s[newline_m1] == '{') {
+                            newline    = newline_m1
+                            newline_m1 = newline - 1
+
+                            if (newline_m1 >= 0 && s[newline_m1] == ' ') {
+                                newline = newline_m1
+                            }
+                        }
+
+                        trace_start('Gem.Core.execute(%s)', s.substring(0, newline))
+                    }
+                }
+
+
                 if (trace_code)    { trace_start('%s()', code.name) }
 
                 code()
