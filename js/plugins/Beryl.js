@@ -63,7 +63,12 @@ window.Gem = {
     },
 
     Trace : {                                               //  Map of functions, methods & bound_methods being traced.
-        depth : 0,                                          //      Current tracing depth.
+        depth   : 0,                                        //      Current tracing depth.
+        pending : null,                                     //      Pending closed trace group
+
+        //  trace_line  : Function                          //      Start a trace group
+        //  trace_start : Function                          //      Start a closed trace group
+        //  trace_stop  : Function                          //      End a trace group
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
@@ -85,12 +90,13 @@ Gem.Core.execute(
         //
         var Tracing = Gem.Tracing
 
-        Tracing['Gem.Core.execute']   = 7
-        Tracing.execute$setup_Tracing = 7
-        Tracing.execute$setup_Gem     = 7
+        Tracing['Gem.Core.execute']                      = 7     //  NOTE: Also traces `traced$Gem.Core.execute`
+        Tracing.execute$setup_Tracing                    = 7
+        Tracing.execute$codify$traced$Gem__Core__execute = 7
+        Tracing.execute$setup_Gem                        = 7
 
         //
-        //  Trace myself
+        //  Define trace funtions & trace myself
         //
         if (Gem.Configuration.trace) {
             var Trace = Gem.Trace
@@ -98,9 +104,138 @@ Gem.Core.execute(
             var execute_name = 'Gem.Core.execute'
             var my_name      = 'execute$setup_Tracing'
 
-            if (execute_name in Tracing) { Trace.depth += 1; console.groupCollapsed('%s(%s)', execute_name, my_name) }
-            if (my_name in Tracing)      { console.log('%s()', my_name) }
-            if (execute_name in Tracing) { console.groupEnd() }
+            var trace_execute = (execute_name in Tracing)
+            var trace_myself  = (my_name      in Tracing)
+
+            if (trace_execute) { Trace.depth += 1; console.groupCollapsed('%s(%s)', execute_name, my_name) }
+            if (trace_myself)  { Trace.depth += 1; Trace.pending = ['%s()', my_name] }
+
+            var slice = Array.prototype.slice
+
+            if ('bind' in Array.prototype.slice) {
+                //
+                //
+                //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
+                //  to the `this` argument of `Array.prototype.slice`:
+                //
+                //      In other words `.slice_call(arguments)` becomes `Array.prototype.slice.call(arguments)`
+                //
+                //  This suggestion came from:
+                //      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+                //
+                var slice_call = slice.call.bind(slice)
+            } else {
+                var slice_call = false                          //  Can't implement `slice.call`, do it old way.
+            }
+
+
+            var unbound__group_start_closed = console.groupCollapsed
+            var unbound__group_stop         = console.groupEnd
+            var unbound__line               = console.log
+
+
+            if ('bind' in unbound__group_stop) {
+                var group_stop = unbound__group_stop.bind(console)
+            } else {
+                var group_stop = function OLD_WAY$group_stop(/*...*/) {
+                    console.groupEnd()
+                }
+            }
+            
+
+            if (slice_call) {
+                Trace.trace_start = function Gem__Trace__trace_start(/*...*/) {
+                    //  Queue a pending new closed trace group.
+                    //
+                    //  NOTE #1:
+                    //      If there are lines inside the group, then this is [later] flushed as a closed trace group.
+                    //
+                    //      If there is no lines inside the group, then this is [later] converted to a normal line.
+                    //
+                    //  NOTE #2:
+                    //      If this is the first line inside [an outer] closed group, then the [previously pending]
+                    //      closed group is first flushed (i.e.: actually output as a closed group).
+
+                    var pending = Trace.pending
+
+                    if (pending) {
+                        unbound__group_start_closed.apply(console, pending)
+                    }
+
+                    Trace.depth += 1
+                    Trace.pending = slice_call(arguments)
+                }
+            } else {
+                Trace.trace_start = function OLD_WAY$Gem__Trace__trace_start(/*...*/) {
+                    var pending = Trace.pending
+
+                    if (pending) {
+                        unbound__group_start_closed.apply(console, pending)
+                    }
+
+                    Trace.depth += 1
+                    Trace.pending = slice.call(arguments)                   //  OLD WAY: `slice.call`
+                }
+            }
+
+
+            var trace_stop = (
+                Trace.trace_stop = function Gem__Trace__trace_stop() {
+                    //  End a closed trace group.
+                    //
+                    //  NOTE:
+                    //      If there are lines inside the group, then the group is closed.
+                    //
+                    //      If there is no lines inside the group, then the [previously pending] closed group is
+                    //      converted to a normal line.
+
+                    var pending = Trace.pending
+
+                    if (pending) {
+                        unbound__line.apply(console, pending)
+                        Trace.pending = null
+                    } else {
+                        group_stop()
+                    }
+
+                    Trace.depth -= 1
+                }
+            )
+
+
+            if (slice_call) {
+                Trace.trace_line = function Gem__Trace__trace_line(/*arguments*/) {
+                    //  Output a line of text in trace mode.
+                    //
+                    //  NOTE:
+                    //      If this is the first line inside the group, then the [previously pending] closed group is
+                    //      flushed (i.e.: actualy output as a closed group).
+
+                    var pending = Trace.pending
+
+                    if (pending) {
+                        unbound__group_start_closed.apply(console, pending)
+                        Trace.pending = null
+                    }
+
+                    unbound__line.apply(console, slice_call(arguments))
+                }
+            } else {
+                Trace.trace_line = function OLD_WAY$Gem__Trace__trace_line(/*arguments*/) {
+                    var pending = Trace.pending
+
+                    if (pending) {
+                        unbound__group_start_closed.apply(console, pending)
+                        Trace.pending = null
+                    }
+
+                    unbound__line.apply(console, slice.call(arguments))        //  OLD WAY: `slice.call`
+                }
+            }
+
+
+            if (trace_myself)  { trace_stop() }
+            if (trace_execute) { trace_stop() }
         }
     }
 )
@@ -115,28 +250,51 @@ Gem.Core.execute(
 //      shows up in stack traces as the full name `Gem__Core__execute` instead of shorter name `execute`
 //      (this is really really helpful when reading stack traces).
 //
-Gem.Core.execute = function Gem__Core__execute(code) {
-    debugger
+if (Gem.Configuration.trace) {
+    Gem.Core.execute(
+        function execute$codify$traced$Gem__Core__execute() {
+            var Trace   = Gem.Trace
+            var Tracing = Gem.Tracing
 
-    if (Gem.Configuration.trace) {
-        var Trace   = Gem.Trace
-        var Tracing = Gem.Tracing
+            var trace_line  = Trace.trace_line
+            var trace_start = Trace.trace_start
+            var trace_stop  = Trace.trace_stop
 
-        var trace_myself = ('Gem__Core__execute' in Tracing)
-        var trace_code   = (code.name            in Tracing)
+            var execute_name = 'Gem.Core.execute'               //  NOTE: Also traces `traced$Gem.Core.execute`
+            var my_name      = 'execute$codify$traced$Gem__Core__execute'   //  NOTE: 'traced' (with a 'd') on purpose.
 
-        if (trace_myself) { Trace.depth += 1; console.group_start('Gem.Core.execute(%s)', code.name) }
-        if (trace_code)   { Trace.depth += 1; console.group_start('%s', code.name)                   }
+            var trace_execute = (execute_name in Tracing)
+            var trace_myself  = (my_name      in Tracing)
 
-        code()
 
-        if (trace_code)   { console.group_end(); Trace.depth -= 1 }
-        if (trace_myself) { console.group_end(); Trace.depth -= 1 }
+            //
+            //  Here we both trace *THIS* call to `Gem.Core.execute` ...
+            //      ... and then in *FUTURE* calls we also trace calls to `Gem.Core.execute`
+            //          (i.e.: `traced$Gem__Core__execute`).
+            //
+            if (trace_execute) { trace_start('%s(%s)', execute_name, my_name) }
+            if (trace_myself)  { trace_line('%s()', my_name) }
 
-        return
-    }
 
-    code()
+            Gem.Core.execute = function traced$Gem__Core__execute(code) {
+                var trace_code = (code.name in Tracing)
+
+                if (trace_execute) { trace_start('Gem.Core.execute(%s)', code.name) }
+                if (trace_code)    { trace_start('%s()', code.name) }
+
+                code()
+
+                if (trace_code)    { trace_stop() }
+                if (trace_execute) { trace_stop() }
+            }
+
+
+            if (trace_myself)  { trace_stop() }
+            if (trace_execute) { trace_stop() }
+
+            return
+        }
+    )
 }
 
 
