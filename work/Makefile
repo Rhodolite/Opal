@@ -8,8 +8,8 @@ BERYL_FILES = \
 	../Gem/Beryl/Boot3_Clarity.js \
 	../Gem/Beryl/Boot4_Methods.js \
 	../Gem/Beryl/Boot5_Module.js \
-	../Gem/Beryl/Boot7.js \
-	../Gem/Clarity/DomainObjectModel.js \
+	../Gem/Beryl/Boot7.js
+#../Gem/Clarity/DomainObjectModel.js \
 
 CRYSTAL_FILES = \
 	../js/plugins/Bloodstone.js \
@@ -30,7 +30,10 @@ WORK_FILES = \
 	Makefile \
 
 FILES = \
+	$(BERYL_FILES) \
 	$(CRYSTAL_FILES) \
+	$(GEM_FILES) \
+	$(SILVER_FILES) \
 	$(WORK_FILES)
 	#
 	#   Excludes:
@@ -52,8 +55,10 @@ clean:
 	rm -f s.js sc.js
 
 files:
-	echo $(FILES) >files.new
-	mv files.new files
+	echo $(FILES) >files.tmp1
+	tr ' ' '\n' <files.tmp1 >files.tmp2
+	sort <files.tmp2 >files.tmp1
+	mv files.tmp1 files
 
 links:
 	ln -s ../js/plugins/Beryl.js     	        b.js

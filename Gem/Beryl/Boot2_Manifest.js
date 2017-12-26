@@ -6,13 +6,13 @@
 
 
 //
-//  Load next script:
+//  Load next scripts:
 //      "Gem/Beryl/Boot3_Clarity.js"    - Add `.$who`, and `.$what`, prepare to reload `Gem` (only in clarity mode)
 //      "Gem/Beryl/Boot4_Methods.js"    - Initial Methods
 //      "Gem/Beryl/Boot5_Module.js"     - Method to define a module
 //      "Gem/Beryl/Boot7.js"            - Rest of code under development
 //
-Gem.Beryl.execute(
+Gem.Core.execute(
     function execute$load_next_scripts() {
         //
         //  Imports
@@ -32,17 +32,17 @@ Gem.Beryl.execute(
         //
         //  Load rest of scripts
         //
-        var manifest = [
+        var manifest_list = [
                 'Gem/Beryl/Boot4_Methods.js',
                 'Gem/Beryl/Boot5_Module.js',
                 'Gem/Beryl/Boot7.js'//,
             ]
 
 
-        for (var i = 0; i < manifest.length; i ++) {
-            var name = manifest[i]
+        for (var i = 0; i < manifest_list.length; i ++) {
+            var manifest = manifest_list[i]
 
-            load(name)
+            load(manifest)
         }
     }//,
 )

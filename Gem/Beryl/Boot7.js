@@ -5,41 +5,39 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-
-
-Gem.Beryl.mutable(
+Gem.Core.mutable(
     'single_step_binding',
     (
-          '`Gem.Beryl.trace_binding` can be set to true, to single step in Developer Tools'
+          '`Gem.Core.trace_binding` can be set to true, to single step in Developer Tools'
         + ' the backwards compatability implementation when `.bind` does not exist in the browser.'
     ),
     //
     //  WARNING: Changing the following to `true` or `6` ... might, temporarily, turn your mind into a PRETZEL.
     //
-    //      `true` means use real     Gem.Beryl.bind & single step through it
-    //      `6`    means use EMULATED Gem.Beryl.bind & single step through it
+    //      `true` means use real     Gem.Core.bind & single step through it
+    //      `6`    means use EMULATED Gem.Core.bind & single step through it
     //
     false//,                                        //  Change to `true` or `6` to single step in Developer Tools ...
 )
 
 
-Gem.Beryl.constant(
+Gem.Core.constant(
     'has_bind',
-    '`Gem.Beryl.has_bind` is `true` when `Function.prototype.bind` exists (which it does in all modern browsers).',
-    ('bind' in Function) && (Gem.Beryl.single_step_binding !== 6)//,
+    '`Gem.Core.has_bind` is `true` when `Function.prototype.bind` exists (which it does in all modern browsers).',
+    ('bind' in Function) && (Gem.Core.single_step_binding !== 6)//,
 )
 
 
 //
-//  Gem.Beryl.bind
+//  Gem.Core.bind
 //      Create a new function with a bound `this` value (and optionally other bound arguments).
 //
-if (Gem.Beryl.has_bind) {
+if (Gem.Core.has_bind) {
     //
     //  Modern Browser implementation using `Function.prototype.bind`
     //
     //  NOTE #1:
-    //      This version of `Gem.Beryl.bind` method *IS* correct & really does work ...
+    //      This version of `Gem.Core.bind` method *IS* correct & really does work ...
     //
     //      ... However, it is really confusing to understand and use it, especially when doing stack traces in
     //          Developer tools ...
@@ -53,15 +51,15 @@ if (Gem.Beryl.has_bind) {
     //  NOTE #2:
     //      ... If you really want to see how this procedure works ...
     //
-    //      ... You can enable the `Gem.Beryl.single_step_binding` to enable this function to be called ...
+    //      ... You can enable the `Gem.Core.single_step_binding` to enable this function to be called ...
     //
     //      ... Otherwise, it is too confusing to use this method & is not actually used ...
     //
-    if (Gem.Beryl.single_step_binding) {
-        Gem.Beryl.codify_method(
+    if (Gem.Core.single_step_binding) {
+        Gem.Core.codify_method(
             'bind',
             'Create a new function with a bound `this` value (and optionally other bound arguments).`',
-            function codifier$Gem__Beryl__bind() {
+            function codifier$Gem__Core__bind() {
                 //
                 //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
                 //  to the `this` argument of `Array.prototype.slice`:
@@ -73,7 +71,7 @@ if (Gem.Beryl.has_bind) {
                 //
                 var slice_call = Array.prototype.slice.call.bind(Array.prototype.slice)
 
-                return function Gem__Beryl__bind(bound_f, bound_this /*, ...*/) {
+                return function Gem__Core__bind(bound_f, bound_this /*, ...*/) {
                     if (arguments.length === 2) {
                         return bound_f.bind(bound_this)
                     }
@@ -84,13 +82,13 @@ if (Gem.Beryl.has_bind) {
         )
     }
 } else {
-    Gem.Beryl.codify_method(
+    Gem.Core.codify_method(
         'bind',
         'Create a new function with a bound `this` value (and optionally other bound arguments).`',
         //
         //  Backwards compatiable implementation emulating `Function.prototype.bind`
         //
-        function codifier$Gem__Beryl__bind() {
+        function codifier$Gem__Core__bind() {
             //
             //  NOTE #1:
             //      The use of 'slice' is as recommended at:
@@ -115,7 +113,7 @@ if (Gem.Beryl.has_bind) {
             var slice = Array.prototype.slice
 
 
-            return function Gem__Beryl__bind(bound_f, bound_this /*, ...*/) {
+            return function Gem__Core__bind(bound_f, bound_this /*, ...*/) {
                 if (arguments.length === 2) {
                     //
                     //  No extra arguments passed in, the simple version ...
@@ -171,7 +169,7 @@ if (Gem.Beryl.has_bind) {
 
 
 //
-//  Gem.beryl.bind_create_Object
+//  Gem.Core.bind_create_Object
 //      A factory of factories.  The created factories create objects.
 //
 //  Overview:
@@ -213,19 +211,19 @@ if (Gem.Beryl.has_bind) {
 //
 //                  This factory, is thus, appropriatly named "create__BoxOfPropertyDescriptors".
 //
-if (Gem.Beryl.has_bind) {
-    Gem.Beryl.codify_bound_method(
+if (Gem.Core.has_bind) {
+    Gem.Core.codify_bound_method(
         'bind_create_Object',
         'A factory of factories.  The created factories create objects.',
         'A binding of `Function.prototype.bind` to `Function.prototype.bind` (i.e.: a binding of `bind` to `bind).',
-        function codifier$Gem__Beryl__bind_create_Object() {
+        function codifier$Gem__Core__bind_create_Object() {
             //
             //  Imports
             //
             var create_Object       = Object.create
-            var single_step_binding = Gem.Beryl.single_step_binding
+            var single_step_binding = Gem.Core.single_step_binding
 
-            if ( ! Gem.Beryl.single_step_binding) {
+            if ( ! Gem.Core.single_step_binding) {
                 return create_Object.bind.bind(create_Object, Object)   //  One line quick & efficient implementation
 
                 //
@@ -266,10 +264,10 @@ if (Gem.Beryl.has_bind) {
 
             //
             //  NOTE #4:
-            //      We deliberately did *NOT* use the previously defined `Gem.Beryl.bind` above, since that is way
+            //      We deliberately did *NOT* use the previously defined `Gem.Core.bind` above, since that is way
             //      harder to understand.
             //
-            //      You can see the "Pure" implementation below for really using `Gem.Beryl.Bind` and why
+            //      You can see the "Pure" implementation below for really using `Gem.Core.Bind` and why
             //      it is even more confusing.
             //
             //      This "Pure" implementation is only here for reference -- to understand other versions.
@@ -296,7 +294,7 @@ if (Gem.Beryl.has_bind) {
 
             single_step_binding = 'STEP 1 - START'
 
-            var bind = Gem.Beryl.bind                   //  Our "internal" implementation of `Function.prototype.bind`
+            var bind = Gem.Core.bind                    //  Our "internal" implementation of `Function.prototype.bind`
 
 
             //
@@ -356,7 +354,7 @@ if (Gem.Beryl.has_bind) {
     //      Although it does the same as the other version, it doesn't really do a double "bind"; but instead
     //      emulates it with a double "closure" (making it easier to understand).
     //
-    Gem.Beryl.method(
+    Gem.Core.method(
         'bind_create_Object',
         (
               'A factory of factories.  The created factories create objects.\n'
@@ -370,7 +368,7 @@ if (Gem.Beryl.has_bind) {
             + 'Also, optionally, in the bound function, the `properties` parameter is passed as the second'
             + ' parameter to `Object.create`.'
         ),
-        function Gem__Beryl__bind_create_Object(prototype, /*optional*/ properties) {
+        function Gem__Core__bind_create_Object(prototype, /*optional*/ properties) {
             //  A factory of factories.  The created factories create objects.
             //
             //  EMULATION: This implementation emulates `.bind` (which is not supported in this browser).
@@ -395,7 +393,7 @@ if (Gem.Beryl.has_bind) {
 
             //
             //  `properties` argument passed in; hence use the already passed in `properties` arguments to
-            //  `Gem.Beryl.bind_create_Object`
+            //  `Gem.Core.bind_create_Object`
             //
             return function bound_create_Object() {
                 return Object.create(prototype, properties)
@@ -405,13 +403,13 @@ if (Gem.Beryl.has_bind) {
 }
 
 
-Gem.Beryl.execute(
-    function execute$codify__Gem__Beryl__create_BoxOfPropertyDescriptors() {
+Gem.Core.execute(
+    function execute$codify__Gem__Core__create_BoxOfPropertyDescriptors() {
         //
         //  Imports
         //
         var create_Object      = Object.create
-        var bind_create_Object = Gem.Beryl.bind_create_Object
+        var bind_create_Object = Gem.Core.bind_create_Object
 
 
         if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
@@ -448,10 +446,10 @@ Gem.Beryl.execute(
             var next_segment__BoxOfPropertyDescriptors = null
         }
 
-        var single_step_binding = Gem.Beryl.single_step_binding
+        var single_step_binding = Gem.Core.single_step_binding
 
         if ( ! single_step_binding) {
-            Gem.Beryl.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
+            Gem.Core.create__BoxOfPropertyDescriptors = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
             return
         }
 
@@ -472,7 +470,7 @@ Gem.Beryl.execute(
         single_step_binding = 'STEP 2 - START'
 
         var create__BoxOfPropertyDescriptors
-            = Gem.Beryl.create__BoxOfPropertyDescriptors
+            = Gem.Core.create__BoxOfPropertyDescriptors
             = bind_create_Object(next_segment__BoxOfPropertyDescriptors)
 
                             //------------------------------------------------------------+
@@ -502,23 +500,23 @@ Gem.Beryl.execute(
 
 
 //
-//  Gem.Beryl.produce_create_Box
+//  Gem.Core.produce_create_Box
 //      A factory of factories.  The created factories each creates a Box -- an Object with a "class name".
 //
 if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
-    Gem.Beryl.codify_method(
+    Gem.Core.codify_method(
         'produce_create_Box',
         (
               'A factory of factories.  The created factories each creates a Box -- an Object with a "class name".\n'
             + '\n'
             + 'The "class name" comes from the name of parameter `named_constructor` (i.e.: `named_constructor.name`).'
         ),
-        function codifier$Gem__Beryl__produce_create_Box() {
+        function codifier$Gem__Core__produce_create_Box() {
             //
             //  Imports
             //
-            var bind_create_Object  = Gem.Beryl.bind_create_Object
-            var single_step_binding = Gem.Beryl.single_step_binding
+            var bind_create_Object  = Gem.Core.bind_create_Object
+            var single_step_binding = Gem.Core.single_step_binding
 
             //
             //  Locals
@@ -543,7 +541,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
                 single_step_binding = 'STEP 3 - START'
             }
 
-            var property_descriptors = Gem.Beryl.create__BoxOfPropertyDescriptors(
+            var property_descriptors = Gem.Core.create__BoxOfPropertyDescriptors(
                     { constructor : { value : property__constructor, enumerable : true } }//,
                 )
 
@@ -575,7 +573,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             var create_AnonymousBox_using_property_descriptors = bind_create_Object(null, property_descriptors)
 
 
-            return function Gem__Beryl__produce_create_Box(named_constructor) {
+            return function Gem__Core__produce_create_Box(named_constructor) {
                 //  A factory of factories.  The created factories each creates a Box -- an Object with a "class name".
                 //
                 //  The "class name" comes from the name of parameter `named_constructor`
@@ -606,7 +604,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
         }
     )
 } else {
-    Gem.Beryl.codify_method(
+    Gem.Core.codify_method(
         'produce_create_Box',
         (
               'A factory of factories.\n'
@@ -617,10 +615,10 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
             + '\n'
             + 'In clarity mode, instead the created factories each creates a Box -- an Object with a "class name".'
         ),
-        function codifier$Gem__Beryl__produce_create_Box() {
-            var create_AnonymousBox = Gem.Beryl.bind_create_Object(null)
+        function codifier$Gem__Core__produce_create_Box() {
+            var create_AnonymousBox = Gem.Core.bind_create_Object(null)
 
-            return function Gem__Beryl__produce_create_Box(/*named_constructor*/) {
+            return function Gem__Core__produce_create_Box(/*named_constructor*/) {
                 //      A factory of factories.
                 //
                 //      Since this is non clarity mode, in this simplified version, each created factory is really
@@ -637,22 +635,22 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
 }
 
 
-Gem.Beryl.codify_bound_method(
+Gem.Core.codify_bound_method(
     'create_Box',
     'Create an object with a "class name" of "Box" in Developer Tools.',
     'A binding of `create_Object` to `Box` (i.e.: A binding of `Object.create` to `Box`).',
-    function codifier$Gem__Beryl__create_Box() {
+    function codifier$Gem__Core__create_Box() {
         function Box() {
             //  An unused fake "constructor" function named 'Box' so that Developer Tools shows the "class name"
             //  of an instance using this prototype as 'Box'
         }
 
-        return Gem.Beryl.produce_create_Box(Box)
+        return Gem.Core.produce_create_Box(Box)
     }//,
 )
 
 
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'deep_copy_with_adjustments',
     (
           'Create a deep copy of an object -- with various adjustments.\n'
@@ -663,7 +661,7 @@ Gem.Beryl.codify_method(
         + '\n'
         + 'This makes it easier to examine the object in Developer Tools with less "junk".'
     ),
-    function codifier$Gem__Beryl__deep_copy_with_adjustments() {
+    function codifier$Gem__Core__deep_copy_with_adjustments() {
         //  Create a deep copy of an object -- with various adjustments
         //
         //  Adjustments:
@@ -678,7 +676,7 @@ Gem.Beryl.codify_method(
         //      For example `Gem.Script.script_map['Gem/Beryl/Boot.js']` has a prototype of `HTMLScriptELement`,
         //      this prototype is meaningful & necessary, and therefore is not removed.
 
-        var create_Box        = Gem.Beryl.create_Box
+        var create_Box        = Gem.Core.create_Box
         var object__prototype = Object.prototype
         var get_prototype_of  = Object.getPrototypeOf
 
@@ -689,7 +687,7 @@ Gem.Beryl.codify_method(
             var enumerable_keys              = Object.keys
             var get_all_property_descriptors = Object.getOwnPropertyDescriptors //  with a trailing 's'
 
-            var deep_copy_with_adjustments = function Gem__Beryl__deep_copy_with_adjustments(instance) {
+            var deep_copy_with_adjustments = function Gem__Core__deep_copy_with_adjustments(instance) {
                 if (7) {
                     //
                     //  JavaScript 6.0:
@@ -735,7 +733,7 @@ Gem.Beryl.codify_method(
         var get_property_names             = Object.getOwnPropertyNames
         var get_single_property_descriptor = Object.getOwnPropertyDescriptor    //  *NO* trailing 's'
 
-        var deep_copy_with_adjustments = function Gem__Beryl__deep_copy_with_adjustments(instance) {
+        var deep_copy_with_adjustments = function Gem__Core__deep_copy_with_adjustments(instance) {
             if (7) {
                 //
                 //  JavaScript 5.0 does not have `Object.getOwnPropertyDescriptors` (with a trailing 's')
@@ -783,14 +781,14 @@ Gem.Beryl.codify_method(
 
 
 if (Gem.Configuration.clarity) {
-    Gem.Beryl.execute(
+    Gem.Core.execute(
         function execute$deep_copy__Gem__without_object_prototypes() {
-            window.Gem = Gem.Beryl.deep_copy_with_adjustments(Gem)
+            window.Gem = Gem.Core.deep_copy_with_adjustments(Gem)
 
             //
             //  Now do callback's informing them that `Gem` has changed
             //
-            var clarity_mode$global_variable_Gem_changed  = Gem._.Beryl.clarity_mode$global_variable_Gem_changed
+            var clarity_mode$global_variable_Gem_changed  = Gem._.Core.clarity_mode$global_variable_Gem_changed
 
             for (var i = 0; i < clarity_mode$global_variable_Gem_changed .length; i ++) {
                 var callback = clarity_mode$global_variable_Gem_changed [i]
@@ -802,7 +800,7 @@ if (Gem.Configuration.clarity) {
 }
 
 
-Gem.Beryl.execute(
+Gem.Core.execute(
     function execute$Gem__clear__and__log_Gem() {
         Gem.NodeWebKit.show_developer_tools()
         //console.clear()

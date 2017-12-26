@@ -25,7 +25,7 @@
 //      When an object uses `.$who` or `.$what` members for it's own purposes, then the extra members created
 //      are named `.$$who` and `.$$what` to avoid conflicts.
 //
-Gem.Beryl.execute(
+Gem.Core.execute(
     function execute$Gem__add_clarity() {
         if ( ! ('$' in Gem)) {
             Gem.$ = {                                           //  Map of introspection of all the Gem modules
@@ -52,8 +52,8 @@ Gem.Beryl.execute(
         Gem._.$who  = 'Gem._'
         Gem._.$what = 'Private members & methods of all Gem modules.'
 
-        Gem._.Beryl.$who  = 'Gem._.Beryl'
-        Gem._.Beryl.$what = 'Private members & methods of the Beryl module.'
+        Gem._.Core.$who  = 'Gem._.Core'
+        Gem._.Core.$what = 'Private members & methods of the Core Gem module.'
     }
 )
 
@@ -61,19 +61,19 @@ Gem.Beryl.execute(
 //
 //  The following four methods call each other, hence they have to be defined together in the same closure:
 //
-//      Gem.Beryl.throw_must_be_a_number    - Throw a type error when a parameter is not a number.
-//      Gem.Beryl.throw_must_be_a_string    - Throw a type error when a parameter is not a string.
-//      Gem.Beryl.throw_type_error          - Throw a type error (usually ... received invalid parameters).
-//      Gem.Beryl.throw_wrong_arguments     - Throw a type error when a method receives wrong number of arguments.
+//      Gem.Core.throw_must_be_a_number    - Throw a type error when a parameter is not a number.
+//      Gem.Core.throw_must_be_a_string    - Throw a type error when a parameter is not a string.
+//      Gem.Core.throw_type_error          - Throw a type error (usually ... received invalid parameters).
+//      Gem.Core.throw_wrong_arguments     - Throw a type error when a method receives wrong number of arguments.
 //
-Gem.Beryl.execute(
+Gem.Core.execute(
     function execute$setup__Gem__throw_methods() {
-        var throw_must_be_number = function Gem__Beryl__throw_must_be_number(name, v) {
+        var throw_must_be_number = function Gem__Core__throw_must_be_number(name, v) {
             //  Throw a type error when a parameter is not a number.
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.throw_must_be_number', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Core.throw_must_be_number', 2, arguments.length)
                 }
 
                 if (typeof name !== 'string') { throw_must_be_string('name', name) }
@@ -84,12 +84,12 @@ Gem.Beryl.execute(
         }
 
 
-        var throw_must_be_string = function Gem__Beryl__throw_must_be_string(name, v) {
+        var throw_must_be_string = function Gem__Core__throw_must_be_string(name, v) {
             //  Throw a type error when a parameter is not a string.
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.throw_must_be_string', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Core.throw_must_be_string', 2, arguments.length)
                 }
 
                 if (typeof name !== 'string') { throw_must_be_string('name', name) }
@@ -100,12 +100,12 @@ Gem.Beryl.execute(
         }
 
 
-        var throw_type_error = function Gem__Beryl__throw_type_error(prefix, v) {
+        var throw_type_error = function Gem__Core__throw_type_error(prefix, v) {
             //  Throw a type error (usually used when a method received invalid parameters).
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.throw_type_error', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Core.throw_type_error', 2, arguments.length)
                 }
 
                 if (typeof prefix !== 'string') { throw_must_be_string(prefix, 'prefix') }
@@ -132,12 +132,12 @@ Gem.Beryl.execute(
         }
 
 
-        var throw_wrong_arguments = function Gem__Beryl__throw_wrong_arguments(name, actual, expected) {
+        var throw_wrong_arguments = function Gem__Core__throw_wrong_arguments(name, actual, expected) {
             //  Throw a type error when a method receives wrong number of arguments.
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.throw_wrong_arguments', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.throw_wrong_arguments', 3, arguments.length)
                 }
 
                 if (typeof name     !== 'string') { throw_must_be_string('name',     name)     }
@@ -160,10 +160,10 @@ Gem.Beryl.execute(
 
 
         //
-        //  Gem.Beryl.throw_must_be_number
+        //  Gem.Core.throw_must_be_number
         //      Throw a type error when a parameter is not a number.
         //
-        Gem.Beryl.method(
+        Gem.Core.method(
             'throw_must_be_number',
             'Throw a type error when a parameter is not a number.',
             throw_must_be_number//,
@@ -171,10 +171,10 @@ Gem.Beryl.execute(
 
 
         //
-        //  Gem.Beryl.throw_must_be_string
+        //  Gem.Core.throw_must_be_string
         //      Throw a type error when a parameter is not a string.
         //
-        Gem.Beryl.method(
+        Gem.Core.method(
             'throw_must_be_string',
             'Throw a type error when a parameter is not a string.',
             throw_must_be_string//,
@@ -182,10 +182,10 @@ Gem.Beryl.execute(
 
 
         //
-        //  Gem.Beryl.throw_type_error
+        //  Gem.Core.throw_type_error
         //      Throw a type error (usually used when a method received invalid parameters).
         //
-        Gem.Beryl.method(
+        Gem.Core.method(
             'throw_type_error',
             'Throw a type error (usually used when a method received invalid parameters).',
             throw_type_error//,
@@ -193,10 +193,10 @@ Gem.Beryl.execute(
 
 
         //
-        //  Gem.Beryl.throw_wrong_arguments
+        //  Gem.Core.throw_wrong_arguments
         //      Throw a type error when a method receives wrong number of arguments.
         //
-        Gem.Beryl.method(
+        Gem.Core.method(
             'throw_wrong_arguments',
             'Throw a type error when a method receives wrong number of arguments.',
             throw_wrong_arguments//,
@@ -210,7 +210,7 @@ Gem.Beryl.execute(
 //      Gem.Script.load
 //          Load JavaScript code using a `<script>` tag.
 //
-Gem.Beryl.execute(
+Gem.Core.execute(
     function execute$push_to_callback_later$recodify$Gem__Script__load() {
         if ( ! ('codify_method_load' in Gem.Script)) {
             //
@@ -222,7 +222,7 @@ Gem.Beryl.execute(
 
 
         //  Imports
-        var clarity_mode$global_variable_Gem_changed = Gem._.Beryl.clarity_mode$global_variable_Gem_changed
+        var clarity_mode$global_variable_Gem_changed = Gem._.Core.clarity_mode$global_variable_Gem_changed
         var codify_method_load                       = Gem.Script.codify_method_load
 
 

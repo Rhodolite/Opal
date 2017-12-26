@@ -1,15 +1,3 @@
-Gem.Beryl.codify(
-    'codify',
-    (
-          'Create the code for a function or procedure'
-        + ', typically as a closure to avoid the use of any global variables.'
-    ),
-    function codifier__Beryl__codify() {
-        return Gem.Beryl.produce_codify(Gem.Beryl, Gem.$.Beryl)
-    }
-)
-
-
 console.log(Gem.$.Beryl)
 
 

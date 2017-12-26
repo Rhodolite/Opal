@@ -6,7 +6,7 @@
 
 
 //
-//  Gem.Beryl.visible_mutable_attribute
+//  Gem.Core.visible_mutable_attribute
 //
 //      A visible mutable attribute (i.e.: a normal member).
 //
@@ -16,14 +16,14 @@
 //      Enumerable properties are shown better in Developer Tools (at the top of the list, and not grayed out),
 //      for this reason `$what`, `$which`, `$who`, and '*$' are all shown as visibile instead of invisible.
 //
-Gem.Beryl.qualify_constant(
+Gem.Core.qualify_constant(
     'visible_mutable_attribute',
     (
           'A visible mutable attribute (i.e.: a normal member).\n'
         + '\n'
         + "Read 'visible' to mean 'enumerable'."
     ),
-    function qualifier$Gem__Beryl__visible_mutable_attribute() {
+    function qualifier$Gem__Core__visible_mutable_attribute() {
         //
         //  Imports
         //
@@ -44,13 +44,13 @@ Gem.Beryl.qualify_constant(
 
 
 //
-//  Gem.Beryl.clarity_note
+//  Gem.Core.clarity_note
 //      Add a note to a variable or set of variables (clarity mode only).
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'clarity_note',
     'Add a note to a variable or set of variables (clarity mode only).',
-    function codifier$Gem__Beryl__clarity_note() {
+    function codifier$Gem__Core__clarity_note() {
         //
         //  Imports
         //
@@ -61,7 +61,7 @@ Gem.Beryl.codify_method(
         //  Implementation: Simple version
         //
         if (simple) {
-            return function Gem__Beryl__clarity_note(/*who, $what*/) {
+            return function Gem__Core__clarity_note(/*who, $what*/) {
                 //  Nothing to do, not in clarity mode
             }
         }
@@ -70,18 +70,18 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string       = Gem.Beryl.throw_must_be_string
-        var throw_wrong_arguments      = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error           = Gem.Beryl.throw_type_error
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var throw_must_be_string       = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments      = Gem.Core.throw_wrong_arguments
+        var throw_type_error           = Gem.Core.throw_type_error
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
-        return function Gem__Beryl__clarity_note(who, $what) {
+        return function Gem__Core__clarity_note(who, $what) {
             //  Add a note to a variable or set of variables (clarity mode only)
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Beryl.clarity_note', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Core.clarity_note', 2, arguments.length)
                 }
 
                 if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
@@ -97,31 +97,31 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Beryl.codify_bound_method:
+//  Gem.Core.codify_bound_method:
 //      Codify a global Gem bound method.
 //
 //      Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.
 //
 //  NOTE:
 //      A "bound method" is in some sense a "constant", thus this routine bears a lot of similiarity to
-//      `Gem.Beryl.qualify_constant`.
+//      `Gem.Core.qualify_constant`.
 //
 //      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'codify_bound_method',
     (
           'Codify a global Gem bound method.\n'
         + '\n'
         + 'Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.'
     ),
-    function codifier$Gem__Beryl__codify_bound_method() {
+    function codifier$Gem__Core__codify_bound_method() {
         //
         //  Imports
         //
         var simple                     = ( ! Gem.Configuration.clarity)
         var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
         //
@@ -135,7 +135,7 @@ Gem.Beryl.codify_method(
             //      (Although this method has an extra `$which` parameter, so we can't substitute
             //      `Gem.codify_constant` for this method).
             //
-            return function Gem__Beryl__codify_bound_method(who, $what, $which, codifier) {
+            return function Gem__Core__codify_bound_method(who, $what, $which, codifier) {
                 //  Codify a global Gem bound method.
                 //
                 //  Ignores the `$what` & `$which` parameters, which are only used in clarity mode.
@@ -150,19 +150,19 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
-        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error      = Gem.Beryl.throw_type_error
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+        var throw_type_error      = Gem.Core.throw_type_error
 
 
-        return function Gem__Beryl__codify_bound_method(who, $what, $which, codifier) {
+        return function Gem__Core__codify_bound_method(who, $what, $which, codifier) {
             //  Codify a global Gem bound method.
             //
             //  Also in clarity mode adds a `.$who` and `.$what` attributes to the bound method.
 
             /*arguments*/ {
                 if (arguments.length !== 4) {
-                    throw_wrong_arguments('Gem.Beryl.codify_bound_method', 4, arguments.length)
+                    throw_wrong_arguments('Gem.Core.codify_bound_method', 4, arguments.length)
                 }
 
                 if (typeof who    !== 'string') { throw_must_be_string('who',    who)   }
@@ -207,7 +207,7 @@ Gem.Beryl.codify_method(
                                   //  Our brower is so old it doesn't even have bound methods ...
                                   //      ... So accept anything (presumably an emulation function) ...
                                   //
-/*FIX THIS*/                      ( ! Gem.Beryl.has_bind)
+/*FIX THIS*/                      ( ! Gem.Core.has_bind)
                               )
                        )
                 ) {
@@ -246,32 +246,32 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Beryl.codify_method:
+//  Gem.Core.codify_method:
 //      Create the code for a method as a closure to avoid the use of any global variables.
 //
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'codify_method',
     (
           'Create the code for a method as a closure to avoid the use of any global variables.\n'
         + '\n'
         + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
     ),
-    function codifier$Gem__Beryl__codify_method(who, $what, codifier) {
+    function codifier$Gem__Core__codify_method(who, $what, codifier) {
         //
         //  Imports
         //
         var simple                     = ( ! Gem.Configuration.clarity)
         var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
         //
         //  Implementation: Simple version
         //
         if (simple) {
-            return function Gem__Beryl__codify_method(who, $what, codifier) {
+            return function Gem__Core__codify_method(who, $what, codifier) {
                 //  Create the code for a method as a closure to avoid the use of any global variables.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
@@ -286,19 +286,19 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
-        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error      = Gem.Beryl.throw_type_error
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+        var throw_type_error      = Gem.Core.throw_type_error
 
 
-        return function Gem__Beryl__codify_method(who, $what, codifier) {
+        return function Gem__Core__codify_method(who, $what, codifier) {
             //  Create the code for a method as a closure to avoid the use of any global variables.
             //
             //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.codify_method', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.codify_method', 3, arguments.length)
                 }
 
                 if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
@@ -352,32 +352,32 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Beryl.constant
+//  Gem.Core.constant
 //      Store a global Gem constant.
 //
 //      Also in clarity mode adds an explanation of what the constant does.
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'constant',
     (
           'Store a global Gem constant.\n'
         + '\n'
         + 'Also in clarity mode adds an explanation of what the variable does.'
     ),
-    function codifier$Gem__Beryl__constant() {
+    function codifier$Gem__Core__constant() {
         //
         //  Imports
         //
         var simple                     = ( ! Gem.Configuration.clarity)
         var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
         //
         //  Implementation: Simple version
         //
         if (simple) {
-            return function Gem__Beryl__constant(who, $what, constant) {
+            return function Gem__Core__constant(who, $what, constant) {
                 //  Store a global Gem constant.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
@@ -392,22 +392,22 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
-        var throw_type_error      = Gem.Beryl.throw_type_error
-        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_type_error      = Gem.Core.throw_type_error
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
 
 
         //
         //  Implementation
         //
-        return function Gem__Beryl__constant(who, $what, constant) {
+        return function Gem__Core__constant(who, $what, constant) {
             //  Store a global Gem constant.
             //
             //  Also in clarity mode adds an explanation of what the constant does.
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.constant', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.constant', 3, arguments.length)
                 }
 
                 if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
@@ -436,32 +436,32 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Beryl.method
+//  Gem.Core.method
 //      Store a Gem Method.
 //
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'method',
     (
           'Store a Gem Method.\n'
         + '\n'
         + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the method.'
     ),
-    function codifier$Gem__Beryl__method() {
+    function codifier$Gem__Core__method() {
         //
         //  Imports
         //
         var simple                     = ( ! Gem.Configuration.clarity)
         var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
         //
         //  Implementation: Simple version
         //
         if (simple) {
-            var method = function Gem__Beryl__method(who, $what, method) {
+            var method = function Gem__Core__method(who, $what, method) {
                 //  Store a Gem Method.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
@@ -476,19 +476,19 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
-        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error      = Gem.Beryl.throw_type_error
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+        var throw_type_error      = Gem.Core.throw_type_error
 
 
-        return function Gem__Beryl__method(who, $what, method) {
+        return function Gem__Core__method(who, $what, method) {
             //  Store a Gem Method.
             //
             //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.method', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.method', 3, arguments.length)
                 }
 
                 if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
@@ -527,33 +527,33 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Beryl.mutable:
+//  Gem.Core.mutable:
 //      Initialize a global Gem mutable value.
 //
 //      Also in clarity mode adds an explanation of what the mutable value does.
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'mutable',
     (
           'Initialize a global Gem mutable value.\n'
         + '\n'
         + 'Also in clarity mode adds an explanation of what the value does.'
     ),
-    function codifier$Gem__Beryl__mutable() {
+    function codifier$Gem__Core__mutable() {
         //
         //  Imports
         //
         var define_property            = Object.defineProperty
         var simple                     = ( ! Gem.Configuration.clarity)
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
-        var visible_mutable_attribute  = Gem.Beryl.visible_mutable_attribute
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
+        var visible_mutable_attribute  = Gem.Core.visible_mutable_attribute
 
 
         //
         //  Implementation: Simple version
         //
         if (simple) {
-            return function Gem__Beryl__mutable(who, $what, value) {
+            return function Gem__Core__mutable(who, $what, value) {
                 //  Initialize a global Gem mutable value.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
@@ -568,19 +568,19 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
-        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
-        var throw_type_error      = Gem.Beryl.throw_type_error
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+        var throw_type_error      = Gem.Core.throw_type_error
 
 
-        return function Gem__Beryl__mutable(who, $what, value) {
+        return function Gem__Core__mutable(who, $what, value) {
             //  Initialize a global Gem mutable value.
             //
             //  Also in clarity mode adds an explanation of what the mutable value does.
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.mutable', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.mutable', 3, arguments.length)
                 }
 
                 if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
@@ -609,14 +609,14 @@ Gem.Beryl.codify_method(
 
 
 //
-//  Gem.Beryl.qualify_constant
+//  Gem.Core.qualify_constant
 //      Qualify a global Gem constant.
 //
 //      The `qualifier` argument is a function that returns the value of the constant.
 //
 //      Also in clarity mode adds an explanation of what the variable does.
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'qualify_constant',
     (
           'Qualify a global Gem constant.\n'
@@ -625,20 +625,20 @@ Gem.Beryl.codify_method(
         + '\n'
         + 'Also in clarity mode adds an explanation of what the constant does.'
     ),
-    function codifier$Gem__Beryl__qualify_constant() {
+    function codifier$Gem__Core__qualify_constant() {
         //
         //  Imports
         //
         var simple                     = ( ! Gem.Configuration.clarity)
         var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Beryl.visible_constant_attribute
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
         //
         //  Implementation: Simple version
         //
         if (simple) {
-            return function Gem__Beryl__qualify_constant(who, $what, qualifier) {
+            return function Gem__Core__qualify_constant(who, $what, qualifier) {
                 //  Qualify a global Gem constant.
                 //
                 //  The `qualifier` argument is a function that returns the value of the constant.
@@ -655,12 +655,12 @@ Gem.Beryl.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Beryl.throw_must_be_string
-        var throw_type_error      = Gem.Beryl.throw_type_error
-        var throw_wrong_arguments = Gem.Beryl.throw_wrong_arguments
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_type_error      = Gem.Core.throw_type_error
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
 
 
-        return function Gem__Beryl__qualify_constant(who, $what, qualifier) {
+        return function Gem__Core__qualify_constant(who, $what, qualifier) {
             //  Qualify a global Gem variable.
             //
             //  The `qualifier` argument is a function that returns the value of the constant.
@@ -669,7 +669,7 @@ Gem.Beryl.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Beryl.qualify_constant', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.qualify_constant', 3, arguments.length)
                 }
 
                 if (typeof name  !== 'string') { throw_must_be_string('name',  name) }

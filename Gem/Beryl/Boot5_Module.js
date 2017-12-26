@@ -6,14 +6,14 @@
 
 
 //
-//  Gem.Beryl.module
+//  Gem.Core.module
 //      Define a Gem Module.
 //
 //      The module may be specified as 'dynamic' if it can be reloaded.
 //
 //      Also in clarity mode adds a `.$who`, and `.$what` to the module.
 //
-Gem.Beryl.codify_method(
+Gem.Core.codify_method(
     'module',
     (
           'Define a Gem Module.\n'
@@ -22,8 +22,8 @@ Gem.Beryl.codify_method(
         + '\n'
         + 'Also in clarity mode adds a `.$who`, and `.$what` to the module.'
     ),
-    function codifier$Gem__Beryl__module() {
-        return function Gem__Beryl__module(who, $what, dynamic)
+    function codifier$Gem__Core__module() {
+        return function Gem__Core__module(who, $what, dynamic)
         {
         }
     }//,
