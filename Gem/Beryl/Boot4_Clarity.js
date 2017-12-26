@@ -49,6 +49,9 @@ Gem.Core.execute(
                          + ' to avoid garbage collection of all functions from that source file,'
                          + ' which causes the source file to disappear from the "Sources" tab of Developer Tools'
 
+        Gem.Trace.$who  = 'Gem.Trace'
+        Gem.Trace.$what = 'Map of functions, methods & bound_methods being traced.'
+
         Gem._.$who  = 'Gem._'
         Gem._.$what = 'Private members & methods of all Gem modules.'
 
@@ -231,15 +234,14 @@ Gem.Core.codify_method(
         var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
-        return function Gem__Core__codify_bound_method(who, $what, $which, codifier) {
+        return function Gem__Core__codify_bound_method(who, $what, $which, codifier, codifier_trace) {
             var bound_method = codifier()
 
-            visible_constant_attribute.value = bound_method
-            define_property(this, who, visible_constant_attribute)
-            delete visible_constant_attribute.value
-
             if (clarity) {
-                visible_constant_attribute.value = this.$who + '.' + who
+                var full_name = (
+                        visible_constant_attribute.value = this.$who + '.' + who
+                    )
+
                 define_property(bound_method, '$who', visible_constant_attribute)
 
                 visible_constant_attribute.value = $what
@@ -248,6 +250,25 @@ Gem.Core.codify_method(
                 visible_constant_attribute.value = $which
                 define_property(bound_method, '$which', visible_constant_attribute)
             }
+
+            if (codifier_trace) {
+                bound_method = codifier_trace(bound_method)
+
+                if (clarity) {
+                    visible_constant_attribute.value = full_name
+                    define_property(bound_method, '$who', visible_constant_attribute)
+
+                    visible_constant_attribute.value = 'Trace: ' + full_name
+                    define_property(bound_method, '$what', visible_constant_attribute)
+
+                    visible_constant_attribute.value = 'Trace: ' + $which
+                    define_property(bound_method, '$which', visible_constant_attribute)
+                }
+            }
+
+            visible_constant_attribute.value = bound_method
+            define_property(this, who, visible_constant_attribute)
+            delete visible_constant_attribute.value
         }
     }//,
 )
@@ -263,7 +284,7 @@ Gem.Core.codify_bound_method(
     'Binding of an identifier pattern (Regular expression for an identifier) to `RegExp.prototype.exec`.',
     function qualifier$Gem__Core__identifier_test() {
         //
-        //  Imports
+        //  Imports: Types
         //
         var Pattern = window.RegExp
 
@@ -273,6 +294,7 @@ Gem.Core.codify_bound_method(
         //
         var identifier_pattern = new Pattern('^[$A-Za-z_][0-9$A-Za-z_]*$')
 
+
         if ('bind' in identifier_pattern.test) {
             return identifier_pattern.test.bind(identifier_pattern)
         }
@@ -281,6 +303,17 @@ Gem.Core.codify_bound_method(
             //  Test a string to see if it represents an identifier.
 
             return identifier_pattern.test(s)
+        }
+    },
+    function codifier$trace$Gem__Core__identifier_test(Gem__Core__identifier_test) {
+        return function trace$Gem__Core__identifier_test(s) {
+            //  Trace Gem.Core.identifier_test.
+
+            var r = Gem__Core__identifier_test(s)
+
+            console.log('Gem.Core.identifier_test(%s) => %s', s, r)
+
+            return r
         }
     }//,
 )

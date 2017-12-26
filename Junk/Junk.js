@@ -331,3 +331,11 @@ Gem.Beryl.codify(
 )
         //      `Gem.Script.event_list` is deleted later in this file; so make sure to grab a copy now, so
         //      it is available, later, if `codifier__Gem__Script__load` is called a second time
+            'Return `true` if a function, method, or bound method with name `name` is being traced.',
+        //
+        //  Imports: Other
+        //
+        var clarity = Gem.Configuration.clarity
+        var tracing = clarity && Gem.Core.tracing('identifier_test')
+
+

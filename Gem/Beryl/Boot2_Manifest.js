@@ -7,7 +7,8 @@
 
 //
 //  Load next scripts:
-//      "Gem/Beryl/Boot4_Clarity.js"    - Add `.$who`, and `.$what`, prepare to reload `Gem` (only in clarity mode)
+//      "Gem/Beryl/Boot3_Trace.js"      - Trace functions, methods & bound_methods           (clarity mode only)
+//      "Gem/Beryl/Boot4_Clarity.js"    - Add `.$who`, and `.$what`, prepare to reload `Gem` (clarity mode only)
 //      "Gem/Beryl/Boot5_Methods.js"    - Initial Methods
 //      "Gem/Beryl/Boot6_Module.js"     - Method to define a module
 //      "Gem/Beryl/Boot7.js"            - Rest of code under development
@@ -22,9 +23,12 @@ Gem.Core.execute(
 
 
         //
-        //  Load "Gem/Beryl/Boot4_Clarity.js" (clarity mode only)
+        //  Clarity mode only: Load:
+        //      "Gem/Beryl/Boot3_Trace.js"
+        //      "Gem/Beryl/Boot4_Clarity.js"
         //
         if (clarity) {
+            load('Gem/Beryl/Boot3_Trace.js')
             load('Gem/Beryl/Boot4_Clarity.js')
         }
 
