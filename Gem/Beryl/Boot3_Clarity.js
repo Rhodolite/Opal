@@ -68,6 +68,15 @@ Gem.Core.execute(
 //
 Gem.Core.execute(
     function execute$setup__Gem__throw_methods() {
+        //
+        //  Imports
+        //
+        var Error = window.Error
+
+
+        //
+        //  Implementation
+        //
         var throw_must_be_number = function Gem__Core__throw_must_be_number(name, v) {
             //  Throw a type error when a parameter is not a number.
 
@@ -202,6 +211,135 @@ Gem.Core.execute(
             throw_wrong_arguments//,
         )
     }
+)
+
+
+//
+//  Gem.Core.codify_bound_method
+//      Stub for Gem.Core.codify_bound_method
+//
+//  NOTE:
+//      See "js/plugin/Beryl.js" for an explanation of why stub's are used.
+//      See "Gem/Beryl/Boot4_Methods.js" for full implementation
+//
+Gem.Core.codify_method(
+    'codify_bound_method',
+    'Stub for Gem.Core.codify_bound_method',
+    function codifier$Gem__Core__codify_bound_method() {
+        var clarity                    = Gem.Configuration.clarity
+        var define_property            = Object.defineProperty
+        var visible_constant_attribute = Gem.Core.visible_constant_attribute
+
+
+        return function Gem__Core__codify_bound_method(who, $what, $which, codifier) {
+            var bound_method = codifier()
+
+            visible_constant_attribute.value = bound_method
+            define_property(this, who, visible_constant_attribute)
+            delete visible_constant_attribute.value
+
+            if (clarity) {
+                visible_constant_attribute.value = this.$who + '.' + who
+                define_property(bound_method, '$who', visible_constant_attribute)
+
+                visible_constant_attribute.value = $what
+                define_property(bound_method, '$what', visible_constant_attribute)
+
+                visible_constant_attribute.value = $which
+                define_property(bound_method, '$which', visible_constant_attribute)
+            }
+        }
+    }//,
+)
+
+
+//
+//  Gem.Core.identifier_test
+//      Test a string to see if it represents an identifier.
+//
+Gem.Core.codify_bound_method(
+    'identifier_test',
+    'Test a string to see if it represents an identifier.',
+    'Binding of an identifier pattern (Regular expression for an identifier) to `RegExp.prototype.exec`.',
+    function qualifier$Gem__Core__identifier_test() {
+        //
+        //  Imports
+        //
+        var Pattern = window.RegExp
+
+
+        //
+        //  Implementation
+        //
+        var identifier_pattern = new Pattern('^[$A-Za-z_][0-9$A-Za-z_]*$')
+
+        if ('bind' in identifier_pattern.test) {
+            return identifier_pattern.test.bind(identifier_pattern)
+        }
+
+        return function OLD_WAY$Gem__Core__identifier_test(s) {
+            //  Test a string to see if it represents an identifier.
+
+            return identifier_pattern.test(s)
+        }
+    }//,
+)
+
+
+//
+//  Gem.Core.throw_must_be_identifier
+//      Throw a type error when a parameter is not a string representing an identifier.
+//
+Gem.Core.codify_method(
+    'throw_must_be_identifier',
+    'Throw a type error when a parameter is not a string representing an identifier.',
+    function codifier$Gem__Core__throw_must_be_identifier() {
+        //
+        //  Imports
+        //
+        var Error                 = window.Error
+        var throw_must_be_string  = Gem.Core.throw_must_be_string
+        var throw_type_error      = Gem.Core.throw_type_error
+        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+
+
+        return function Gem__Core__throw_must_be_identifier(name, v) {
+            //  Throw a type error when a parameter is not a string representing an identifier.
+
+            /*arguments*/ {
+                if (arguments.length !== 2) {
+                    throw_wrong_arguments('Gem.Core.throw_must_be_identifier', 2, arguments.length)
+                }
+
+                if (typeof name !== 'string') { throw_must_be_string('name', name) }
+                //  `v` can by any type
+            }
+
+
+            //
+            //  Simple message if the parameter is not a string
+            //
+            if (typeof v !== 'string') {
+                throw_type_error(
+                        'parameter `' + name + '` must be a string representing an identifier; was instead',
+                        v//,
+                    )
+            }
+
+
+            //
+            //  More detailed message if the parameter is a string, but does not represent an identifier
+            //
+            var prefix = 'parameter `' + name + '` must be a string representing an identifier'
+                       + '; was instead the string "' + v + '" which does not look like an identifier'
+                       + ".  An identifier must begin with one of '$', a letter, or '_' and can be followed"
+                       + "  by any number of '$', a number, a letter, or '_'"
+
+            var message = 'TypeError: ' + prefix
+
+            throw new Error(message)
+        }
+    }//,
 )
 
 

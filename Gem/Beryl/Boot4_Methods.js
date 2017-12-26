@@ -70,9 +70,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
+        var define_property            = Object.defineProperty
+        var identifier_test            = Gem.Core.identifier_test
+        var throw_must_be_identifier   = Gem.Core.throw_must_be_identifier
         var throw_must_be_string       = Gem.Core.throw_must_be_string
         var throw_wrong_arguments      = Gem.Core.throw_wrong_arguments
-        var throw_type_error           = Gem.Core.throw_type_error
         var visible_constant_attribute = Gem.Core.visible_constant_attribute
 
 
@@ -84,7 +86,10 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.clarity_note', 2, arguments.length)
                 }
 
-                if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
+                if ( ! (typeof who === 'string' && identifier_test(who))) {
+                    throw_must_be_identifier('$who', who)
+                }
+
                 if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
             }
 
@@ -150,9 +155,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
-        var throw_type_error      = Gem.Core.throw_type_error
+        var identifier_test          = Gem.Core.identifier_test
+        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
+        var throw_must_be_string     = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
+        var throw_type_error         = Gem.Core.throw_type_error
 
 
         return function Gem__Core__codify_bound_method(who, $what, $which, codifier) {
@@ -165,7 +172,10 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.codify_bound_method', 4, arguments.length)
                 }
 
-                if (typeof who    !== 'string') { throw_must_be_string('who',    who)   }
+                if ( ! (typeof who === 'string' && identifier_test(who))) {
+                    throw_must_be_identifier('$who', who)
+                }
+
                 if (typeof $what  !== 'string') { throw_must_be_string('$what',  $what) }
                 if (typeof $which !== 'string') { throw_must_be_string('$which', $which) }
 
@@ -286,9 +296,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
-        var throw_type_error      = Gem.Core.throw_type_error
+        var identifier_test          = Gem.Core.identifier_test
+        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
+        var throw_must_be_string     = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
+        var throw_type_error         = Gem.Core.throw_type_error
 
 
         return function Gem__Core__codify_method(who, $what, codifier) {
@@ -301,7 +313,10 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.codify_method', 3, arguments.length)
                 }
 
-                if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
+                if ( ! (typeof who === 'string' && identifier_test(who))) {
+                    throw_must_be_identifier('$who', who)
+                }
+
                 if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
 
                 /*codifier*/ {
@@ -392,9 +407,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Core.throw_must_be_string
-        var throw_type_error      = Gem.Core.throw_type_error
-        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+        var identifier_test          = Gem.Core.identifier_test
+        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
+        var throw_must_be_string     = Gem.Core.throw_must_be_string
+        var throw_type_error         = Gem.Core.throw_type_error
+        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
 
 
         //
@@ -410,14 +427,21 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.constant', 3, arguments.length)
                 }
 
-                if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
+                if ( ! (typeof who === 'string' && identifier_test(who))) {
+                    throw_must_be_identifier('$who', who)
+                }
+
                 if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
 
-                if (typeof constant === 'undefined' || typeof constant === 'function') {
-                    throw_type_error(
-                            'parameter `constant` must be a value; was instead',
-                            constant//,
-                        )
+                /*constant*/ {
+                    var typeof_constant = typeof constant
+
+                    if (typeof_constant === 'undefined' || typeof_constant === 'function') {
+                        throw_type_error(
+                                'parameter `constant` must be a value; was instead',
+                                constant//,
+                            )
+                    }
                 }
             }
 
@@ -476,9 +500,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
-        var throw_type_error      = Gem.Core.throw_type_error
+        var identifier_test          = Gem.Core.identifier_test
+        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
+        var throw_must_be_string     = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
+        var throw_type_error         = Gem.Core.throw_type_error
 
 
         return function Gem__Core__method(who, $what, method) {
@@ -491,7 +517,10 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.method', 3, arguments.length)
                 }
 
-                if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
+                if ( ! (typeof who === 'string' && identifier_test(who))) {
+                    throw_must_be_identifier('$who', who)
+                }
+
                 if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
 
                 /*method*/ {
@@ -568,9 +597,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
-        var throw_type_error      = Gem.Core.throw_type_error
+        var identifier_test          = Gem.Core.identifier_test
+        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
+        var throw_must_be_string     = Gem.Core.throw_must_be_string
+        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
+        var throw_type_error         = Gem.Core.throw_type_error
 
 
         return function Gem__Core__mutable(who, $what, value) {
@@ -583,14 +614,21 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.mutable', 3, arguments.length)
                 }
 
-                if (typeof who   !== 'string') { throw_must_be_string('who',   who)   }
+                if ( ! (typeof who === 'string' && identifier_test(who))) {
+                    throw_must_be_identifier('$who', who)
+                }
+
                 if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
 
-                if (typeof value === 'undefined' || typeof value === 'function') {
-                    throw_type_error(
-                            'parameter `value` must be a value; was instead',
-                            value//,
+                /*value*/ {
+                    var typeof_value = typeof value
+
+                    if (typeof_value === 'undefined' || typeof_value === 'function') {
+                        throw_type_error(
+                                'parameter `value` must be a value; was instead',
+                                value//,
                         )
+                    }
                 }
             }
 
@@ -694,7 +732,9 @@ Gem.Core.codify_method(
             var constant = qualifier()
 
             /*verify*/ {
-                if (typeof constant === 'undefined' || typeof constant === 'function') {
+                var typeof_constant = typeof constant
+
+                if (typeof_constant === 'undefined' || typeof_constant === 'function') {
                     throw_type_error(
                             (
                                   'qualifier `' + qualifier_name + '` did not return a constant'

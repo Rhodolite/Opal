@@ -139,7 +139,7 @@ Gem.Core.execute(
         //  NOTE:
         //      These stubs are ~100 lines long ...
         //
-        //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~100 lines
+        //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~200 lines
         //          of extra error handling code) in "Gem/Beryl/Boot4_Methods.js ...
         //
         //      ... Thus, the full implementation, was moved to a separate file, for readability ...
@@ -153,7 +153,11 @@ Gem.Core.execute(
         //      ... In this special case, as boot code, it was decided to do this both for initial readability and
         //          to shorten the boot code in thie file ...
         //
-        //      (Was not an easy choice, hopefully was the right one).
+        //      The reason the code split up is "initially more readabile" is the other way (all the code here) is
+        //      a lot of contortions have to be done to define the procedures in the "proper order", and it's hard
+        //      to follow so much contorted code ...
+        //
+        //      (Was not an easy choice to create the stubs, hopefully was the right one).
         //
         var method = function Gem__Core__method(who, $what, method) {
             visible_constant_attribute.value = method
@@ -490,7 +494,7 @@ if (Gem.Script.handle_errors) {
             if ('bind' in console.error) {
                 var console_error = console.error.bind(console)
             } else {
-                var console_error = function OLD_WAY__console_error(message) {
+                var console_error = function OLD_WAY$console_error(message) {
                     console.error(message)
                 }
             }
@@ -668,7 +672,7 @@ Gem.Core.codify_method.call(
         if ('bind' in gem_scripts.appendChild) {
             var append_child = gem_scripts.appendChild.bind(gem_scripts)    //  Append to `gem_scripts`
         } else {
-            var append_child = function OLD_WAY__append_child(tag) {
+            var append_child = function OLD_WAY$append_child(tag) {
                 gem_scripts.appendChild(tag)                                //  Old way: Append to `gem_scripts`
             }
         }
@@ -683,7 +687,7 @@ Gem.Core.codify_method.call(
             //
             //  Old way: Creates a `<script>` tag
             //
-            var create_script_tag = function OLD_WAY__create_script_tag() {
+            var create_script_tag = function OLD_WAY$create_script_tag() {
                 return document.createElement('script')
             }
         }

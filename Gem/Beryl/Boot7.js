@@ -776,7 +776,7 @@ Gem.Core.codify_method(
 
 
         return deep_copy_with_adjustments
-    }
+    }//,
 )
 
 
@@ -795,7 +795,7 @@ if (Gem.Configuration.clarity) {
 
                 callback()
             }
-        }
+        }//,
     )
 }
 
@@ -805,5 +805,11 @@ Gem.Core.execute(
         Gem.NodeWebKit.show_developer_tools()
         //console.clear()
         console.log('%o', Gem)
-    }
+    }//,
+)
+
+
+Gem.Core.execute(
+    function execute$development_code() {
+    }//,
 )
