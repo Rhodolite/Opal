@@ -306,12 +306,14 @@ Gem.Core.codify_bound_method(
         }
     },
     function codifier$trace$Gem__Core__identifier_test(Gem__Core__identifier_test) {
+        var escape = window.escape
+
         return function trace$Gem__Core__identifier_test(s) {
             //  Trace Gem.Core.identifier_test.
 
             var r = Gem__Core__identifier_test(s)
 
-            console.log('Gem.Core.identifier_test(%s) => %s', s, r)
+            console.log('Gem.Core.identifier_test(%s) => %s', escape(s), r)
 
             return r
         }
@@ -330,6 +332,7 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
+        var escape                = window.escape
         var Error                 = window.Error
         var throw_must_be_string  = Gem.Core.throw_must_be_string
         var throw_type_error      = Gem.Core.throw_type_error
@@ -364,7 +367,7 @@ Gem.Core.codify_method(
             //  More detailed message if the parameter is a string, but does not represent an identifier
             //
             var prefix = 'parameter `' + name + '` must be a string representing an identifier'
-                       + '; was instead the string "' + v + '" which does not look like an identifier'
+                       + '; was instead the string ' + escape(v) + ' which does not look like an identifier'
                        + ".  An identifier must begin with one of '$', a letter, or '_' and can be followed"
                        + "  by any number of '$', a number, a letter, or '_'"
 

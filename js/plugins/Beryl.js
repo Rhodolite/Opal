@@ -64,7 +64,7 @@ window.Gem = {
 
     Trace : {                                               //  Map of functions, methods & bound_methods being traced.
         depth   : 0,                                        //      Current tracing depth.
-        pending : null,                                     //      Pending closed trace group
+        pending : [],                                       //      Current pending format to start a tracing group.
 
         //  trace_line  : Function                          //      Start a trace group
         //  trace_start : Function                          //      Start a closed trace group
@@ -90,10 +90,12 @@ Gem.Core.execute(
         //
         var Tracing = Gem.Tracing
 
-        Tracing['Gem.Core.execute']                      = 7     //  NOTE: Also traces `traced$Gem.Core.execute`
-        Tracing.execute$setup_Tracing                    = 7
-        Tracing.execute$codify$traced$Gem__Core__execute = 7
+        Tracing['Gem.Core.execute']                     = 7
+        Tracing.execute$setup_Tracing                   = 7
+        Tracing.execute$codify$trace$Gem__Core__execute = 7
         Tracing.execute$setup_Gem                        = 7
+        Tracing.execute$setup_Gem$who_what               = 7
+
 
         //
         //  Define trace functions & trace myself
@@ -101,37 +103,14 @@ Gem.Core.execute(
         if (Gem.Configuration.trace) {
             var Trace = Gem.Trace
 
-            var execute_name = 'Gem.Core.execute'
-            var my_name      = 'execute$setup_Tracing'
-
-            var trace_execute = (execute_name in Tracing)
-            var trace_myself  = (my_name      in Tracing)
-
-            if (trace_execute) { Trace.depth += 1; console.groupCollapsed('%s(%s)', execute_name, my_name) }
-            if (trace_myself)  { Trace.depth += 1; Trace.pending = ['%s()', my_name] }
-
-            var slice = Array.prototype.slice
-
-            if ('bind' in Array.prototype.slice) {
-                //
-                //
-                //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
-                //  to the `this` argument of `Array.prototype.slice`:
-                //
-                //      In other words `.slice_call(arguments)` becomes `Array.prototype.slice.call(arguments)`
-                //
-                //  This suggestion came from:
-                //      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-                //
-                var slice_call = slice.call.bind(slice)
-            } else {
-                var slice_call = false                          //  Can't implement `slice.call`, do it old way.
-            }
-
+            var pending = Trace.pending
 
             var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_stop         = console.groupEnd
             var unbound__line               = console.log
+            var unbound__push               = pending.push
+            var unbound__slice              = Array.prototype.slice             //  NOTE: slice *WITHOUT* a 'p'
+            var unbound__SPLICE             = Array.prototype.splice            //  NOTE: splice *WITH* a 'p'
 
 
             if ('bind' in unbound__group_stop) {
@@ -141,92 +120,250 @@ Gem.Core.execute(
                     console.groupEnd()
                 }
             }
-            
 
-            if (slice_call) {
-                Trace.trace_start = function Gem__Trace__trace_start(/*...*/) {
-                    //  Queue a pending new closed trace group.
-                    //
-                    //  NOTE #1:
-                    //      If there are lines inside the group, then this is [later] flushed as a closed trace group.
-                    //
-                    //      If there is no lines inside the group, then this is [later] converted to a normal line.
-                    //
-                    //  NOTE #2:
-                    //      If this is the first line inside [an outer] closed group, then the [previously pending]
-                    //      closed group is first flushed (i.e.: actually output as a closed group).
 
-                    var pending = Trace.pending
-
-                    if (pending) {
-                        unbound__group_start_closed.apply(console, pending)
-                    }
-
-                    Trace.depth += 1
-                    Trace.pending = slice_call(arguments)
-                }
+            if ('bind' in unbound__push) {
+                var push_color_blue   = unbound__push.bind(pending, 'color:blue')
+                var push_color_green  = unbound__push.bind(pending, 'color:green')
+                var push_color_none   = unbound__push.bind(pending, 'color:none')
+                var push_color_orange = unbound__push.bind(pending, 'color: #EEA500')
+                var push_color_pink   = unbound__push.bind(pending, 'color: #FF1493')       //  Actually: DeepPink
+                var push_color_purple = unbound__push.bind(pending, 'color:purple')
+                var push_string       = unbound__push.bind(pending)
             } else {
-                Trace.trace_start = function OLD_WAY$Gem__Trace__trace_start(/*...*/) {
-                    var pending = Trace.pending
+                var push_color_blue   = function OLD_WAY$push_color_blue()   { pending.push('color:blue')     }
+                var push_color_green  = function OLD_WAY$push_color_green()  { pending.push('color:green')    }
+                var push_color_none   = function OLD_WAY$push_color_none()   { pending.push('color:none')     }
+                var push_color_orange = function OLD_WAY$push_color_orange() { pending.push('color: #EEA500') }
+                var push_color_pink   = function OLD_WAY$push_color_orange() { pending.push('color: #FF1493') }
+                var push_color_purple = function OLD_WAY$push_color_orange() { pending.push('color:purple')   }
+                var push_string       = function OLD_WAY$push_string(s)      { pending.push(s)                }
+            }
 
-                    if (pending) {
-                        unbound__group_start_closed.apply(console, pending)
-                    }
 
-                    Trace.depth += 1
-                    Trace.pending = slice.call(arguments)                   //  OLD WAY: `slice.call`
+            if ('bind' in unbound__slice) {
+                //
+                //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
+                //  to the `this` argument of `Array.prototype.slice`:
+                //
+                //      In other words `.slice_call(arguments)` becomes `Array.prototype.slice.call(arguments)`
+                //
+                //  This suggestion came from:
+                //      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+                //
+                var slice_call = unbound__slice.call.bind(unbound__slice)
+            } else {
+                var slice_call = false                          //  Can't implement `slice.call`, do it old way.
+            }
+
+
+            if ('bind' in unbound__SPLICE) {
+                var zap_pending = unbound__SPLICE.bind(pending, 0)
+            } else {
+                var zap_pending = function OLD_WAY$zap_pending() {
+                    pending.splice(0)                                               //  NOTE: splice *WITH* a 'p'
+                }
+            }
+                    
+
+            //
+            //  Implementaion
+            //
+            var trace_execute = ('Gem.Core.execute'      in Tracing)
+            var trace_myself  = ('execute$setup_Tracing' in Tracing)
+
+
+            var trace_begin_call = function Gem__Trace__trace_begin_call(f) {
+                //  Begin a function call to queue a pending new closed trace group.
+                //
+                //  NOTE #1:
+                //      If there are lines inside the group, then this is [later] flushed as a closed trace group.
+                //
+                //      If there is no lines inside the group, then this is [later] converted to a normal line.
+                //
+                //  NOTE #2:
+                //      If this is the first line inside [an outer] closed group, then the [previously pending]
+                //      closed group is first flushed (i.e.: actually output as a closed group).
+
+                if (pending.length) {
+                    unbound__group_start_closed.apply(console, pending)
+                    zap_pending()
+                }
+
+                Trace.depth += 1
+
+                push_string('%c' + f.name + '%c(')
+                push_color_green()
+                push_color_none()
+            }
+
+
+            var trace_end_call = function Gem__Trace__trace_end_call() {
+                if (pending.length === 0) {
+                    throw new Error("internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_end_call`")
+                }
+
+                pending[0] += /*(*/ ')'
+            }
+                
+
+            var trace_function_argument = function Gem__Trace__trace_function_argument(f) {
+                var total = pending.length
+
+                if (total === 0) {
+                    throw new Error(
+                            "internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_function_argument`"//,
+                        )
+                }
+
+                var comma = (total == 3) ? '' : ', '
+
+                if (f.name === '') {
+                    pending[0] += comma + '%cunnamed function%c ()'
+                    push_color_blue()
+                    push_color_none()
+                    return
+                }
+
+                var s = f.toString()
+
+                if (s.substr(-18) === ' { [native code] }') {               //  `substr` allows negative indexes
+                    pending[0] += comma + '%cfunction%c %c%s%c() { [native code] }'
+                    push_color_blue()
+                    push_color_none()
+                    push_color_orange()
+                    push_string(s.substring(9, s.length - 29))              //  Cheating a bit: 9..-29 = function name
+                    push_color_none()
+                    return
+                }
+
+                var open_left_parenthesis = s.indexOf('(')
+                var newline               = s.indexOf('\n')
+                var newline_m2            = newline - 2
+
+                if (
+                       (0 < open_left_parenthesis && open_left_parenthesis < newline_m2)
+                    && s.substring(newline_m2, newline) == ' {' /*}*/
+                ) {
+                    pending[0] += comma + '%cfunction%c %c%s%c%s'
+                    push_color_blue()
+                    push_color_none()
+                    push_color_orange()
+                    push_string(s.substring(9, open_left_parenthesis))
+                    push_color_none()
+                    push_string(s.substring(open_left_parenthesis, newline_m2))
+                    return
+                }
+
+                pending[0] += comma + '%cfunction%c %s()'
+                push_color_blue()
+                push_color_none()
+                push_color_orange()
+                push_string(f.name)
+                push_color_none()
+            }
+
+
+            if (trace_execute || trace_myself) {
+                //
+                //  NOTE:
+                //      We use a fake `execute$setup_Tracing` here, as we don't have the real one (ourselves).
+                //
+                //      This is safer than use `arguments.callee` which is very STRONGLY deprecated.
+                //
+                var myself = function execute$setup_Tracing() {
+                }
+
+
+                if (trace_execute) {
+                    trace_begin_call(Gem.Core.execute)
+                    trace_function_argument(myself)
+                    trace_end_call()
+                }
+
+
+                if (trace_myself)  {
+                    trace_begin_call(myself)
+                    trace_end_call()
                 }
             }
 
 
-            var trace_stop = (
-                Trace.trace_stop = function Gem__Trace__trace_stop() {
-                    //  End a closed trace group.
-                    //
-                    //  NOTE:
-                    //      If there are lines inside the group, then the group is closed.
-                    //
-                    //      If there is no lines inside the group, then the [previously pending] closed group is
-                    //      converted to a normal line.
+            var trace_global_argument = function Gem__Trace__trace_global_argument(who) {
+                var total = pending.length
 
-                    var pending = Trace.pending
-
-                    if (pending) {
-                        unbound__line.apply(console, pending)
-                        Trace.pending = null
-                    } else {
-                        group_stop()
-                    }
-
-                    Trace.depth -= 1
+                if (total === 0) {
+                    throw new Error(
+                            "internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_global_argument`"//,
+                        )
                 }
-            )
+
+                var comma = (total == 3) ? '' : ', '
+
+                pending[0] += comma + "%c`" + who + "`%c"
+                push_color_pink()
+                push_color_none()
+            }
+
+
+            var trace_stop = function Gem__Trace__trace_stop() {
+                //  End a closed trace group.
+                //
+                //  NOTE:
+                //      If there are lines inside the group, then the group is closed.
+                //
+                //      If there is no lines inside the group, then the [previously pending] closed group is
+                //      converted to a normal line.
+
+                if (pending.length) {
+                    unbound__line.apply(console, pending)
+                    zap_pending()
+                } else {
+                    group_stop()
+                }
+
+                Trace.depth -= 1
+            }
+
+
+            var trace_string_argument = function Gem__Trace__trace_string_argument(who) {
+                var total = pending.length
+
+                if (total === 0) {
+                    throw new Error(
+                            "internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_string_argument`"//,
+                        )
+                }
+
+                var comma = (total == 3) ? '' : ', '
+
+                pending[0] += comma + '%c%s%c'
+                push_color_purple()
+                push_string('"' + who + '"')
+                push_color_none()
+            }
 
 
             if (slice_call) {
-                Trace.trace_line = function Gem__Trace__trace_line(/*arguments*/) {
+                var trace_line = function Gem__Trace__trace_line(/*arguments*/) {
                     //  Output a line of text in trace mode.
                     //
                     //  NOTE:
                     //      If this is the first line inside the group, then the [previously pending] closed group is
                     //      flushed (i.e.: actualy output as a closed group).
 
-                    var pending = Trace.pending
-
-                    if (pending) {
+                    if (pending.length) {
                         unbound__group_start_closed.apply(console, pending)
-                        Trace.pending = null
+                        zap_pending()
                     }
 
                     unbound__line.apply(console, slice_call(arguments))
                 }
             } else {
-                Trace.trace_line = function OLD_WAY$Gem__Trace__trace_line(/*arguments*/) {
-                    var pending = Trace.pending
-
-                    if (pending) {
+                var trace_line = function OLD_WAY$Gem__Trace__trace_line(/*arguments*/) {
+                    if (pending.length) {
                         unbound__group_start_closed.apply(console, pending)
-                        Trace.pending = null
+                        zap_pending()
                     }
 
                     unbound__line.apply(console, slice.call(arguments))        //  OLD WAY: `slice.call`
@@ -234,30 +371,20 @@ Gem.Core.execute(
             }
 
 
-            Trace.portray_function = function Gem__Trace__portray_function(f) {
-                if (f.name === '') {
-                    return 'unnamed function ()'
-                }
-
-                var s = f.toString()
-
-                if (s.substr(-18) === ' { [native code] }') {               //  `substr` allows negative indexes
-                    return s
-                }
-
-                var newline    = s.indexOf('\n')
-                var newline_m2 = newline - 2
-
-                if (newline_m2 >= 0 && s.substring(newline_m2, newline) == ' {' /*}*/) {
-                    return s.substring(0, newline_m2)
-                }
-
-                return 'function ' + code.name + '()'
-            }
-
-
             if (trace_myself)  { trace_stop() }
             if (trace_execute) { trace_stop() }
+
+
+            //
+            //  Exports
+            //
+            Trace.trace_begin_call        = trace_begin_call
+            Trace.trace_end_call          = trace_end_call
+            Trace.trace_function_argument = trace_function_argument
+            Trace.trace_global_argument   = trace_global_argument
+            Trace.trace_line              = trace_line
+            Trace.trace_stop              = trace_stop
+            Trace.trace_string_argument   = trace_string_argument
         }
     }
 )
@@ -274,38 +401,68 @@ Gem.Core.execute(
 //
 if (Gem.Configuration.trace) {
     Gem.Core.execute(
-        function execute$codify$traced$Gem__Core__execute() {
+        function execute$codify$trace$Gem__Core__execute() {
+            //
+            //  NOTE:
+            //      We use a fake `execute$setup_Tracing` here, as we don't have the real one (ourselves).
+            //
+            //      This is safer than use `arguments.callee` which is very STRONGLY deprecated.
+            //
+            var myself = function execute$codify$trace$Gem__Core__execute() {
+            }
+
             var Trace   = Gem.Trace
             var Tracing = Gem.Tracing
 
-            var trace_portray_function = Trace.portray_function
-            var trace_line             = Trace.trace_line
-            var trace_start            = Trace.trace_start
-            var trace_stop             = Trace.trace_stop
-
-            var execute_name = 'Gem.Core.execute'               //  NOTE: Also traces `traced$Gem.Core.execute`
-            var my_name      = 'execute$codify$traced$Gem__Core__execute'   //  NOTE: 'traced' (with a 'd') on purpose.
-
-            var trace_execute = (execute_name in Tracing)
-            var trace_myself  = (my_name      in Tracing)
-
+            var trace_begin_call        = Trace.trace_begin_call
+            var trace_end_call          = Trace.trace_end_call
+            var trace_function_argument = Trace.trace_function_argument
+            var trace_global_argument   = Trace.trace_global_argument
+            var trace_line              = Trace.trace_line
+            var trace_stop              = Trace.trace_stop
+            var trace_string_argument   = Trace.trace_string_argument
 
             //
-            //  Here we both trace *THIS* call to `Gem.Core.execute` ...
-            //      ... and then in *FUTURE* calls we also trace calls to `Gem.Core.execute`
-            //          (i.e.: `traced$Gem__Core__execute`).
+            //  Tracing `execute` and myself
             //
-            if (trace_execute) { trace_start('%s(%s)', execute_name, my_name) }
-            if (trace_myself)  { trace_line('%s()', my_name) }
+            //  NOTE:
+            //      Here we both trace *THIS* call to `Gem.Core.execute` ...
+            //          ... and then in *FUTURE* calls we also trace calls to `Gem.Core.execute`
+            //              (i.e.: `trace$Gem__Core__execute`).
+            //
+            //
+            var execute = Gem.Core.execute                  //  Original version we are tracing
+
+            var trace_execute = ('Gem.Core.execute' in Tracing)
+            var trace_myself  = (myself.name        in Tracing)
+
+            if (trace_execute) {
+                trace_begin_call(execute$codify$trace$Gem__Core__execute)
+                trace_function_argument(myself)
+                trace_end_call()
+            }
+
+            if (trace_myself) {
+                trace_begin_call(myself)
+                trace_end_call()
+            }
 
 
-            Gem.Core.execute = function traced$Gem__Core__execute(code) {
+            Gem.Core.execute = function trace$Gem__Core__execute(code) {
                 var trace_code = (code.name in Tracing)
 
-                if (trace_execute) { trace_start('Gem.Core.execute(function %s)', trace_portray_function(code)) }
-                if (trace_code)    { trace_start('%s()', code.name) }
+                if (trace_execute) {
+                    trace_begin_call(execute)
+                    trace_function_argument(code)
+                    trace_end_call()
+                }
 
-                code()
+                if (trace_code) {
+                    trace_begin_call(code)
+                    trace_end_call()
+                }
+                    
+                execute(code)
 
                 if (trace_code)    { trace_stop() }
                 if (trace_execute) { trace_stop() }
@@ -314,8 +471,6 @@ if (Gem.Configuration.trace) {
 
             if (trace_myself)  { trace_stop() }
             if (trace_execute) { trace_stop() }
-
-            return
         }
     )
 }
@@ -358,7 +513,7 @@ Gem.Core.execute(
 
 
         if (clarity) {
-            function who_what(module, $who, $what) {
+            var who_what = function execute$setup_Gem$who_what(module, $who, $what) {
                 visible_constant_attribute.value = $who
                 define_property(module, '$who', visible_constant_attribute)
 
@@ -367,6 +522,38 @@ Gem.Core.execute(
 
                 delete visible_constant_attribute.value
             }
+
+
+            if (Gem.Configuration.trace) {
+                var Tracing = Gem.Tracing
+
+                if ('execute$setup_Gem$who_what' in Tracing) {
+                    var Trace = Gem.Trace
+
+                    var trace_begin_call      = Trace.trace_begin_call
+                    var trace_string_argument = Trace.trace_string_argument
+                    var trace_global_argument = Trace.trace_global_argument
+                    var trace_end_call        = Trace.trace_end_call
+                    var trace_stop            = Trace.trace_stop
+                    
+                    var original_who_what = who_what
+
+                    var who_what = function trace$execute$setup_Gem$who_what(module, $who, $what) {
+                        /*trace*/ {
+                            trace_begin_call(who_what)
+                            trace_global_argument('window.' + $who)
+                            trace_string_argument($who)
+                            trace_string_argument($what)
+                            trace_end_call()
+                        }
+
+                        original_who_what(module, $who, $what)
+
+                        trace_stop()
+                    }
+                }
+            }
+
 
             who_what(Gem,            'Gem',            'The only global variable used by Gem.')
             who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.')
