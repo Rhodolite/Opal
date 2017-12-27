@@ -339,3 +339,22 @@ Gem.Beryl.codify(
         var tracing = clarity && Gem.Core.tracing('identifier_test')
 
 
+//                  if (v === COLOR_PINK) {
+//                      i += 1
+//
+//                      v = (i < argument_total && argument_list[i])
+//
+//                      if (typeof v !== 'string') {
+//                          throw new Error(
+//                                    'trace_start: programming error:'
+//                                  + ': special symbol COLOR_PINK must be followed by a string'
+//                              )
+//                      }
+//
+//                      format += comma + '%c%s%c'
+//                      COLOR_PINK()
+//                      push_string(v)
+//                      push_color_none()
+//                      continue
+//                  }
+

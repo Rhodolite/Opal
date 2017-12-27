@@ -182,10 +182,10 @@ Gem.Core.execute(
 
 
             if ('bind' in unbound__SPLICE) {
-                var zap_pending = unbound__SPLICE.bind(pending, 0)
+                var zap_pending__3_to_end = unbound__SPLICE.bind(pending, 3)
             } else {
-                var zap_pending = function OLD_WAY$zap_pending() {
-                    pending.splice(0)                                               //  NOTE: splice *WITH* a 'p'
+                var zap_pending__3_to_end = function OLD_WAY$zap_pending() {
+                    pending.splice(3)                                               //  NOTE: splice *WITH* a 'p'
                 }
             }
 
@@ -195,7 +195,131 @@ Gem.Core.execute(
             //
             var trace_execute = ('Gem.Core.execute'      in Tracing)
             var trace_myself  = ('execute$setup_Tracing' in Tracing)
-//          var COLOR_PINK    = push_color_pink
+
+
+            //
+            //  Reserve first three elements of `pending` & [later] use `format` to replace `pending[0]
+            var format
+
+
+            push_object(null)
+            push_color_green()
+            push_color_none()
+
+
+            var trace_value = function trace_value(v) {
+                var v_type = typeof v
+
+                if (v_type === 'string') {
+                    format += '%c"%s"%c'
+                    push_color_purple()
+                    push_string(v)
+                    push_color_none()
+                    return
+                }
+
+                if (v_type === 'number') {
+                    format += '%c' + v.toString() + '%c'
+                    push_color_teal()
+                    push_color_none()
+                    return
+                }
+
+                if (v_type === 'boolean') {
+                    format += (v ? '%ctrue%c' : '%cfalse%c')
+                    push_color_blue()
+                    push_color_none()
+                    return
+                }
+
+                if (v_type === 'object') {
+                    if (v === null) {
+                        format += '%cnull%c'
+                        push_color_blue()
+                        push_color_none()
+                        return
+                    }
+
+                    if ('$who' in v) {
+                        format += "`%c" + v.$who + "`%c %o"
+                        push_color_pink()
+                        push_color_none()
+                        push_object(v)
+                        return
+                    }
+
+                    format += '%o'
+                    push_object(v)
+                    return
+                }
+
+                if (v_type === 'function') {
+                    if (v.name === '') {
+                        format += '%cunnamed function%c ()'
+                        push_color_blue()
+                        push_color_none()
+                        return
+                    }
+
+                    var s = v.toString()
+
+                    if (s.substr(-18) === ' { [native code] }') {       //  `substr` allows negative indexes
+                        format += '%cfunction%c %c%s%c() { [native code] }'
+                        push_color_blue()
+                        push_color_none()
+                        push_color_orange()
+                        push_string(s.substring(9, s.length - 29))      //  Cheating a bit: 9..-29 = function name
+                        push_color_none()
+                        return
+                    }
+
+                    var open_left_parenthesis = s.indexOf('(')
+                    var open_left_brace       = s.indexOf('{')
+                    var open_left_brace__m1   = open_left_brace - 1
+
+                    if (
+                           (0 < open_left_parenthesis && open_left_parenthesis < open_left_brace__m1)
+                        && s[open_left_brace__m1] === ' '
+                    ) {
+                        format += '%cfunction%c %c%s%c%s'
+                        push_color_blue()
+                        push_color_none()
+                        push_color_orange()
+                        push_string(s.substring(9, open_left_parenthesis))
+                        push_color_none()
+                        push_string(s.substring(open_left_parenthesis, open_left_brace__m1))
+                        return
+                    }
+
+                    format += '%cfunction%c %s()'
+                    push_color_blue()
+                    push_color_none()
+                    push_color_orange()
+                    push_string(v.name)
+                    push_color_none()
+                    return
+                }
+
+                if (v_type === 'symbol') {
+                    format += '%c' + v.toString() + '%c'
+                    push_color_blue()
+                    push_color_none()
+                    return
+                }
+
+                if (v_type === 'undefined') {
+                    format += '%cundefined%c'
+                    push_color_red()
+                    push_color_none()
+                    return
+                }
+
+
+                format += '%c<v_type:' + v_type + '>%c %o'
+                push_color_red()
+                push_color_none()
+                push_object(v)
+            }
 
 
             var trace_start = function Gem__Trace__trace_start(f, /*optional*/ argument_list) {
@@ -210,165 +334,35 @@ Gem.Core.execute(
                 //      If this is the first line inside [an outer] closed group, then the [previously pending]
                 //      closed group is first flushed (i.e.: actually output as a closed group).
 
-                if (pending.length) {
+                if (pending.length > 3) {
                     unbound__group_start_closed.apply(console, pending)
-                    zap_pending()
+                    zap_pending__3_to_end()
                 }
 
                 Trace.depth += 1
 
                 if (argument_list === undefined) {
-                    push_string('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
-                    push_color_green()
-                    push_color_none()
+                    pending[0] = ('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
                     return
                 }
 
-                var format = '%c' + (('$who') in f ? f.$who : f.name) + '%c('
-
-                push_string(format)
-                push_color_green()
-                push_color_none()
-
                 var argument_total = argument_list.length
 
+                if ( ! argument_total) {
+                    pending[0] = ('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
+                    return
+                }
+
+                format = '%c' + (('$who') in f ? f.$who : f.name) + '%c('
+
                 for (var i = 0; i < argument_total; i ++) {
-                    var v     = argument_list[i]
-                    var comma = (i ? ', ' : '')
+                    var v = argument_list[i]
 
-//                  if (v === COLOR_PINK) {
-//                      i += 1
-//
-//                      v = (i < argument_total && argument_list[i])
-//
-//                      if (typeof v !== 'string') {
-//                          throw new Error(
-//                                    'trace_start: programming error:'
-//                                  + ': special symbol COLOR_PINK must be followed by a string'
-//                              )
-//                      }
-//
-//                      format += comma + '%c%s%c'
-//                      COLOR_PINK()
-//                      push_string(v)
-//                      push_color_none()
-//                      continue
-//                  }
-
-                    var v_type = typeof v
-
-                    if (v_type === 'boolean') {
-                        format += comma + (v ? '%ctrue%c' : '%cfalse%c')
-                        push_color_blue()
-                        push_color_none()
-                        continue
+                    if (i) {
+                        format += ','
                     }
 
-                    if (v_type === 'function') {
-                        if (v.name === '') {
-                            format += comma + '%cunnamed function%c ()'
-                            push_color_blue()
-                            push_color_none()
-                            continue
-                        }
-
-                        var s = v.toString()
-
-                        if (s.substr(-18) === ' { [native code] }') {       //  `substr` allows negative indexes
-                            format += comma + '%cfunction%c %c%s%c() { [native code] }'
-                            push_color_blue()
-                            push_color_none()
-                            push_color_orange()
-                            push_string(s.substring(9, s.length - 29))      //  Cheating a bit: 9..-29 = function name
-                            push_color_none()
-                            continue
-                        }
-
-                        var open_left_parenthesis = s.indexOf('(')
-                        var open_left_brace       = s.indexOf('{')
-                        var open_left_brace__m1   = open_left_brace - 1
-
-                        if (
-                               (0 < open_left_parenthesis && open_left_parenthesis < open_left_brace__m1)
-                            && s[open_left_brace__m1] === ' '
-                        ) {
-                            format += comma + '%cfunction%c %c%s%c%s'
-                            push_color_blue()
-                            push_color_none()
-                            push_color_orange()
-                            push_string(s.substring(9, open_left_parenthesis))
-                            push_color_none()
-                            push_string(s.substring(open_left_parenthesis, open_left_brace__m1))
-                            continue
-                        }
-
-                        format += comma + '%cfunction%c %s()'
-                        push_color_blue()
-                        push_color_none()
-                        push_color_orange()
-                        push_string(v.name)
-                        push_color_none()
-                        continue
-                    }
-
-                    if (v_type === 'number') {
-                        format += comma + '%c' + v.toString() + '%c'
-                        push_color_teal()
-                        push_color_none()
-                        continue
-                    }
-
-                    if (v_type === 'string') {
-                        format += comma + '%c"%s"%c'
-                        push_color_purple()
-                        push_string(v)
-                        push_color_none()
-                        continue
-                    }
-
-                    if (v_type === 'symbol') {
-                        format += comma + '%c' + v.toString() + '%c'
-                        push_color_blue()
-                        push_color_none()
-                        continue
-                    }
-
-                    if (v_type === 'undefined') {
-                        format += comma + '%cundefined%c'
-                        push_color_red()
-                        push_color_none()
-                        continue
-                    }
-
-                    if (v === null) {
-                        format += comma + '%cnull%c'
-                        push_color_blue()
-                        push_color_none()
-                        continue
-                    }
-
-
-                    //
-                    //  Even if 'v_type' is not an object, we'll use '%o' format & treat it as an object, as we have
-                    //  no idea what it really is.
-                    //
-                    if (v_type === 'object') {
-                        if ('$who' in v) {
-                            format += "`%c" + v.$who + "`%c %o"
-                            push_color_pink()
-                            push_color_none()
-                        } else {
-                            format += comma + '%o'
-                        }
-
-                        push_object(v)
-                        continue
-                    }
-
-                    format += '%c<v_type:' + v_type + '>%c %o'
-                    push_color_red()
-                    push_color_none()
-                    push_object(v)
+                    trace_value(v)
                 }
 
                 pending[0] = format + ')'
@@ -401,9 +395,9 @@ Gem.Core.execute(
                 //      If there is no lines inside the group, then the [previously pending] closed group is
                 //      converted to a normal line.
 
-                if (pending.length) {
+                if (pending.length > 3) {
                     unbound__line.apply(console, pending)
-                    zap_pending()
+                    zap_pending__3_to_end()
                 } else {
                     group_stop()
                 }
@@ -420,18 +414,18 @@ Gem.Core.execute(
                     //      If this is the first line inside the group, then the [previously pending] closed group is
                     //      flushed (i.e.: actualy output as a closed group).
 
-                    if (pending.length) {
+                    if (pending.length > 3) {
                         unbound__group_start_closed.apply(console, pending)
-                        zap_pending()
+                        zap_pending__3_to_end()
                     }
 
                     unbound__line.apply(console, slice_call(arguments))
                 }
             } else {
                 var trace_line = function OLD_WAY$Gem__Trace__trace_line(/*arguments*/) {
-                    if (pending.length) {
+                    if (pending.length > 3) {
                         unbound__group_start_closed.apply(console, pending)
-                        zap_pending()
+                        zap_pending__3_to_end()
                     }
 
                     unbound__line.apply(console, slice.call(arguments))        //  OLD WAY: `slice.call`
@@ -446,7 +440,6 @@ Gem.Core.execute(
             //
             //  Exports
             //
-//          Trace.COLOR_PINK  = COLOR_PINK
             Trace.trace_line  = trace_line
             Trace.trace_start = trace_start
             Trace.trace_stop  = trace_stop
