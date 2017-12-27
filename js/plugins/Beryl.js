@@ -93,8 +93,8 @@ Gem.Core.execute(
         Tracing['Gem.Core.execute']                     = 7
         Tracing.execute$setup_Tracing                   = 7
         Tracing.execute$codify$trace$Gem__Core__execute = 7
-        Tracing.execute$setup_Gem                        = 7
-        Tracing.execute$setup_Gem$who_what               = 7
+        Tracing.execute$setup_Gem                       = 7
+        Tracing.execute$setup_Gem$who_what              = 7
 
 
         //
@@ -129,16 +129,23 @@ Gem.Core.execute(
                 var push_color_orange = unbound__push.bind(pending, 'color: #EEA500')
                 var push_color_pink   = unbound__push.bind(pending, 'color: #FF1493')       //  Actually: DeepPink
                 var push_color_purple = unbound__push.bind(pending, 'color:purple')
-                var push_string       = unbound__push.bind(pending)
+                var push_color_red    = unbound__push.bind(pending, 'color:red')
+                var push_color_teal   = unbound__push.bind(pending, 'color:teal')
+                var push_object       = unbound__push.bind(pending)
             } else {
-                var push_color_blue   = function OLD_WAY$push_color_blue()   { pending.push('color:blue')     }
-                var push_color_green  = function OLD_WAY$push_color_green()  { pending.push('color:green')    }
-                var push_color_none   = function OLD_WAY$push_color_none()   { pending.push('color:none')     }
-                var push_color_orange = function OLD_WAY$push_color_orange() { pending.push('color: #EEA500') }
-                var push_color_pink   = function OLD_WAY$push_color_orange() { pending.push('color: #FF1493') }
-                var push_color_purple = function OLD_WAY$push_color_orange() { pending.push('color:purple')   }
-                var push_string       = function OLD_WAY$push_string(s)      { pending.push(s)                }
+                var push_color_blue   = function OLD_WAY$push_color_blue()     { pending.push('color:blue')     }
+                var push_color_green  = function OLD_WAY$push_color_green()    { pending.push('color:green')    }
+                var push_color_none   = function OLD_WAY$push_color_none()     { pending.push('color:none')     }
+                var push_color_orange = function OLD_WAY$push_color_orange()   { pending.push('color: #EEA500') }
+                var push_color_pink   = function OLD_WAY$push_color_orange()   { pending.push('color: #FF1493') }
+                var push_color_purple = function OLD_WAY$push_color_orange()   { pending.push('color:purple')   }
+                var push_color_red    = function OLD_WAY$push_color_orange()   { pending.push('color:red')      }
+                var push_color_teal   = function OLD_WAY$push_color_orange()   { pending.push('color:teal')     }
+                var push_object       = function OLD_WAY$push_object(instance) { pending.push(instance)         }
             }
+
+
+            var push_string = push_object
 
 
             if ('bind' in unbound__slice) {
@@ -164,16 +171,17 @@ Gem.Core.execute(
                     pending.splice(0)                                               //  NOTE: splice *WITH* a 'p'
                 }
             }
-                    
+
 
             //
             //  Implementaion
             //
             var trace_execute = ('Gem.Core.execute'      in Tracing)
             var trace_myself  = ('execute$setup_Tracing' in Tracing)
+            var COLOR_PINK    = push_color_pink
 
 
-            var trace_begin_call = function Gem__Trace__trace_begin_call(f) {
+            var trace_start = function Gem__Trace__trace_start(f, /*optional*/ argument_list) {
                 //  Begin a function call to queue a pending new closed trace group.
                 //
                 //  NOTE #1:
@@ -192,76 +200,153 @@ Gem.Core.execute(
 
                 Trace.depth += 1
 
-                push_string('%c' + f.name + '%c(')
+                if (argument_list === undefined) {
+                    push_string('%c' + f.name + '%c()')
+                    push_color_green()
+                    push_color_none()
+                    return
+                }
+
+                var format = '%c' + f.name + '%c('
+
+                push_string(format)
                 push_color_green()
                 push_color_none()
+
+                var argument_total = argument_list.length
+
+                for (var i = 0; i < argument_total; i ++) {
+                    var v     = argument_list[i]
+                    var comma = (i ? ', ' : '')
+
+                    if (v === COLOR_PINK) {
+                        i += 1
+
+                        v = (i < argument_total && argument_list[i])
+
+                        if (typeof v !== 'string') {
+                            throw new Error(
+                                      'trace_start: programming error:'
+                                    + ': special symbol COLOR_PINK must be followed by a string'
+                                )
+                        }
+
+                        format += comma + '%c%s%c'
+                        COLOR_PINK()
+                        push_string(v)
+                        push_color_none()
+                        continue
+                    }
+
+                    var v_type = typeof v
+
+                    if (v_type === 'boolean') {
+                        format += comma + (v ? '%ctrue%c' : '%cfalse%c')
+                        push_color_blue()
+                        push_color_none()
+                        continue
+                    }
+
+                    if (v_type === 'function') {
+                        if (v.name === '') {
+                            format += comma + '%cunnamed function%c ()'
+                            push_color_blue()
+                            push_color_none()
+                            continue
+                        }
+
+                        var s = v.toString()
+
+                        if (s.substr(-18) === ' { [native code] }') {       //  `substr` allows negative indexes
+                            format += comma + '%cfunction%c %c%s%c() { [native code] }'
+                            push_color_blue()
+                            push_color_none()
+                            push_color_orange()
+                            push_string(s.substring(9, s.length - 29))      //  Cheating a bit: 9..-29 = function name
+                            push_color_none()
+                            continue
+                        }
+
+                        var open_left_parenthesis = s.indexOf('(')
+                        var open_left_brace       = s.indexOf('{')
+                        var open_left_brace__m1   = open_left_brace - 1
+
+                        if (
+                               (0 < open_left_parenthesis && open_left_parenthesis < open_left_brace__m1)
+                            && s[open_left_brace__m1] === ' '
+                        ) {
+                            format += comma + '%cfunction%c %c%s%c%s'
+                            push_color_blue()
+                            push_color_none()
+                            push_color_orange()
+                            push_string(s.substring(9, open_left_parenthesis))
+                            push_color_none()
+                            push_string(s.substring(open_left_parenthesis, open_left_brace__m1))
+                            continue
+                        }
+
+                        format += comma + '%cfunction%c %s()'
+                        push_color_blue()
+                        push_color_none()
+                        push_color_orange()
+                        push_string(v.name)
+                        push_color_none()
+                        continue
+                    }
+
+                    if (v_type === 'number') {
+                        format += comma + '%c' + v.toString() + '%c'
+                        push_color_teal()
+                        push_color_none()
+                        continue
+                    }
+
+                    if (v_type === 'string') {
+                        format += comma + '%c"%s"%c'
+                        push_color_purple()
+                        push_string(v)
+                        push_color_none()
+                        continue
+                    }
+
+                    if (v_type === 'symbol') {
+                        format += comma + '%c' + v.toString() + '%c'
+                        push_color_blue()
+                        push_color_none()
+                        continue
+                    }
+
+                    if (v_type === 'null') {
+                        if (v === null) {
+                            format += comma + '%cnull%c'
+                            push_color_blue()
+                            push_color_none()
+                            continue
+                        }
+
+                        format += comma + '%c%o%c'
+                        push_color_orange()
+                        push_object(v)
+                        push_color_none()
+                        continue
+                    }
+
+                    if (v_type === 'undefined') {
+                        format += comma + '%cundefined%c'
+                        push_color_red()
+                        push_color_none()
+                        continue
+                    }
+
+                    format += comma + '%c%o%c'
+                    push_color_yellow()
+                    push_object(v)
+                    push_color_none()
+                }
+
+                pending[0] = format + ')'
             }
 
-
-            var trace_end_call = function Gem__Trace__trace_end_call() {
-                if (pending.length === 0) {
-                    throw new Error("internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_end_call`")
-                }
-
-                pending[0] += /*(*/ ')'
-            }
-                
-
-            var trace_function_argument = function Gem__Trace__trace_function_argument(f) {
-                var total = pending.length
-
-                if (total === 0) {
-                    throw new Error(
-                            "internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_function_argument`"//,
-                        )
-                }
-
-                var comma = (total == 3) ? '' : ', '
-
-                if (f.name === '') {
-                    pending[0] += comma + '%cunnamed function%c ()'
-                    push_color_blue()
-                    push_color_none()
-                    return
-                }
-
-                var s = f.toString()
-
-                if (s.substr(-18) === ' { [native code] }') {               //  `substr` allows negative indexes
-                    pending[0] += comma + '%cfunction%c %c%s%c() { [native code] }'
-                    push_color_blue()
-                    push_color_none()
-                    push_color_orange()
-                    push_string(s.substring(9, s.length - 29))              //  Cheating a bit: 9..-29 = function name
-                    push_color_none()
-                    return
-                }
-
-                var open_left_parenthesis = s.indexOf('(')
-                var newline               = s.indexOf('\n')
-                var newline_m2            = newline - 2
-
-                if (
-                       (0 < open_left_parenthesis && open_left_parenthesis < newline_m2)
-                    && s.substring(newline_m2, newline) == ' {' /*}*/
-                ) {
-                    pending[0] += comma + '%cfunction%c %c%s%c%s'
-                    push_color_blue()
-                    push_color_none()
-                    push_color_orange()
-                    push_string(s.substring(9, open_left_parenthesis))
-                    push_color_none()
-                    push_string(s.substring(open_left_parenthesis, newline_m2))
-                    return
-                }
-
-                pending[0] += comma + '%cfunction%c %s()'
-                push_color_blue()
-                push_color_none()
-                push_color_orange()
-                push_string(f.name)
-                push_color_none()
-            }
 
 
             if (trace_execute || trace_myself) {
@@ -275,34 +360,8 @@ Gem.Core.execute(
                 }
 
 
-                if (trace_execute) {
-                    trace_begin_call(Gem.Core.execute)
-                    trace_function_argument(myself)
-                    trace_end_call()
-                }
-
-
-                if (trace_myself)  {
-                    trace_begin_call(myself)
-                    trace_end_call()
-                }
-            }
-
-
-            var trace_global_argument = function Gem__Trace__trace_global_argument(who) {
-                var total = pending.length
-
-                if (total === 0) {
-                    throw new Error(
-                            "internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_global_argument`"//,
-                        )
-                }
-
-                var comma = (total == 3) ? '' : ', '
-
-                pending[0] += comma + "%c`" + who + "`%c"
-                push_color_pink()
-                push_color_none()
+                if (trace_execute) { trace_start(Gem.Core.execute, [myself]) }
+                if (trace_myself)  { trace_start(myself)                     }
             }
 
 
@@ -323,24 +382,6 @@ Gem.Core.execute(
                 }
 
                 Trace.depth -= 1
-            }
-
-
-            var trace_string_argument = function Gem__Trace__trace_string_argument(who) {
-                var total = pending.length
-
-                if (total === 0) {
-                    throw new Error(
-                            "internal error: `Gem.Trace.pending` is empty in `Gem.Trace.trace_string_argument`"//,
-                        )
-                }
-
-                var comma = (total == 3) ? '' : ', '
-
-                pending[0] += comma + '%c%s%c'
-                push_color_purple()
-                push_string('"' + who + '"')
-                push_color_none()
             }
 
 
@@ -378,13 +419,10 @@ Gem.Core.execute(
             //
             //  Exports
             //
-            Trace.trace_begin_call        = trace_begin_call
-            Trace.trace_end_call          = trace_end_call
-            Trace.trace_function_argument = trace_function_argument
-            Trace.trace_global_argument   = trace_global_argument
-            Trace.trace_line              = trace_line
-            Trace.trace_stop              = trace_stop
-            Trace.trace_string_argument   = trace_string_argument
+            Trace.COLOR_PINK  = COLOR_PINK
+            Trace.trace_line  = trace_line
+            Trace.trace_start = trace_start
+            Trace.trace_stop  = trace_stop
         }
     }
 )
@@ -414,13 +452,8 @@ if (Gem.Configuration.trace) {
             var Trace   = Gem.Trace
             var Tracing = Gem.Tracing
 
-            var trace_begin_call        = Trace.trace_begin_call
-            var trace_end_call          = Trace.trace_end_call
-            var trace_function_argument = Trace.trace_function_argument
-            var trace_global_argument   = Trace.trace_global_argument
-            var trace_line              = Trace.trace_line
-            var trace_stop              = Trace.trace_stop
-            var trace_string_argument   = Trace.trace_string_argument
+            var trace_start = Trace.trace_start
+            var trace_stop  = Trace.trace_stop
 
             //
             //  Tracing `execute` and myself
@@ -436,32 +469,16 @@ if (Gem.Configuration.trace) {
             var trace_execute = ('Gem.Core.execute' in Tracing)
             var trace_myself  = (myself.name        in Tracing)
 
-            if (trace_execute) {
-                trace_begin_call(execute$codify$trace$Gem__Core__execute)
-                trace_function_argument(myself)
-                trace_end_call()
-            }
-
-            if (trace_myself) {
-                trace_begin_call(myself)
-                trace_end_call()
-            }
+            if (trace_execute) { trace_start(execute$codify$trace$Gem__Core__execute, [ myself ]) }
+            if (trace_myself)  { trace_start(myself) }
 
 
             Gem.Core.execute = function trace$Gem__Core__execute(code) {
                 var trace_code = (code.name in Tracing)
 
-                if (trace_execute) {
-                    trace_begin_call(execute)
-                    trace_function_argument(code)
-                    trace_end_call()
-                }
+                if (trace_execute) { trace_start(execute, arguments) }
+                if (trace_code)    { trace_start(code)               }
 
-                if (trace_code) {
-                    trace_begin_call(code)
-                    trace_end_call()
-                }
-                    
                 execute(code)
 
                 if (trace_code)    { trace_stop() }
@@ -530,22 +547,14 @@ Gem.Core.execute(
                 if ('execute$setup_Gem$who_what' in Tracing) {
                     var Trace = Gem.Trace
 
-                    var trace_begin_call      = Trace.trace_begin_call
-                    var trace_string_argument = Trace.trace_string_argument
-                    var trace_global_argument = Trace.trace_global_argument
-                    var trace_end_call        = Trace.trace_end_call
-                    var trace_stop            = Trace.trace_stop
-                    
+                    var COLOR_PINK  = Trace.COLOR_PINK
+                    var trace_start = Trace.trace_start
+                    var trace_stop  = Trace.trace_stop
+
                     var original_who_what = who_what
 
                     var who_what = function trace$execute$setup_Gem$who_what(module, $who, $what) {
-                        /*trace*/ {
-                            trace_begin_call(who_what)
-                            trace_global_argument('window.' + $who)
-                            trace_string_argument($who)
-                            trace_string_argument($what)
-                            trace_end_call()
-                        }
+                        trace_start(who_what, [COLOR_PINK, "`window." + $who, $who, $what])
 
                         original_who_what(module, $who, $what)
 
@@ -733,7 +742,7 @@ Gem.Core.execute(
         var minor = NaN
         var version = (('process' in window) && ('versions' in process) && (process.versions['node-webkit']))
 
-        if (typeof version == 'string') {
+        if (typeof version === 'string') {
             var version_list = version.split('.')
 
             if (version_list.length > 0) { major = parse_integer__or__NaN(version_list[0]) }
@@ -1289,7 +1298,7 @@ Gem.Core.execute(
 
         //
         //  Cleanup unused attributes
-        // 
+        //
         /*section*/ {
             delete Gem.Configuration.show_alert
             delete Gem.Script       .event_list
