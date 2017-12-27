@@ -98,6 +98,23 @@ Gem.Core.execute(
 
 
         //
+        //  Configuration
+        //
+        var Configuration = Gem.Configuration
+
+        var clarity = Gem.Configuration.clarity
+        var trace   = Gem.Configuration.trace
+
+
+        //
+        //  Clarity
+        //
+        if (clarity) {
+            Gem.Core.execute.$who = 'Gem.Core.execute'
+        }
+
+
+        //
         //  Define trace functions & trace myself
         //
         if (Gem.Configuration.trace) {
@@ -178,7 +195,7 @@ Gem.Core.execute(
             //
             var trace_execute = ('Gem.Core.execute'      in Tracing)
             var trace_myself  = ('execute$setup_Tracing' in Tracing)
-            var COLOR_PINK    = push_color_pink
+//          var COLOR_PINK    = push_color_pink
 
 
             var trace_start = function Gem__Trace__trace_start(f, /*optional*/ argument_list) {
@@ -201,13 +218,13 @@ Gem.Core.execute(
                 Trace.depth += 1
 
                 if (argument_list === undefined) {
-                    push_string('%c' + f.name + '%c()')
+                    push_string('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
                     push_color_green()
                     push_color_none()
                     return
                 }
 
-                var format = '%c' + f.name + '%c('
+                var format = '%c' + (('$who') in f ? f.$who : f.name) + '%c('
 
                 push_string(format)
                 push_color_green()
@@ -219,24 +236,24 @@ Gem.Core.execute(
                     var v     = argument_list[i]
                     var comma = (i ? ', ' : '')
 
-                    if (v === COLOR_PINK) {
-                        i += 1
-
-                        v = (i < argument_total && argument_list[i])
-
-                        if (typeof v !== 'string') {
-                            throw new Error(
-                                      'trace_start: programming error:'
-                                    + ': special symbol COLOR_PINK must be followed by a string'
-                                )
-                        }
-
-                        format += comma + '%c%s%c'
-                        COLOR_PINK()
-                        push_string(v)
-                        push_color_none()
-                        continue
-                    }
+//                  if (v === COLOR_PINK) {
+//                      i += 1
+//
+//                      v = (i < argument_total && argument_list[i])
+//
+//                      if (typeof v !== 'string') {
+//                          throw new Error(
+//                                    'trace_start: programming error:'
+//                                  + ': special symbol COLOR_PINK must be followed by a string'
+//                              )
+//                      }
+//
+//                      format += comma + '%c%s%c'
+//                      COLOR_PINK()
+//                      push_string(v)
+//                      push_color_none()
+//                      continue
+//                  }
 
                     var v_type = typeof v
 
@@ -316,21 +333,6 @@ Gem.Core.execute(
                         continue
                     }
 
-                    if (v_type === 'null') {
-                        if (v === null) {
-                            format += comma + '%cnull%c'
-                            push_color_blue()
-                            push_color_none()
-                            continue
-                        }
-
-                        format += comma + '%c%o%c'
-                        push_color_orange()
-                        push_object(v)
-                        push_color_none()
-                        continue
-                    }
-
                     if (v_type === 'undefined') {
                         format += comma + '%cundefined%c'
                         push_color_red()
@@ -338,10 +340,35 @@ Gem.Core.execute(
                         continue
                     }
 
-                    format += comma + '%c%o%c'
-                    push_color_yellow()
-                    push_object(v)
+                    if (v === null) {
+                        format += comma + '%cnull%c'
+                        push_color_blue()
+                        push_color_none()
+                        continue
+                    }
+
+
+                    //
+                    //  Even if 'v_type' is not an object, we'll use '%o' format & treat it as an object, as we have
+                    //  no idea what it really is.
+                    //
+                    if (v_type === 'object') {
+                        if ('$who' in v) {
+                            format += "`%c" + v.$who + "`%c %o"
+                            push_color_pink()
+                            push_color_none()
+                        } else {
+                            format += comma + '%o'
+                        }
+
+                        push_object(v)
+                        continue
+                    }
+
+                    format += '%c<v_type:' + v_type + '>%c %o'
+                    push_color_red()
                     push_color_none()
+                    push_object(v)
                 }
 
                 pending[0] = format + ')'
@@ -419,7 +446,7 @@ Gem.Core.execute(
             //
             //  Exports
             //
-            Trace.COLOR_PINK  = COLOR_PINK
+//          Trace.COLOR_PINK  = COLOR_PINK
             Trace.trace_line  = trace_line
             Trace.trace_start = trace_start
             Trace.trace_stop  = trace_stop
@@ -469,7 +496,7 @@ if (Gem.Configuration.trace) {
             var trace_execute = ('Gem.Core.execute' in Tracing)
             var trace_myself  = (myself.name        in Tracing)
 
-            if (trace_execute) { trace_start(execute$codify$trace$Gem__Core__execute, [ myself ]) }
+            if (trace_execute) { trace_start(execute, [ myself ]) }
             if (trace_myself)  { trace_start(myself) }
 
 
@@ -547,14 +574,18 @@ Gem.Core.execute(
                 if ('execute$setup_Gem$who_what' in Tracing) {
                     var Trace = Gem.Trace
 
-                    var COLOR_PINK  = Trace.COLOR_PINK
+//                  var COLOR_PINK  = Trace.COLOR_PINK
                     var trace_start = Trace.trace_start
                     var trace_stop  = Trace.trace_stop
 
                     var original_who_what = who_what
 
                     var who_what = function trace$execute$setup_Gem$who_what(module, $who, $what) {
-                        trace_start(who_what, [COLOR_PINK, "`window." + $who, $who, $what])
+                        visible_constant_attribute.value = $who
+                        define_property(module, '$who', visible_constant_attribute)
+                        delete visible_constant_attribute.value
+
+                        trace_start(who_what, [module, $who, $what])
 
                         original_who_what(module, $who, $what)
 
