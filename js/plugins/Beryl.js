@@ -129,6 +129,7 @@ Gem.Core.execute(
         //      keys in the loops safetly.
         //
         var keys = get_property_names(Tracing).sort()    //  `sort` makes the for loop deterministic
+
         var double_underscore__pattern = new Pattern('__', 'g')
 
 
@@ -216,8 +217,9 @@ Gem.Core.execute(
             //
             //  Implementaion
             //
-            var trace_execute = (trace === 7) || ('Gem.Core.execute'      in Tracing)
-            var trace_myself  = (trace === 7) || ('execute$setup_Tracing' in Tracing)
+            var carriage_return__pattern = new Pattern('\n', 'g')
+            var trace_execute            = (trace === 7) || ('Gem.Core.execute'      in Tracing)
+            var trace_myself             = (trace === 7) || ('execute$setup_Tracing' in Tracing)
 
 
             //
@@ -227,6 +229,8 @@ Gem.Core.execute(
 
 
             push_object(null)
+
+
 
 
             var trace_value = function trace_value(v) {
@@ -366,6 +370,37 @@ Gem.Core.execute(
                     return
                 }
 
+                for (var i = 0; i < argument_total; i ++) {
+                    var v = argument_list[i]
+
+                    if (typeof v === 'string' && v.indexOf('\n') != -1) {
+                        //
+                        //  A string has a '\n' in it:
+                        //      Output each argument on a separate line
+                        //
+
+                        format = '%c' + (('$who') in f ? f.$who : f.name) + '%c(\n'
+
+                        for (var i = 0; i < argument_total; i ++) {
+                            var v = argument_list[i]
+
+                            if (typeof v === 'string' && v.indexOf('\n') != -1) {
+                                push_color_purple()
+                                push_string(v.replace(carriage_return__pattern, '\n    '))
+                                push_color_none()
+                                format += '    %c"%s"%c,\n'
+                                continue
+                            }
+
+                            format += '    ' + trace_value(v) + ',\n'
+                        }
+
+                        pending[0] = format + ')'
+
+                        return
+                    }
+                }
+
                 format = '%c' + (('$who') in f ? f.$who : f.name) + '%c('
 
                 for (var i = 0; i < argument_total; i ++) {
@@ -425,16 +460,36 @@ Gem.Core.execute(
                     var r = f.apply(this, arguments)
 
                     if (r !== undefined) {
-                        throw new Error(
-                                (
-                                      'STUB$trace_wrapper:'
-                                    + ' the STUB implementation for `trace_wrapper` cannot trace return values'
-                                )//,
-                            )
+                        trace_result(r)
+                        return r
                     }
 
                     trace_stop()
                 }
+            }
+
+
+            var trace_result = function Gem__Trace__trace_result(v) {
+                //  End a closed trace group with a result (i.e.: function return value).
+                //
+                //  NOTE:
+                //      If there are lines inside the group, then the group is closed.
+                //
+                //      If there is no lines inside the group, then the [previously pending] closed group is
+                //      converted to a normal line.
+
+                if (pending.length > 1) {
+                    pending[0] += ' => '
+                } else {
+                    group_stop()
+                    pending[0] = '=> '
+                }
+
+                pending[0] += trace_value(v)
+                unbound__line.apply(console, pending)
+                zap_pending__1_to_end()
+
+                Trace.depth -= 1
             }
 
 
@@ -447,6 +502,7 @@ Gem.Core.execute(
             //
             Trace.group_stop            = group_stop
             Trace.trace_function        = trace_function
+            Trace.trace_result          = trace_result
             Trace.trace_start           = trace_start
             Trace.trace_stop            = trace_stop
             Trace.trace_value           = trace_value
@@ -543,7 +599,12 @@ Gem.Core.execute(
         var create_Object   = Object.create
         var define_property = Object.defineProperty
         var trace           = Configuration.trace
-        var trace_function  = Trace.trace_function
+
+        if (trace) {
+            var trace_function = Trace.trace_function
+            var trace_start    = Trace.trace_start
+            var trace_stop     = Trace.trace_stop
+        }
 
 
         //
@@ -580,11 +641,6 @@ Gem.Core.execute(
                 var Tracing = Gem.Tracing
 
                 if ((Configuration.trace === 7) || ('execute$setup_Gem$who_what' in Tracing)) {
-                    var Trace = Gem.Trace
-
-                    var trace_start = Trace.trace_start
-                    var trace_stop  = Trace.trace_stop
-
                     var original_who_what = who_what
 
 
@@ -677,10 +733,11 @@ Gem.Core.execute(
         }
 
 
-        debugger
-
-
-        (trace ? trace_function(method) : method).call(         //  Use [optionally traced] `method` on itself ...
+        //
+        //  The next ';' is one of the few times we really need a ';' in JavaScript ...
+        //      To avoid a leading '(' the next statement being combined with the previous statement.
+        //
+        ;(trace ? trace_function(method) : method).call(                        //  Use 'method' on itself
             Gem.Core,
             'method',
             'Temporary stub for Gem.Core.method',
@@ -705,8 +762,13 @@ Gem.Core.execute(
             'codify_method',
             'Temporary stub for Gem.Core.codify_method',
             function STUB$Gem__Core__codify_method(who, $what, codifier) {
-                var method        = codifier()
-                var traced_method = (trace ? trace_function(method) : method)
+                if (trace) {
+                    var method        = trace_function(codifier)()
+                    var traced_method = trace_function(method)
+                } else {
+                    var method        = codifier()
+                    var traced_method = method
+                }
 
                 visible_constant_attribute.value = traced_method
                 define_property(this, who, visible_constant_attribute)
@@ -753,7 +815,7 @@ Gem.Core.execute(
             'qualify_constant',
             'Temporary stub for Gem.Core.qualify_constant',
             function STUB$Gem__Core__qualify_constant(who, $what, qualifier) {
-                visible_constant_attribute.value = qualifier()
+                visible_constant_attribute.value = (trace ? trace_function(qualifier) : qualifier)()
                 define_property(this, who, visible_constant_attribute)
 
                 if (clarity) {
@@ -767,7 +829,6 @@ Gem.Core.execute(
 //  </stubs>                                                //   End of stubs
 
 
-        debugger
         //
         //  visible_constant_attribute
         //      A property used to create visible (i.e.: enumerable) constant attributes
@@ -950,7 +1011,7 @@ if (Gem.Script.handle_errors) {
         Gem.Script,
         'source_attribute',
         'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
-        function codifier$Gem__Script__source_attribute(tag) {
+        function codifier$Gem__Script__source_attribute() {
             //
             //  Modern Browser version
             //
@@ -1160,7 +1221,7 @@ Gem.Core.codify_method.call(
     Gem.Script,
     'codify_method_load',
     (
-          'Codify method `Gem.Script.load`.\n',
+          'Codify method `Gem.Script.load`.\n'
         + '\n'
         + 'This routine can be called multiple times:\n'
         + '\n'
