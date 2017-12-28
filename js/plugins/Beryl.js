@@ -91,9 +91,13 @@ Gem.Core.execute(
     function execute$setup_Tracing() {
         //
         //  Imports
-        var Tracing            = Gem.Tracing
+        var Configuration = Gem.Configuration
+        var Tracing       = Gem.Tracing
+
+        var clarity            = Gem.Configuration.clarity
         var get_property_names = Object.getOwnPropertyNames
         var Pattern            = window.RegExp
+        var trace              = Gem.Configuration.trace
 
 
         //
@@ -139,15 +143,6 @@ Gem.Core.execute(
                 delete Tracing[k]
             }
         }
-
-
-        //
-        //  Configuration
-        //
-        var Configuration = Gem.Configuration
-
-        var clarity = Gem.Configuration.clarity
-        var trace   = Gem.Configuration.trace
 
 
         //
@@ -238,66 +233,58 @@ Gem.Core.execute(
                 var v_type = typeof v
 
                 if (v_type === 'string') {
-                    format += '%c"%s"%c'
                     push_color_purple()
                     push_string(v)
                     push_color_none()
-                    return
+                    return '%c"%s"%c'
                 }
 
                 if (v_type === 'number') {
-                    format += '%c' + v.toString() + '%c'
                     push_color_teal()
                     push_color_none()
-                    return
+                    return '%c' + v.toString() + '%c'
                 }
 
                 if (v_type === 'boolean') {
-                    format += (v ? '%ctrue%c' : '%cfalse%c')
                     push_color_blue()
                     push_color_none()
-                    return
+                    return (v ? '%ctrue%c' : '%cfalse%c')
                 }
 
                 if (v_type === 'object') {
                     if (v === null) {
-                        format += '%cnull%c'
                         push_color_blue()
                         push_color_none()
-                        return
+                        return '%cnull%c'
                     }
 
                     if ('$who' in v) {
-                        format += "`%c" + v.$who + "`%c %o"
                         push_color_pink()
                         push_color_none()
                         push_object(v)
-                        return
+                        return "`%c" + v.$who + "`%c %o"
                     }
 
-                    format += '%o'
                     push_object(v)
-                    return
+                    return '%o'
                 }
 
                 if (v_type === 'function') {
                     if (v.name === '') {
-                        format += '%cunnamed function%c ()'
                         push_color_blue()
                         push_color_none()
-                        return
+                        return '%cunnamed function%c ()'
                     }
 
                     var s = v.toString()
 
                     if (s.substr(-18) === ' { [native code] }') {       //  `substr` allows negative indexes
-                        format += '%cfunction%c %c%s%c() { [native code] }'
                         push_color_blue()
                         push_color_none()
                         push_color_orange()
                         push_string(s.substring(9, s.length - 29))      //  Cheating a bit: 9..-29 = function name
                         push_color_none()
-                        return
+                        return '%cfunction%c %c%s%c() { [native code] }'
                     }
 
                     var open_left_parenthesis = s.indexOf('(')
@@ -308,44 +295,40 @@ Gem.Core.execute(
                            (0 < open_left_parenthesis && open_left_parenthesis < open_left_brace__m1)
                         && s[open_left_brace__m1] === ' '
                     ) {
-                        format += '%cfunction%c %c%s%c%s'
                         push_color_blue()
                         push_color_none()
                         push_color_orange()
                         push_string(s.substring(9, open_left_parenthesis))
                         push_color_none()
                         push_string(s.substring(open_left_parenthesis, open_left_brace__m1))
-                        return
+                        return '%cfunction%c %c%s%c%s'
                     }
 
-                    format += '%cfunction%c %s()'
                     push_color_blue()
                     push_color_none()
                     push_color_orange()
                     push_string(v.name)
                     push_color_none()
-                    return
+                    return '%cfunction%c %s()'
                 }
 
                 if (v_type === 'symbol') {
-                    format += '%c' + v.toString() + '%c'
                     push_color_blue()
                     push_color_none()
-                    return
+                    return '%c' + v.toString() + '%c'
                 }
 
                 if (v_type === 'undefined') {
-                    format += '%cundefined%c'
                     push_color_red()
                     push_color_none()
-                    return
+                    return '%cundefined%c'
                 }
 
 
-                format += '%c<v_type:' + v_type + '>%c %o'
                 push_color_red()
                 push_color_none()
                 push_object(v)
+                return '%c<v_type:' + v_type + '>%c %o'
             }
 
 
@@ -389,15 +372,14 @@ Gem.Core.execute(
                     var v = argument_list[i]
 
                     if (i) {
-                        format += ','
+                        format += ',' + trace_value(v)
+                    } else {
+                        format += trace_value(v)
                     }
-
-                    trace_value(v)
                 }
 
                 pending[0] = format + ')'
             }
-
 
 
             if (trace_execute || trace_myself) {
@@ -413,30 +395,6 @@ Gem.Core.execute(
 
                 if (trace_execute) { trace_start(Gem.Core.execute, [myself]) }
                 if (trace_myself)  { trace_start(myself)                     }
-            }
-
-
-            var trace_result = function Gem__Trace__trace_result(v) {
-                //  End a closed trace group with a result (i.e.: function return value).
-                //
-                //  NOTE:
-                //      If there are lines inside the group, then the group is closed.
-                //
-                //      If there is no lines inside the group, then the [previously pending] closed group is
-                //      converted to a normal line.
-
-                if (pending.length > 1) {
-                    pending[0] += ' => '
-                } else {
-                    group_stop()
-                    pending[0] = '=> '
-                }
-
-                trace_value(v)
-                unbound__line.apply(console, pending)
-                zap_pending__1_to_end()
-
-                Trace.depth -= 1
             }
 
 
@@ -467,9 +425,9 @@ Gem.Core.execute(
             //
             //  Exports
             //
-            Trace.trace_result          = trace_result
             Trace.trace_start           = trace_start
             Trace.trace_stop            = trace_stop
+            Trace.trace_value           = trace_value
             Trace.zap_pending__1_to_end = zap_pending__1_to_end
         }
     }

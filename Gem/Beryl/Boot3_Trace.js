@@ -8,6 +8,17 @@
 //
 //  In Gem tracing mode, *every* function, method & bound_method call is traced.
 //
+
+
+//
+//  Gem.Trace.trace_line
+//
+//  Output a line of text in trace mode.
+//
+//  NOTE:
+//      If this is the first line inside the group, then the [previously pending] closed group is flushed
+//      (i.e.: actually output as a closed group).
+//
 Gem.Core.codify_method.call(
     Gem.Trace,
     'trace_line',
@@ -24,7 +35,6 @@ Gem.Core.codify_method.call(
         //  Imports
         //
         var Trace = Gem.Trace
-
 
         var console                   = window.console
         var pending                   = Trace.pending
@@ -53,6 +63,66 @@ Gem.Core.codify_method.call(
     }//,
 )
 
+
+//
+//  Gem.Trace.trace_result
+//      End a closed trace group with a result (i.e.: function return value).
+//
+//  NOTE:
+//      If there are lines inside the group, then the group is closed.
+//
+//      If there is no lines inside the group, then the [previously pending] closed group is
+//      converted to a normal line.
+//
+Gem.Core.codify_method.call(
+    Gem.Trace,
+    'trace_result',
+    (
+          'End a closed trace group with a result (i.e.: function return value).\n'
+        + '\n'
+        + 'NOTE:\n'
+        + '    If there are lines inside the group, then the group is closed.\n'
+        + '\n'
+        + '    If there is no lines inside the group, then the [previously pending] closed group is converted to a'
+        + ' normal line'
+        + '.'
+    ),
+    function codifier$Gem__Trace__trace_line() {
+        //
+        //  Imports
+        //
+        var Trace = Gem.Trace
+
+        var pending                   = Trace.pending
+        var trace_value               = Trace.trace_value
+        var unbound__line             = console.log
+        var zap_pending__1_to_end     = Trace.zap_pending__1_to_end
+
+
+        return function Gem__Trace__trace_result(v) {
+            //  End a closed trace group with a result (i.e.: function return value).
+            //
+            //  NOTE:
+            //      If there are lines inside the group, then the group is closed.
+            //
+            //      If there is no lines inside the group, then the [previously pending] closed group is
+            //      converted to a normal line.
+
+            if (pending.length > 1) {
+                pending[0] += ' => '
+            } else {
+                group_stop()
+                pending[0] = '=> '
+            }
+
+            pending[0] += trace_value(v)
+            unbound__line.apply(console, pending)
+            zap_pending__1_to_end()
+
+            Trace.depth -= 1
+        }
+    }//,
+)
 
 
 //--------------------------------------------------------+
