@@ -11,30 +11,30 @@
 
 
 //
-//  Gem.Trace.trace_function
+//  Gem._.Trace.wrap_function
 //      Trace a function, method, or bound method.
 //
 Gem.Core.codify_method.call(
-    Gem.Trace,
-    'trace_function',
+    Gem._.Trace,
+    'wrap_function',
     'Trace a function, method, or bound method.',
-    function codifier$Gem__Trace__trace_function() {
+    function codifier$Gem__Trace__wrap_function() {
         //
         //  Imports
         //
-        var Trace = Gem.Trace
+        var _Trace = Gem._.Trace
 
-        var group_stop            = Trace.group_stop
-        var trace_start           = Trace.start
-        var pending               = Trace.pending
-        var trace_value           = Trace.trace_value
+        var function_call         = _Trace.function_call
+        var group_stop            = _Trace.group_stop
+        var pending               = _Trace.pending
+        var trace_value           = _Trace.trace_value
         var unbound__line         = console.log
-        var zap_pending__1_to_end = Trace.zap_pending__1_to_end
+        var zap_pending__1_to_end = _Trace.zap_pending__1_to_end
 
 
-        return function Gem__Trace__trace_function(f) {
+        return function Gem__Trace__wrap_function(f) {
             return function trace_wrapper(/*...*/) {
-                trace_start(f, arguments)
+                function_call(f, arguments)
 
                 var r = f.apply(this, arguments)
 
@@ -58,7 +58,7 @@ Gem.Core.codify_method.call(
                     zap_pending__1_to_end()
                 }
 
-                Trace.depth -= 1
+                _Trace.depth -= 1
             }
         }
     }//,
@@ -66,7 +66,7 @@ Gem.Core.codify_method.call(
 
 
 //
-//  Gem.Trace.trace_line
+//  Gem._.Trace.trace_line
 //
 //  Output a line of text in trace mode.
 //
@@ -75,7 +75,7 @@ Gem.Core.codify_method.call(
 //      (i.e.: actually output as a closed group).
 //
 Gem.Core.codify_method.call(
-    Gem.Trace,
+    Gem._.Trace,
     'trace_line',
     (
           'Output a line of text in trace mode.\n'
@@ -89,13 +89,13 @@ Gem.Core.codify_method.call(
         //
         //  Imports
         //
-        var Trace = Gem.Trace
+        var _Trace  = Gem._.Trace
 
         var console                   = window.console
-        var pending                   = Trace.pending
+        var pending                   = _Trace.pending
         var unbound__group_start_open = console.group
         var unbound__line             = console.log
-        var zap_pending__1_to_end     = Trace.zap_pending__1_to_end
+        var zap_pending__1_to_end     = _Trace.zap_pending__1_to_end
 
 
         //
@@ -120,7 +120,7 @@ Gem.Core.codify_method.call(
 
 
 //
-//  Gem.Trace.trace_result
+//  Gem._.Trace.function_result
 //      End a closed trace group with a result (i.e.: function return value).
 //
 //  NOTE:
@@ -130,8 +130,8 @@ Gem.Core.codify_method.call(
 //      converted to a normal line.
 //
 Gem.Core.codify_method.call(
-    Gem.Trace,
-    'trace_result',
+    Gem._.Trace,
+    'function_result',
     (
           'End a closed trace group with a result (i.e.: function return value).\n'
         + '\n'
@@ -142,19 +142,19 @@ Gem.Core.codify_method.call(
         + ' normal line'
         + '.'
     ),
-    function codifier$Gem__Trace__trace_result() {
+    function codifier$Gem__Trace__function_result() {
         //
         //  Imports
         //
-        var Trace = Gem.Trace
+        var _Trace = Gem._.Trace
 
-        var pending                   = Trace.pending
-        var trace_value               = Trace.trace_value
+        var pending                   = _Trace.pending
+        var trace_value               = _Trace.trace_value
         var unbound__line             = console.log
-        var zap_pending__1_to_end     = Trace.zap_pending__1_to_end
+        var zap_pending__1_to_end     = _Trace.zap_pending__1_to_end
 
 
-        return function Gem__Trace__trace_result(v) {
+        return function Gem__Trace__function_result(v) {
             //  End a closed trace group with a result (i.e.: function return value).
             //
             //  NOTE:
@@ -174,7 +174,7 @@ Gem.Core.codify_method.call(
             unbound__line.apply(console, pending)
             zap_pending__1_to_end()
 
-            Trace.depth -= 1
+            _Trace.depth -= 1
         }
     }//,
 )

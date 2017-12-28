@@ -49,14 +49,18 @@ Gem.Core.execute(
                          + ' to avoid garbage collection of all functions from that source file,'
                          + ' which causes the source file to disappear from the "Sources" tab of Developer Tools'
 
-        Gem.Trace.$who  = 'Gem.Trace'
-        Gem.Trace.$what = 'Map of functions, methods & bound_methods being traced.'
+        Gem.Tracing.$who  = 'Gem.Trace'
+        Gem.Tracing.$what = 'Map of functions, methods & bound_methods being traced.'
 
         Gem._.$who  = 'Gem._'
         Gem._.$what = 'Private members & methods of all Gem modules.'
 
         Gem._.Core.$who  = 'Gem._.Core'
         Gem._.Core.$what = 'Private members & methods of the Core Gem module.'
+
+        Gem._.Trace.$who  = 'Gem._.Trace'
+        Gem._.Trace.$what = 'Private members & methods of the Trace module.'
+    }
     }
 )
 
@@ -306,20 +310,20 @@ Gem.Core.codify_bound_method(
         }
     },
     function codifier$trace$Gem__Core__identifier_test(Gem__Core__identifier_test) {
-        var Trace = Gem.Trace
+        var _Trace = Gem._.Trace
 
-        var trace_start  = Trace.trace_start
-        var trace_result = Trace.trace_result
+        var function_call   = _Trace.function_call
+        var function_result = _Trace.function_result
 
 
         return function trace$Gem__Core__identifier_test(s) {
             //  Trace Gem.Core.identifier_test.
 
-            trace_start(Gem__Core__identifier_test, arguments)
+            function_call(Gem__Core__identifier_test, arguments)
 
             var r = Gem__Core__identifier_test(s)
 
-            trace_result(r)
+            function_result(r)
 
             return r
         }

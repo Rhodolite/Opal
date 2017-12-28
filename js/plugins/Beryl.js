@@ -17,7 +17,7 @@ window.Gem = {
         capture_error : true,                               //      Try to capture errors
         clarity       : true,                               //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
-        show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors
+        show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
         trace         : 7,                                  //      Trace function, method & bound method calls.
     },
 
@@ -53,7 +53,7 @@ window.Gem = {
         //  handle_errors : false,                          //      `true` if handling `<script>` errors.
         //  load          : Function                        //      Load a script using `<script>` tag.
 
-        script_map : {                                      //      Map of all the scripts loaded (or loading)>
+        script_map : {                                      //      Map of all the scripts loaded (or loading)>.
             //  'Gem/Beryl/Boot2_Manfest.js' : `<script>` tag   //  `<script>` tag to load "Gem/Beryl/Boot.js".
         }//,
 
@@ -61,27 +61,36 @@ window.Gem = {
         //  NOTE:
         //      The rest of attributes are only used if `Gem.Script.handle_errors` is `true`.
         //
-        //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag>
-        //  handle_event        : Function                  //      Handle events of `<script>` tags>
+        //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag>.
+        //  handle_event        : Function                  //      Handle events of `<script>` tags>.
         //  source_attribute    : Function                  //      Get unmodified `.src` attribute.
     },
 
-    Source : {                                              //  Functions to "hold onto" for Developer Tools>
-        //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'>
+    Source : {                                              //  Functions to "hold onto" for Developer Tools.
+        //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'>.
     },
 
-    Trace : {                                               //  Map of functions, methods & bound_methods being traced.
-        depth   : 0,                                        //      Current tracing depth.
-        pending : [],                                       //      Current pending format to start a tracing group.
+//  Trace : {                                               //  Map of functions, methods & bound_methods being traced.
+//      //  method_call     : Function          [TODO]      //      Start a trace group for a method call.
+//      //  trace_line      : Function                      //      Start a trace group.
+//  },
 
-        //  trace_line  : Function                          //      Start a trace group
-        //  trace_start : Function                          //      Start a closed trace group
-        //  trace_stop  : Function                          //      End a trace group
-    },
 
     _ : {                                                   //  Private members & methods of all Gem modules.
         Core : {                                            //      Private members & methods of the Core Gem module.
         //  clarity_mode$global_variable_Gem_changed : []   //      Callbacks to call when `Gem` is changed.
+        },
+
+        Trace : {                                           //      Private members & methods of the Trace module.
+            depth   : 0,                                    //          Current tracing depth.
+            pending : []//,                                 //          Pending format to start a tracing group.
+        //  function_call         : Function                //          Start a trace group for a function call.
+        //  function_result       : Function                //          Finish a function with a result
+        //  group_stop            : Bound Function          //          Stop a group on the console.
+        //  trace_value           : Function                //          Show a value for tracing.
+        //  procedure_done        : Function                //          Finish a procedure (no result shown).
+        //  wrap_function         : Function                //          Wrap a function with tracing.
+        //  zap_pending__1_to_end : Function                //          Internal routine to clean up 'Trace.pending'.
         }//,
     }//,
 }
@@ -158,9 +167,10 @@ Gem.Core.execute(
         //  Define trace functions & trace myself
         //
         if (trace) {
-            var Trace = Gem.Trace
+            var _Trace = Gem._.Trace
+            var Trace  = Gem.Trace
 
-            var pending = Trace.pending
+            var pending = _Trace.pending
 
 //          var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_start_open   = console.group
@@ -227,10 +237,7 @@ Gem.Core.execute(
             //
             var format
 
-
             push_object(null)
-
-
 
 
             var trace_value = function trace_value(v) {
@@ -336,7 +343,7 @@ Gem.Core.execute(
             }
 
 
-            var trace_start = function Gem__Trace__trace_start(f, /*optional*/ argument_list) {
+            var function_call = function Gem__Trace__function_call(f, /*optional*/ argument_list) {
                 //  Begin a function call to queue a pending new closed trace group.
                 //
                 //  NOTE #1:
@@ -353,7 +360,7 @@ Gem.Core.execute(
                     zap_pending__1_to_end()
                 }
 
-                Trace.depth += 1
+                _Trace.depth += 1
 
                 push_color_green()
                 push_color_none()
@@ -428,12 +435,12 @@ Gem.Core.execute(
                 }
 
 
-                if (trace_execute) { trace_start(Gem.Core.execute, [myself]) }
-                if (trace_myself)  { trace_start(myself)                     }
+                if (trace_execute) { function_call(Gem.Core.execute, [myself]) }
+                if (trace_myself)  { function_call(myself)                     }
             }
 
 
-            var trace_stop = function Gem__Trace__trace_stop() {
+            var procedure_done = function Gem__Trace__procedure_done() {
                 //  End a closed trace group.
                 //
                 //  NOTE:
@@ -449,27 +456,11 @@ Gem.Core.execute(
                     group_stop()
                 }
 
-                Trace.depth -= 1
+                _Trace.depth -= 1
             }
 
 
-            var trace_function = function Gem__Trace__trace_function(f) {
-                return function STUB$trace_wrapper(/*...*/) {
-                    trace_start(f, arguments)
-
-                    var r = f.apply(this, arguments)
-
-                    if (r !== undefined) {
-                        trace_result(r)
-                        return r
-                    }
-
-                    trace_stop()
-                }
-            }
-
-
-            var trace_result = function Gem__Trace__trace_result(v) {
+            var function_result = function Gem__Trace__function_result(v) {
                 //  End a closed trace group with a result (i.e.: function return value).
                 //
                 //  NOTE:
@@ -489,24 +480,40 @@ Gem.Core.execute(
                 unbound__line.apply(console, pending)
                 zap_pending__1_to_end()
 
-                Trace.depth -= 1
+                _Trace.depth -= 1
             }
 
 
-            if (trace_myself)  { trace_stop() }
-            if (trace_execute) { trace_stop() }
+            var wrap_function = function Gem__Trace__wrap_function(f) {
+                return function STUB$trace_wrapper(/*...*/) {
+                    function_call(f, arguments)
+
+                    var r = f.apply(this, arguments)
+
+                    if (r !== undefined) {
+                        function_result(r)
+                        return r
+                    }
+
+                    procedure_done()
+                }
+            }
+
+
+            if (trace_myself)  { procedure_done() }
+            if (trace_execute) { procedure_done() }
 
 
             //
-            //  Exports
+            //  Private
             //
-            Trace.group_stop            = group_stop
-            Trace.trace_function        = trace_function
-            Trace.trace_result          = trace_result
-            Trace.trace_start           = trace_start
-            Trace.trace_stop            = trace_stop
-            Trace.trace_value           = trace_value
-            Trace.zap_pending__1_to_end = zap_pending__1_to_end
+            _Trace.function_call         = function_call
+            _Trace.function_result       = function_result
+            _Trace.group_stop            = group_stop
+            _Trace.procedure_done        = procedure_done
+            _Trace.trace_value           = trace_value
+            _Trace.wrap_function         = wrap_function
+            _Trace.zap_pending__1_to_end = zap_pending__1_to_end
         }
     }
 )
@@ -533,13 +540,14 @@ if (Gem.Configuration.trace) {
             var myself = function execute$codify$trace$Gem__Core__execute() {
             }
 
+            var _Trace        = Gem._.Trace
             var Configuration = Gem.Configuration
-            var Trace         = Gem.Trace
             var Tracing       = Gem.Tracing
 
-            var trace       = Configuration.trace
-            var trace_start = Trace.trace_start
-            var trace_stop  = Trace.trace_stop
+            var function_call  = _Trace.function_call
+            var procedure_done = _Trace.procedure_done
+            var trace          = Configuration.trace
+
 
             //
             //  Tracing `execute` and myself
@@ -555,25 +563,25 @@ if (Gem.Configuration.trace) {
             var trace_execute = (trace === 7) || ('Gem.Core.execute' in Tracing)
             var trace_myself  = (trace === 7) || (myself.name        in Tracing)
 
-            if (trace_execute) { trace_start(execute, [ myself ]) }
-            if (trace_myself)  { trace_start(myself) }
+            if (trace_execute) { function_call(execute, [ myself ]) }
+            if (trace_myself)  { function_call(myself) }
 
 
             Gem.Core.execute = function trace$Gem__Core__execute(code) {
                 var trace_code = (Configuration.trace === 7) || (code.name in Tracing)
 
-                if (trace_execute) { trace_start(execute, arguments) }
-                if (trace_code)    { trace_start(code)               }
+                if (trace_execute) { function_call(execute, arguments) }
+                if (trace_code)    { function_call(code)               }
 
                 execute(code)
 
-                if (trace_code)    { trace_stop() }
-                if (trace_execute) { trace_stop() }
+                if (trace_code)    { procedure_done() }
+                if (trace_execute) { procedure_done() }
             }
 
 
-            if (trace_myself)  { trace_stop() }
-            if (trace_execute) { trace_stop() }
+            if (trace_myself)  { procedure_done() }
+            if (trace_execute) { procedure_done() }
         }
     )
 }
@@ -592,8 +600,8 @@ Gem.Core.execute(
         //
         //  Imports
         //
+        var _Trace        = Gem._.Trace
         var Configuration = Gem.Configuration
-        var Trace         = Gem.Trace
 
         var clarity         = Configuration.clarity
         var create_Object   = Object.create
@@ -601,9 +609,9 @@ Gem.Core.execute(
         var trace           = Configuration.trace
 
         if (trace) {
-            var trace_function = Trace.trace_function
-            var trace_start    = Trace.trace_start
-            var trace_stop     = Trace.trace_stop
+            var procedure_done = _Trace.procedure_done
+            var function_call  = _Trace.function_call
+            var wrap_function  = _Trace.wrap_function
         }
 
 
@@ -646,8 +654,8 @@ Gem.Core.execute(
 
                     //
                     //  Trace execute$setup_Gem$who_what:
-                    //      This special version of tracing has to set `module.$who` before calling `trace_start`,
-                    //      so that `trace_start` can properly identify `module`.
+                    //      This special version of tracing has to set `module.$who` before calling `function_call`,
+                    //      so that `function_call` can properly identify `module`.
                     //
                     var who_what = function trace$execute$setup_Gem$who_what(module, $who, $what) {
                         //
@@ -659,11 +667,11 @@ Gem.Core.execute(
                             delete visible_constant_attribute.value
                         }
 
-                        trace_start(who_what, [module, $who, $what])
+                        function_call(who_what, [module, $who, $what])
 
                         original_who_what(module, $who, $what)
 
-                        trace_stop()
+                        procedure_done()
                     }
                 }
             }
@@ -705,7 +713,7 @@ Gem.Core.execute(
         //      (Was not an easy choice to create the stubs, hopefully was the right one).
         //
         var method = function STUB$Gem__Core__method(who, $what, method) {
-            var traced_method = (trace ? trace_function(method) : method)
+            var traced_method = (trace ? wrap_function(method) : method)
 
             visible_constant_attribute.value = traced_method
             define_property(this, who, visible_constant_attribute)
@@ -737,7 +745,7 @@ Gem.Core.execute(
         //  The next ';' is one of the few times we really need a ';' in JavaScript ...
         //      To avoid a leading '(' the next statement being combined with the previous statement.
         //
-        ;(trace ? trace_function(method) : method).call(                        //  Use 'method' on itself
+        ;(trace ? wrap_function(method) : method).call(         //  Use 'method' on itself
             Gem.Core,
             'method',
             'Temporary stub for Gem.Core.method',
@@ -763,8 +771,8 @@ Gem.Core.execute(
             'Temporary stub for Gem.Core.codify_method',
             function STUB$Gem__Core__codify_method(who, $what, codifier) {
                 if (trace) {
-                    var method        = trace_function(codifier)()
-                    var traced_method = trace_function(method)
+                    var method        = wrap_function(codifier)()
+                    var traced_method = wrap_function(method)
                 } else {
                     var method        = codifier()
                     var traced_method = method
@@ -815,7 +823,7 @@ Gem.Core.execute(
             'qualify_constant',
             'Temporary stub for Gem.Core.qualify_constant',
             function STUB$Gem__Core__qualify_constant(who, $what, qualifier) {
-                visible_constant_attribute.value = (trace ? trace_function(qualifier) : qualifier)()
+                visible_constant_attribute.value = (trace ? wrap_function(qualifier) : qualifier)()
                 define_property(this, who, visible_constant_attribute)
 
                 if (clarity) {
