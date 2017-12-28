@@ -372,7 +372,7 @@ Gem.Core.execute(
                     var v = argument_list[i]
 
                     if (i) {
-                        format += ',' + trace_value(v)
+                        format += ', ' + trace_value(v)
                     } else {
                         format += trace_value(v)
                     }
@@ -418,6 +418,26 @@ Gem.Core.execute(
             }
 
 
+            var trace_function = function Gem__Trace__trace_function(f) {
+                return function STUB$trace_wrapper(/*...*/) {
+                    trace_start(f, arguments)
+
+                    var r = f.apply(this, arguments)
+
+                    if (r !== undefined) {
+                        throw new Error(
+                                (
+                                      'STUB$trace_wrapper:'
+                                    + ' the STUB implementation for `trace_wrapper` cannot trace return values'
+                                )//,
+                            )
+                    }
+
+                    trace_stop()
+                }
+            }
+
+
             if (trace_myself)  { trace_stop() }
             if (trace_execute) { trace_stop() }
 
@@ -425,6 +445,8 @@ Gem.Core.execute(
             //
             //  Exports
             //
+            Trace.group_stop            = group_stop
+            Trace.trace_function        = trace_function
             Trace.trace_start           = trace_start
             Trace.trace_stop            = trace_stop
             Trace.trace_value           = trace_value
@@ -514,9 +536,14 @@ Gem.Core.execute(
         //
         //  Imports
         //
-        var clarity         = Gem.Configuration.clarity
+        var Configuration = Gem.Configuration
+        var Trace         = Gem.Trace
+
+        var clarity         = Configuration.clarity
         var create_Object   = Object.create
         var define_property = Object.defineProperty
+        var trace           = Configuration.trace
+        var trace_function  = Trace.trace_function
 
 
         //
@@ -538,16 +565,6 @@ Gem.Core.execute(
 
 
         if (clarity) {
-            //
-            //  Imports
-            //
-            var Configuration = Gem.Configuration
-            var trace         = Configuration.trace
-
-
-            //
-            //  Implementation
-            //
             var who_what = function execute$setup_Gem$who_what(module, $who, $what) {
                 visible_constant_attribute.value = $who
                 define_property(module, '$who', visible_constant_attribute)
@@ -570,10 +587,21 @@ Gem.Core.execute(
 
                     var original_who_what = who_what
 
+
+                    //
+                    //  Trace execute$setup_Gem$who_what:
+                    //      This special version of tracing has to set `module.$who` before calling `trace_start`,
+                    //      so that `trace_start` can properly identify `module`.
+                    //
                     var who_what = function trace$execute$setup_Gem$who_what(module, $who, $what) {
-                        visible_constant_attribute.value = $who
-                        define_property(module, '$who', visible_constant_attribute)
-                        delete visible_constant_attribute.value
+                        //
+                        //  ... Must do this first before calling trace start ...
+                        //
+                        /*first*/ {
+                            visible_constant_attribute.value = $who
+                            define_property(module, '$who', visible_constant_attribute)
+                            delete visible_constant_attribute.value
+                        }
 
                         trace_start(who_what, [module, $who, $what])
 
@@ -620,8 +648,10 @@ Gem.Core.execute(
         //
         //      (Was not an easy choice to create the stubs, hopefully was the right one).
         //
-        var method = function Gem__Core__method(who, $what, method) {
-            visible_constant_attribute.value = method
+        var method = function STUB$Gem__Core__method(who, $what, method) {
+            var traced_method = (trace ? trace_function(method) : method)
+
+            visible_constant_attribute.value = traced_method
             define_property(this, who, visible_constant_attribute)
 
             if (clarity) {
@@ -630,13 +660,27 @@ Gem.Core.execute(
 
                 visible_constant_attribute.value = $what
                 define_property(method, '$what', visible_constant_attribute)
+
+                if (trace) {
+                    visible_constant_attribute.value = method
+                    define_property(traced_method, '$tracing', visible_constant_attribute)
+
+                    visible_constant_attribute.value = 'TRACED: ' + this.$who + '.' + who
+                    define_property(traced_method, '$who', visible_constant_attribute)
+
+                    visible_constant_attribute.value = 'TRACED: ' + $what
+                    define_property(traced_method, '$what', visible_constant_attribute)
+                }
             }
 
             delete visible_constant_attribute.value
         }
 
 
-        method.call(                                        //   Use `method` on itself ...
+        debugger
+
+
+        (trace ? trace_function(method) : method).call(         //  Use [optionally traced] `method` on itself ...
             Gem.Core,
             'method',
             'Temporary stub for Gem.Core.method',
@@ -647,7 +691,7 @@ Gem.Core.execute(
         Gem.Core.method(
             'clarity_note',
             'Temporary stub for Gem.Core.clarity_note',
-            function Gem__Core__clarity_note(who, $what) {
+            function STUB$Gem__Core__clarity_note(who, $what) {
                 if (clarity) {
                     visible_constant_attribute.value = $what
                     define_property(this, who + '$NOTE', visible_constant_attribute)
@@ -660,10 +704,11 @@ Gem.Core.execute(
         Gem.Core.method(
             'codify_method',
             'Temporary stub for Gem.Core.codify_method',
-            function Gem__Core__codify_method(who, $what, codifier) {
-                var method = codifier()
+            function STUB$Gem__Core__codify_method(who, $what, codifier) {
+                var method        = codifier()
+                var traced_method = (trace ? trace_function(method) : method)
 
-                visible_constant_attribute.value = method
+                visible_constant_attribute.value = traced_method
                 define_property(this, who, visible_constant_attribute)
 
                 if (clarity) {
@@ -672,6 +717,14 @@ Gem.Core.execute(
 
                     visible_constant_attribute.value = $what
                     define_property(method, '$what', visible_constant_attribute)
+
+                    if (trace) {
+                        visible_constant_attribute.value = 'TRACED: ' + this.$who + '.' + who
+                        define_property(traced_method, '$who', visible_constant_attribute)
+
+                        visible_constant_attribute.value = 'TRACED: ' + $what
+                        define_property(traced_method, '$what', visible_constant_attribute)
+                    }
                 }
 
                 delete visible_constant_attribute.value
@@ -682,7 +735,7 @@ Gem.Core.execute(
         Gem.Core.method(
             'constant',
             'Temporary stub for Gem.Core.constant',
-            function Gem__Core__constant(who, $what, constant) {
+            function STUB$Gem__Core__constant(who, $what, constant) {
                 visible_constant_attribute.value = constant
                 define_property(this, who, visible_constant_attribute)
 
@@ -699,7 +752,7 @@ Gem.Core.execute(
         Gem.Core.method(
             'qualify_constant',
             'Temporary stub for Gem.Core.qualify_constant',
-            function Gem__Core__qualify_constant(who, $what, qualifier) {
+            function STUB$Gem__Core__qualify_constant(who, $what, qualifier) {
                 visible_constant_attribute.value = qualifier()
                 define_property(this, who, visible_constant_attribute)
 
@@ -714,6 +767,7 @@ Gem.Core.execute(
 //  </stubs>                                                //   End of stubs
 
 
+        debugger
         //
         //  visible_constant_attribute
         //      A property used to create visible (i.e.: enumerable) constant attributes

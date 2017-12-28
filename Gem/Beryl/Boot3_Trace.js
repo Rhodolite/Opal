@@ -11,6 +11,61 @@
 
 
 //
+//  Gem.Trace.trace_function
+//      Trace a function, method, or bound method.
+//
+Gem.Core.codify_method.call(
+    Gem.Trace,
+    'trace_function',
+    'Trace a function, method, or bound method.',
+    function codifier$Gem__Trace__trace_function() {
+        //
+        //  Imports
+        //
+        var Trace = Gem.Trace
+
+        var group_stop            = Trace.group_stop
+        var trace_start           = Trace.start
+        var pending               = Trace.pending
+        var trace_value           = Trace.trace_value
+        var unbound__line         = console.log
+        var zap_pending__1_to_end = Trace.zap_pending__1_to_end
+
+
+        return function Gem__Trace__trace_function(f) {
+            return function trace_wrapper(/*...*/) {
+                trace_start(f, arguments)
+
+                var r = f.apply(this, arguments)
+
+                if (r === undefined) {
+                    if (pending.length > 1) {
+                        unbound__line.apply(console, pending)
+                        zap_pending__1_to_end()
+                    } else {
+                        group_stop()
+                    }
+                } else {
+                    if (pending.length > 1) {
+                        pending[0] += ' => '
+                    } else {
+                        group_stop()
+                        pending[0] = '=> '
+                    }
+
+                    pending[0] += trace_value(v)
+                    unbound__line.apply(console, pending)
+                    zap_pending__1_to_end()
+                }
+
+                Trace.depth -= 1
+            }
+        }
+    }//,
+)
+
+
+//
 //  Gem.Trace.trace_line
 //
 //  Output a line of text in trace mode.
@@ -87,7 +142,7 @@ Gem.Core.codify_method.call(
         + ' normal line'
         + '.'
     ),
-    function codifier$Gem__Trace__trace_line() {
+    function codifier$Gem__Trace__trace_result() {
         //
         //  Imports
         //
