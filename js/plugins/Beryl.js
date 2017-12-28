@@ -90,16 +90,19 @@ window.Gem = {
 Gem.Core.execute(
     function execute$setup_Tracing() {
         //
-        //  Configure Tracing
-        //
-        var get_property_names = Object.getOwnPropertyNames
+        //  Imports
         var Tracing            = Gem.Tracing
+        var get_property_names = Object.getOwnPropertyNames
+        var Pattern            = window.RegExp
 
 
         //
         //  Adjust keys, changing '__' to '.'
         //
-        //  NOTE:
+        //  NOTE #1:
+        //      Only if the key does not have a '$' in it, keys with '$' are left alone.
+        //
+        //  NOTE #2:
         //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
         //
         //          Tracing : {
@@ -114,7 +117,7 @@ Gem.Core.execute(
         //
         //      And then convert the key 'Gem__Core__execute' to 'Gem.Core.execute'.
         //
-        //  NOTE:
+        //  NOTE #2:
         //      Since we are deleting elements from `Tracing`, we can do a `for (k in Tracing)` as you are
         //      not allowed to delete elements inside an iteration.
         //
@@ -122,13 +125,15 @@ Gem.Core.execute(
         //      keys in the loops safetly.
         //
         var keys = get_property_names(Tracing).sort()    //  `sort` makes the for loop deterministic
+        var double_underscore__pattern = new Pattern('__', 'g')
 
 
         for (var i = keys.length - 1; i >= 0; i --) {
-            var k      = keys[i]
-            var dotted = k.replace('__', '.')
+            var k = keys[i]
 
-            if (dotted !== k) {
+            if ((k.indexOf('__') !== -1) && (k.indexOf('$') === -1)) {
+                var dotted = k.replace(double_underscore__pattern, '.')
+
                 Tracing[dotted] = Tracing[k]
 
                 delete Tracing[k]
