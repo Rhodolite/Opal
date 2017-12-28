@@ -8,24 +8,51 @@
 //
 //  In Gem tracing mode, *every* function, method & bound_method call is traced.
 //
-Gem.Core.execute(
-    function execute$Gem__add_tracing() {
-        var Trace   = Gem.Trace
-        var Tracing = Gem.Tracing
+Gem.Core.codify_method.call(
+    Gem.Trace,
+    'trace_line',
+    (
+          'Output a line of text in trace mode.\n'
+        + '\n'
+        + 'NOTE:\n'
+        + '    If this is the first line inside the group, then the [previously pending] closed group is flushed'
+        + ' (i.e.: actually output as a closed group)'
+        + '.'
+    ),
+    function codifier$Gem__Trace__trace_line() {
+        //
+        //  Imports
+        //
+        var Trace = Gem.Trace
 
 
-        Tracing.identifier_test = 7
+        var console                   = window.console
+        var pending                   = Trace.pending
+        var unbound__group_start_open = console.group
+        var unbound__line             = console.log
+        var zap_pending__1_to_end     = Trace.zap_pending__1_to_end
 
 
-        Gem.Core.method(
-            'tracing',
-            'Stub for Gem.Trace.Tracing.',
-            function tracing(name) {
-                return (name in Trace) && (Trace[name])
+        //
+        //  Implementation
+        //
+        return function Gem__Trace__trace_line(/*arguments*/) {
+            //  Output a line of text in trace mode.
+            //
+            //  NOTE:
+            //      If this is the first line inside the group, then the [previously pending] closed group is
+            //      flushed (i.e.: actually output as a closed group).
+
+            if (pending.length > 1) {
+                unbound__group_start_open.apply(console, pending)
+                zap_pending__1_to_end()
             }
-        )
-    }
+
+            unbound__line.apply(console, arguments)
+        }
+    }//,
 )
+
 
 
 //--------------------------------------------------------+

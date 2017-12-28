@@ -358,3 +358,19 @@ Gem.Beryl.codify(
 //                      continue
 //                  }
 
+Gem.Core.execute(
+    function execute$Gem__add_tracing() {
+        var Trace   = Gem.Trace
+        var Tracing = Gem.Tracing
+
+
+        Gem.Core.method.call(
+            Trace,
+            'tracing',
+            'Stub for Gem.Trace.Tracing.',
+            function tracing(name) {
+                return (name in Trace) && (Trace[name])
+            }
+        )
+    }
+)

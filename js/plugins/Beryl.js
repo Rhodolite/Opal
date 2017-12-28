@@ -18,7 +18,15 @@ window.Gem = {
         clarity       : true,                               //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors
-        trace         : true,                               //      Trace function, method & bound method calls.
+        trace         : 7,                                  //      Trace function, method & bound method calls.
+    },
+
+    Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
+        Gem__Core__execute                      : 7,        //      Means 'Gem.Core.execute'
+        execute$setup_Tracing                   : 7,
+        execute$codify$trace$Gem__Core__execute : 7,
+        execute$setup_Gem                       : 7,
+        execute$setup_Gem$who_what              : 7//,
     },
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -71,10 +79,6 @@ window.Gem = {
         //  trace_stop  : Function                          //      End a trace group
     },
 
-    Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
-        //  Defined below to allow quoted strings to be used in JavaScript 5.0
-    },
-
     _ : {                                                   //  Private members & methods of all Gem modules.
         Core : {                                            //      Private members & methods of the Core Gem module.
         //  clarity_mode$global_variable_Gem_changed : []   //      Callbacks to call when `Gem` is changed.
@@ -88,13 +92,48 @@ Gem.Core.execute(
         //
         //  Configure Tracing
         //
-        var Tracing = Gem.Tracing
+        var get_property_names = Object.getOwnPropertyNames
+        var Tracing            = Gem.Tracing
 
-        Tracing['Gem.Core.execute']                     = 7
-        Tracing.execute$setup_Tracing                   = 7
-        Tracing.execute$codify$trace$Gem__Core__execute = 7
-        Tracing.execute$setup_Gem                       = 7
-        Tracing.execute$setup_Gem$who_what              = 7
+
+        //
+        //  Adjust keys, changing '__' to '.'
+        //
+        //  NOTE:
+        //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
+        //
+        //          Tracing : {
+        //              ['Gem.Core.execute'] : 7,
+        //          }
+        //
+        //      So to be compatiable with JavaScript 5.0, we do the following instead:
+        //
+        //          Tracing : {
+        //              Gem__Core__execute : 7//,
+        //          }
+        //
+        //      And then convert the key 'Gem__Core__execute' to 'Gem.Core.execute'.
+        //
+        //  NOTE:
+        //      Since we are deleting elements from `Tracing`, we can do a `for (k in Tracing)` as you are
+        //      not allowed to delete elements inside an iteration.
+        //
+        //      Hence we use `get_property_names(Tracing).sort` to first get the keys, then we can copy/delete
+        //      keys in the loops safetly.
+        //
+        var keys = get_property_names(Tracing).sort()    //  `sort` makes the for loop deterministic
+
+
+        for (var i = keys.length - 1; i >= 0; i --) {
+            var k      = keys[i]
+            var dotted = k.replace('__', '.')
+
+            if (dotted !== k) {
+                Tracing[dotted] = Tracing[k]
+
+                delete Tracing[k]
+            }
+        }
 
 
         //
@@ -117,16 +156,16 @@ Gem.Core.execute(
         //
         //  Define trace functions & trace myself
         //
-        if (Gem.Configuration.trace) {
+        if (trace) {
             var Trace = Gem.Trace
 
             var pending = Trace.pending
 
-            var unbound__group_start_closed = console.groupCollapsed
+//          var unbound__group_start_closed = console.groupCollapsed
+            var unbound__group_start_open   = console.group
             var unbound__group_stop         = console.groupEnd
             var unbound__line               = console.log
             var unbound__push               = pending.push
-            var unbound__slice              = Array.prototype.slice             //  NOTE: slice *WITHOUT* a 'p'
             var unbound__SPLICE             = Array.prototype.splice            //  NOTE: splice *WITH* a 'p'
 
 
@@ -154,10 +193,10 @@ Gem.Core.execute(
                 var push_color_green  = function OLD_WAY$push_color_green()    { pending.push('color:green')    }
                 var push_color_none   = function OLD_WAY$push_color_none()     { pending.push('color:none')     }
                 var push_color_orange = function OLD_WAY$push_color_orange()   { pending.push('color: #EEA500') }
-                var push_color_pink   = function OLD_WAY$push_color_orange()   { pending.push('color: #FF1493') }
-                var push_color_purple = function OLD_WAY$push_color_orange()   { pending.push('color:purple')   }
-                var push_color_red    = function OLD_WAY$push_color_orange()   { pending.push('color:red')      }
-                var push_color_teal   = function OLD_WAY$push_color_orange()   { pending.push('color:teal')     }
+                var push_color_pink   = function OLD_WAY$push_color_pink()     { pending.push('color: #FF1493') }
+                var push_color_purple = function OLD_WAY$push_color_purple()   { pending.push('color:purple')   }
+                var push_color_red    = function OLD_WAY$push_color_red()      { pending.push('color:red')      }
+                var push_color_teal   = function OLD_WAY$push_color_teal()     { pending.push('color:teal')     }
                 var push_object       = function OLD_WAY$push_object(instance) { pending.push(instance)         }
             }
 
@@ -165,27 +204,11 @@ Gem.Core.execute(
             var push_string = push_object
 
 
-            if ('bind' in unbound__slice) {
-                //
-                //  By using `.call.bind` we use the `.call` function to convert the first argument passed to it,
-                //  to the `this` argument of `Array.prototype.slice`:
-                //
-                //      In other words `.slice_call(arguments)` becomes `Array.prototype.slice.call(arguments)`
-                //
-                //  This suggestion came from:
-                //      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-                //
-                var slice_call = unbound__slice.call.bind(unbound__slice)
-            } else {
-                var slice_call = false                          //  Can't implement `slice.call`, do it old way.
-            }
-
-
             if ('bind' in unbound__SPLICE) {
-                var zap_pending__3_to_end = unbound__SPLICE.bind(pending, 3)
+                var zap_pending__1_to_end = unbound__SPLICE.bind(pending, 1)
             } else {
-                var zap_pending__3_to_end = function OLD_WAY$zap_pending() {
-                    pending.splice(3)                                               //  NOTE: splice *WITH* a 'p'
+                var zap_pending__1_to_end = function OLD_WAY$zap_pending() {
+                    pending.splice(1)                                               //  NOTE: splice *WITH* a 'p'
                 }
             }
 
@@ -193,18 +216,17 @@ Gem.Core.execute(
             //
             //  Implementaion
             //
-            var trace_execute = ('Gem.Core.execute'      in Tracing)
-            var trace_myself  = ('execute$setup_Tracing' in Tracing)
+            var trace_execute = (trace === 7) || ('Gem.Core.execute'      in Tracing)
+            var trace_myself  = (trace === 7) || ('execute$setup_Tracing' in Tracing)
 
 
             //
-            //  Reserve first three elements of `pending` & [later] use `format` to replace `pending[0]
+            //  Reserve first elements of `pending` & [later] use `format` to replace `pending[0]`
+            //
             var format
 
 
             push_object(null)
-            push_color_green()
-            push_color_none()
 
 
             var trace_value = function trace_value(v) {
@@ -334,12 +356,15 @@ Gem.Core.execute(
                 //      If this is the first line inside [an outer] closed group, then the [previously pending]
                 //      closed group is first flushed (i.e.: actually output as a closed group).
 
-                if (pending.length > 3) {
-                    unbound__group_start_closed.apply(console, pending)
-                    zap_pending__3_to_end()
+                if (pending.length > 1) {
+                    unbound__group_start_open.apply(console, pending)
+                    zap_pending__1_to_end()
                 }
 
                 Trace.depth += 1
+
+                push_color_green()
+                push_color_none()
 
                 if (argument_list === undefined) {
                     pending[0] = ('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
@@ -386,6 +411,30 @@ Gem.Core.execute(
             }
 
 
+            var trace_result = function Gem__Trace__trace_result(v) {
+                //  End a closed trace group with a result (i.e.: function return value).
+                //
+                //  NOTE:
+                //      If there are lines inside the group, then the group is closed.
+                //
+                //      If there is no lines inside the group, then the [previously pending] closed group is
+                //      converted to a normal line.
+
+                if (pending.length > 1) {
+                    pending[0] += ' => '
+                } else {
+                    group_stop()
+                    pending[0] = '=> '
+                }
+
+                trace_value(v)
+                unbound__line.apply(console, pending)
+                zap_pending__1_to_end()
+
+                Trace.depth -= 1
+            }
+
+
             var trace_stop = function Gem__Trace__trace_stop() {
                 //  End a closed trace group.
                 //
@@ -395,41 +444,14 @@ Gem.Core.execute(
                 //      If there is no lines inside the group, then the [previously pending] closed group is
                 //      converted to a normal line.
 
-                if (pending.length > 3) {
+                if (pending.length > 1) {
                     unbound__line.apply(console, pending)
-                    zap_pending__3_to_end()
+                    zap_pending__1_to_end()
                 } else {
                     group_stop()
                 }
 
                 Trace.depth -= 1
-            }
-
-
-            if (slice_call) {
-                var trace_line = function Gem__Trace__trace_line(/*arguments*/) {
-                    //  Output a line of text in trace mode.
-                    //
-                    //  NOTE:
-                    //      If this is the first line inside the group, then the [previously pending] closed group is
-                    //      flushed (i.e.: actualy output as a closed group).
-
-                    if (pending.length > 3) {
-                        unbound__group_start_closed.apply(console, pending)
-                        zap_pending__3_to_end()
-                    }
-
-                    unbound__line.apply(console, slice_call(arguments))
-                }
-            } else {
-                var trace_line = function OLD_WAY$Gem__Trace__trace_line(/*arguments*/) {
-                    if (pending.length > 3) {
-                        unbound__group_start_closed.apply(console, pending)
-                        zap_pending__3_to_end()
-                    }
-
-                    unbound__line.apply(console, slice.call(arguments))        //  OLD WAY: `slice.call`
-                }
             }
 
 
@@ -440,9 +462,10 @@ Gem.Core.execute(
             //
             //  Exports
             //
-            Trace.trace_line  = trace_line
-            Trace.trace_start = trace_start
-            Trace.trace_stop  = trace_stop
+            Trace.trace_result          = trace_result
+            Trace.trace_start           = trace_start
+            Trace.trace_stop            = trace_stop
+            Trace.zap_pending__1_to_end = zap_pending__1_to_end
         }
     }
 )
@@ -469,9 +492,11 @@ if (Gem.Configuration.trace) {
             var myself = function execute$codify$trace$Gem__Core__execute() {
             }
 
-            var Trace   = Gem.Trace
-            var Tracing = Gem.Tracing
+            var Configuration = Gem.Configuration
+            var Trace         = Gem.Trace
+            var Tracing       = Gem.Tracing
 
+            var trace       = Configuration.trace
             var trace_start = Trace.trace_start
             var trace_stop  = Trace.trace_stop
 
@@ -486,15 +511,15 @@ if (Gem.Configuration.trace) {
             //
             var execute = Gem.Core.execute                  //  Original version we are tracing
 
-            var trace_execute = ('Gem.Core.execute' in Tracing)
-            var trace_myself  = (myself.name        in Tracing)
+            var trace_execute = (trace === 7) || ('Gem.Core.execute' in Tracing)
+            var trace_myself  = (trace === 7) || (myself.name        in Tracing)
 
             if (trace_execute) { trace_start(execute, [ myself ]) }
             if (trace_myself)  { trace_start(myself) }
 
 
             Gem.Core.execute = function trace$Gem__Core__execute(code) {
-                var trace_code = (code.name in Tracing)
+                var trace_code = (Configuration.trace === 7) || (code.name in Tracing)
 
                 if (trace_execute) { trace_start(execute, arguments) }
                 if (trace_code)    { trace_start(code)               }
@@ -550,6 +575,16 @@ Gem.Core.execute(
 
 
         if (clarity) {
+            //
+            //  Imports
+            //
+            var Configuration = Gem.Configuration
+            var trace         = Configuration.trace
+
+
+            //
+            //  Implementation
+            //
             var who_what = function execute$setup_Gem$who_what(module, $who, $what) {
                 visible_constant_attribute.value = $who
                 define_property(module, '$who', visible_constant_attribute)
@@ -561,13 +596,12 @@ Gem.Core.execute(
             }
 
 
-            if (Gem.Configuration.trace) {
+            if (trace) {
                 var Tracing = Gem.Tracing
 
-                if ('execute$setup_Gem$who_what' in Tracing) {
+                if ((Configuration.trace === 7) || ('execute$setup_Gem$who_what' in Tracing)) {
                     var Trace = Gem.Trace
 
-//                  var COLOR_PINK  = Trace.COLOR_PINK
                     var trace_start = Trace.trace_start
                     var trace_stop  = Trace.trace_stop
 
