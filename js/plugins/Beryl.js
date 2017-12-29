@@ -18,7 +18,7 @@ window.Gem = {
         clarity       : true,                               //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 0,                                  //      Trace function, method & bound method calls.
+        trace         : 1,                                  //      Trace function, method & bound method calls.
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
@@ -72,7 +72,7 @@ window.Gem = {
 
 //  Trace : {                                               //  Map of functions, methods & bound_methods being traced.
 //      //  method_call     : Function          [TODO]      //      Start a trace group for a method call.
-//      //  trace_line      : Function                      //      Start a trace group.
+//      //  trace_line      : Function          [MOVE]      //      Start a trace group.
 //  },
 
 
@@ -87,8 +87,9 @@ window.Gem = {
         //  function_call         : Function                //          Start a trace group for a function call.
         //  function_result       : Function                //          Finish a function with a result
         //  group_stop            : Bound Function          //          Stop a group on the console.
-        //  trace_value           : Function                //          Show a value for tracing.
         //  procedure_done        : Function                //          Finish a procedure (no result shown).
+        //  trace_value           : Function                //          Show a value for tracing.
+        //  tracing               : Function                //          Returns the trace configuration for a routine.
         //  wrap_function         : Function                //          Wrap a function with tracing.
         //  zap_pending__1_to_end : Function                //          Internal routine to clean up 'Trace.pending'.
         }//,
@@ -100,6 +101,7 @@ Gem.Core.execute(
     function execute$setup_Tracing() {
         //
         //  Imports
+        // 
         var Configuration = Gem.Configuration
         var Tracing       = Gem.Tracing
 
@@ -228,8 +230,37 @@ Gem.Core.execute(
             //  Implementaion
             //
             var carriage_return__pattern = new Pattern('\n', 'g')
-            var trace_execute            = (trace === 7) || ('Gem.Core.execute'      in Tracing)
-            var trace_myself             = (trace === 7) || ('execute$setup_Tracing' in Tracing)
+
+
+            //
+            //  Gem.Tracing.trace
+            //      Return the trace value for function `name`.
+            //
+            //  Algorithm:
+            //      If `Gem.Configuration.trace` is either 0 (off) or 7 (on always):
+            //              Then return `Gem.Configuration.trace`;
+            //
+            //      Otherwise, return the value of Tracing[name] (if it exists);
+            //
+            //      Otherwise, return 0 (tracing off).
+            //
+            var tracing = function tracing(name) {
+                var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                if (trace === 0 || trace === 7) {
+                    return trace
+                }
+
+                if (name in Tracing) {
+                    return Tracing[name]
+                }
+
+                return 0
+            }
+
+
+            var tracing_execute = tracing('Gem.Core.execute')
+            var tracing_myself  = tracing('execute$setup_Tracing')
 
 
             //
@@ -424,7 +455,7 @@ Gem.Core.execute(
             }
 
 
-            if (trace_execute || trace_myself) {
+            if (tracing_execute || tracing_myself) {
                 //
                 //  NOTE:
                 //      We use a fake `execute$setup_Tracing` here, as we don't have the real one (ourselves).
@@ -435,8 +466,8 @@ Gem.Core.execute(
                 }
 
 
-                if (trace_execute) { function_call(Gem.Core.execute, [myself]) }
-                if (trace_myself)  { function_call(myself)                     }
+                if (tracing_execute) { function_call(Gem.Core.execute, [myself]) }
+                if (tracing_myself)  { function_call(myself)                     }
             }
 
 
@@ -485,23 +516,37 @@ Gem.Core.execute(
 
 
             var wrap_function = function Gem__Trace__wrap_function(f) {
+                var name = f.name
+
+                if ( ! (name in Tracing)) {
+                    Tracing[name] = 0
+                }
+
+
                 return function STUB$trace_wrapper(/*...*/) {
-                    function_call(f, arguments)
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var r = f.apply(this, arguments)
+                    if (trace === 7 || (trace && Tracing[name])) {
+                        function_call(f, arguments)
 
-                    if (r !== undefined) {
-                        function_result(r)
-                        return r
+                        var r = f.apply(this, arguments)
+
+                        if (r !== undefined) {
+                            function_result(r)
+                            return r
+                        }
+
+                        procedure_done()
+                        return
                     }
 
-                    procedure_done()
+                    return f.apply(this, arguments)
                 }
             }
 
 
-            if (trace_myself)  { procedure_done() }
-            if (trace_execute) { procedure_done() }
+            if (tracing_myself)  { procedure_done() }
+            if (tracing_execute) { procedure_done() }
 
 
             //
@@ -512,6 +557,7 @@ Gem.Core.execute(
             _Trace.group_stop            = group_stop
             _Trace.procedure_done        = procedure_done
             _Trace.trace_value           = trace_value
+            _Trace.tracing               = tracing
             _Trace.wrap_function         = wrap_function
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
         }
@@ -540,13 +586,15 @@ if (Gem.Configuration.trace) {
             var myself = function execute$codify$trace$Gem__Core__execute() {
             }
 
-            var _Trace        = Gem._.Trace
-            var Configuration = Gem.Configuration
-            var Tracing       = Gem.Tracing
+
+            //
+            //  Imports
+            //
+            var _Trace = Gem._.Trace
 
             var function_call  = _Trace.function_call
             var procedure_done = _Trace.procedure_done
-            var trace          = Configuration.trace
+            var tracing        = _Trace.tracing
 
 
             //
@@ -560,28 +608,28 @@ if (Gem.Configuration.trace) {
             //
             var execute = Gem.Core.execute                  //  Original version we are tracing
 
-            var trace_execute = (trace === 7) || ('Gem.Core.execute' in Tracing)
-            var trace_myself  = (trace === 7) || (myself.name        in Tracing)
+            var tracing_execute = tracing('Gem.Core.execute')
+            var tracing_myself  = tracing(myself.name)
 
-            if (trace_execute) { function_call(execute, [ myself ]) }
-            if (trace_myself)  { function_call(myself) }
+            if (tracing_execute) { function_call(execute, [ myself ]) }
+            if (tracing_myself)  { function_call(myself) }
 
 
             Gem.Core.execute = function trace$Gem__Core__execute(code) {
-                var trace_code = (Configuration.trace === 7) || (code.name in Tracing)
+                var trace_code = tracing(code.name)
 
-                if (trace_execute) { function_call(execute, arguments) }
-                if (trace_code)    { function_call(code)               }
+                if (tracing_execute) { function_call(execute, arguments) }
+                if (trace_code)      { function_call(code)               }
 
                 execute(code)
 
                 if (trace_code)    { procedure_done() }
-                if (trace_execute) { procedure_done() }
+                if (tracing_execute) { procedure_done() }
             }
 
 
-            if (trace_myself)  { procedure_done() }
-            if (trace_execute) { procedure_done() }
+            if (tracing_myself)  { procedure_done() }
+            if (tracing_execute) { procedure_done() }
         }
     )
 }
@@ -610,8 +658,9 @@ Gem.Core.execute(
         var trace             = Configuration.trace
 
         if (trace) {
-            var procedure_done = _Trace.procedure_done
             var function_call  = _Trace.function_call
+            var procedure_done = _Trace.procedure_done
+            var tracing        = _Trace.tracing
             var wrap_function  = _Trace.wrap_function
         }
 
@@ -683,34 +732,30 @@ Gem.Core.execute(
             }
 
 
-            if (trace) {
-                var Tracing = Gem.Tracing
-
-                if ((Configuration.trace === 7) || ('execute$setup_Gem$STUB$who_what' in Tracing)) {
-                    var original_who_what = who_what
+            if (trace && tracing('execute$setup_Gem$STUB$who_what')) {
+                var original_who_what = who_what
 
 
+                //
+                //  Trace execute$setup_Gem$STUB$who_what:
+                //      This special version of tracing has to set `module.$who` before calling `function_call`,
+                //      so that `function_call` can properly identify `module`.
+                //
+                var who_what = function trace$execute$setup_Gem$STUB$who_what(module, $who, $what) {
                     //
-                    //  Trace execute$setup_Gem$STUB$who_what:
-                    //      This special version of tracing has to set `module.$who` before calling `function_call`,
-                    //      so that `function_call` can properly identify `module`.
+                    //  ... Must do this first before calling trace start ...
                     //
-                    var who_what = function trace$execute$setup_Gem$STUB$who_what(module, $who, $what) {
-                        //
-                        //  ... Must do this first before calling trace start ...
-                        //
-                        /*first*/ {
-                            attribute_$who.value = $who
-                            define_property(module, '$who', attribute_$who)
-                            delete attribute_$who.value
-                        }
-
-                        function_call(original_who_what, arguments)
-
-                        original_who_what(module, $who, $what)
-
-                        procedure_done()
+                    /*first*/ {
+                        attribute_$who.value = $who
+                        define_property(module, '$who', attribute_$who)
+                        delete attribute_$who.value
                     }
+
+                    function_call(original_who_what, arguments)
+
+                    original_who_what(module, $who, $what)
+
+                    procedure_done()
                 }
             }
 
