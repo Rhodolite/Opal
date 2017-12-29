@@ -18,15 +18,15 @@ window.Gem = {
         clarity       : true,                               //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 7,                                  //      Trace function, method & bound method calls.
+        trace         : 0,                                  //      Trace function, method & bound method calls.
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
-        Gem__Core__execute                      : 7,        //      Means 'Gem.Core.execute'
-        execute$setup_Tracing                   : 7,
-        execute$codify$trace$Gem__Core__execute : 7,
-        execute$setup_Gem                       : 7,
-        execute$setup_Gem$who_what              : 7//,
+        Gem__Core__execute                      : 0,        //      Means 'Gem.Core.execute'
+        execute$setup_Tracing                   : 0,
+        execute$codify$trace$Gem__Core__execute : 0,
+        execute$setup_Gem                       : 0,
+        execute$setup_Gem$STUB$who_what         : 0//,
     },
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -595,7 +595,7 @@ if (Gem.Configuration.trace) {
 //      Gem.Core.visible_constant_attribute
 //
 Gem.Core.execute(
-    function execute$setup__Gem() {
+    function execute$setup_Gem() {
         //
         //
         //  Imports
@@ -603,10 +603,11 @@ Gem.Core.execute(
         var _Trace        = Gem._.Trace
         var Configuration = Gem.Configuration
 
-        var clarity         = Configuration.clarity
-        var create_Object   = Object.create
-        var define_property = Object.defineProperty
-        var trace           = Configuration.trace
+        var clarity           = Configuration.clarity
+        var create_Object     = Object.create
+        var define_properties = Object.defineProperties
+        var define_property   = Object.defineProperty
+        var trace             = Configuration.trace
 
         if (trace) {
             var procedure_done = _Trace.procedure_done
@@ -622,6 +623,36 @@ Gem.Core.execute(
         //      Enumerable properties are shown better in Developer Tools (at the top of the list,
         //      and not grayed out).
         //
+        var attribute_$who        = create_Object(null, { enumerable : { value : true } })
+        var attribute_$what       = create_Object(null, { enumerable : { value : true } })
+        var attribute___prefix    = create_Object(null)                                         //  3 underscores
+
+        var module_attributes = create_Object(
+                null,
+                {
+                    '$what'    : { enumerable : true, value : attribute_$what    },
+                    '$who'     : { enumerable : true, value : attribute_$who     },
+                    '__prefix' : { enumerable : true, value : attribute___prefix },
+                }//,
+            )
+
+        if (0 && tracing) {
+            var attribute___name = create_Object(null)                                          //  3 underscores
+
+            define_property(attribute_module, '__name__', { enumerable : true, value : attribute___name})
+        }
+
+
+        var invisible_constant_attribute = create_Object(
+                null,
+                {
+                //  configurable : { value : false },       //  Default value, no need to set
+                    configurable : { value : true  },       //  TEMPORARY!
+                //  enumerable   : { value : false },       //  Default value: invisible (i.e.: not enumerable)
+                //  writable     : { value : false }//,     //  Default value, no need to set
+                }//,
+            )
+
         var visible_constant_attribute = create_Object(
                 null,
                 {
@@ -634,40 +665,47 @@ Gem.Core.execute(
 
 
         if (clarity) {
-            var who_what = function execute$setup_Gem$who_what(module, $who, $what) {
-                visible_constant_attribute.value = $who
-                define_property(module, '$who', visible_constant_attribute)
+            //
+            //  NOTE:
+            //      This sub implementation of 'who_what' only replaces a single '.' since it does not use
+            //      regular expressions with the 'g' flag.
+            //
+            var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
+                attribute_$who    .value = $who
+                attribute_$what   .value = $what
+                attribute___prefix.value = $who.replace('.', '__')
 
-                visible_constant_attribute.value = $what
-                define_property(module, '$what', visible_constant_attribute)
+                define_properties(module, module_attributes)
 
-                delete visible_constant_attribute.value
+                delete attribute_$who    .value
+                delete attribute_$what   .value
+                delete attribute___prefix.value
             }
 
 
             if (trace) {
                 var Tracing = Gem.Tracing
 
-                if ((Configuration.trace === 7) || ('execute$setup_Gem$who_what' in Tracing)) {
+                if ((Configuration.trace === 7) || ('execute$setup_Gem$STUB$who_what' in Tracing)) {
                     var original_who_what = who_what
 
 
                     //
-                    //  Trace execute$setup_Gem$who_what:
+                    //  Trace execute$setup_Gem$STUB$who_what:
                     //      This special version of tracing has to set `module.$who` before calling `function_call`,
                     //      so that `function_call` can properly identify `module`.
                     //
-                    var who_what = function trace$execute$setup_Gem$who_what(module, $who, $what) {
+                    var who_what = function trace$execute$setup_Gem$STUB$who_what(module, $who, $what) {
                         //
                         //  ... Must do this first before calling trace start ...
                         //
                         /*first*/ {
-                            visible_constant_attribute.value = $who
-                            define_property(module, '$who', visible_constant_attribute)
-                            delete visible_constant_attribute.value
+                            attribute_$who.value = $who
+                            define_property(module, '$who', attribute_$who)
+                            delete attribute_$who.value
                         }
 
-                        function_call(who_what, [module, $who, $what])
+                        function_call(original_who_what, arguments)
 
                         original_who_what(module, $who, $what)
 
@@ -835,6 +873,17 @@ Gem.Core.execute(
             }
         )
 //  </stubs>                                                //   End of stubs
+
+
+        //
+        //  invisible_constant_attribute
+        //      A property used to create invisible (i.e.: NOT enumerable) constant attributes
+        //
+        Gem.Core.constant(
+            'invisible_constant_attribute',
+            'A property used to create invisible (i.e.: not enumerable) constant attributes.',
+            invisible_constant_attribute//,
+        )
 
 
         //

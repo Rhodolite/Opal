@@ -27,17 +27,6 @@
 //
 Gem.Core.execute(
     function execute$Gem__add_clarity() {
-        if ( ! ('$' in Gem)) {
-            Gem.$ = {                                           //  Map of introspection of all the Gem modules
-                $who  : 'Gem.$',
-                $what : 'Map of introspection of all the Gem modules.',
-                Beryl : {
-                    $who  : 'Gem.$.Beryl',
-                    $what : 'An introspection of the Beryl module.'//,
-                }//,
-            }
-        }
-
         Gem.Configuration.$who  = 'Gem.Configuration'
         Gem.Configuration.$what = 'Gem Configuration values'
 
@@ -60,7 +49,6 @@ Gem.Core.execute(
 
         Gem._.Trace.$who  = 'Gem._.Trace'
         Gem._.Trace.$what = 'Private members & methods of the Trace module.'
-    }
     }
 )
 
@@ -307,25 +295,6 @@ Gem.Core.codify_bound_method(
             //  Test a string to see if it represents an identifier.
 
             return identifier_pattern.test(s)
-        }
-    },
-    function codifier$trace$Gem__Core__identifier_test(Gem__Core__identifier_test) {
-        var _Trace = Gem._.Trace
-
-        var function_call   = _Trace.function_call
-        var function_result = _Trace.function_result
-
-
-        return function trace$Gem__Core__identifier_test(s) {
-            //  Trace Gem.Core.identifier_test.
-
-            function_call(Gem__Core__identifier_test, arguments)
-
-            var r = Gem__Core__identifier_test(s)
-
-            function_result(r)
-
-            return r
         }
     }//,
 )

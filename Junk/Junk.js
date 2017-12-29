@@ -374,3 +374,33 @@ Gem.Core.execute(
         )
     }
 )
+        if ( ! ('$' in Gem)) {
+            Gem.$ = {                                           //  Map of introspection of all the Gem modules
+                $who  : 'Gem.$',
+                $what : 'Map of introspection of all the Gem modules.',
+                Beryl : {
+                    $who  : 'Gem.$.Beryl',
+                    $what : 'An introspection of the Beryl module.'//,
+                }//,
+            }
+        }
+
+    function codifier$trace$Gem__Core__identifier_test(Gem__Core__identifier_test) {
+        var _Trace = Gem._.Trace
+
+        var function_call   = _Trace.function_call
+        var function_result = _Trace.function_result
+
+
+        return function trace$Gem__Core__identifier_test(s) {
+            //  Trace Gem.Core.identifier_test.
+
+            function_call(Gem__Core__identifier_test, arguments)
+
+            var r = Gem__Core__identifier_test(s)
+
+            function_result(r)
+
+            return r
+        }
+    }//,
