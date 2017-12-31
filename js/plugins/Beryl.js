@@ -649,7 +649,7 @@ if (Gem.Configuration.trace) {
 //      Gem.Core.{clarity_note,codify_method,constant,method,qualify_constant}
 //
 //  Also:
-//      Gem.Core.visible_constant_attribute
+//      Gem.Core.constant_attribute
 //
 Gem.Core.execute(
     function execute$setup_Gem() {
@@ -694,22 +694,22 @@ Gem.Core.execute(
                 }//,
             )
 
+        var constant_attribute = create_Object(
+                null,
+                {
+                //  configurable : { value : false },       //  Default value, no need to set
+                    configurable : { value : true  },       //  TEMPORARY!
+                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+                //  writable     : { value : false }//,     //  Default value, no need to set
+                }//,
+            )
+
         var invisible_constant_attribute = create_Object(
                 null,
                 {
                 //  configurable : { value : false },       //  Default value, no need to set
                     configurable : { value : true  },       //  TEMPORARY!
                 //  enumerable   : { value : false },       //  Default value: invisible (i.e.: not enumerable)
-                //  writable     : { value : false }//,     //  Default value, no need to set
-                }//,
-            )
-
-        var visible_constant_attribute = create_Object(
-                null,
-                {
-                //  configurable : { value : false },       //  Default value, no need to set
-                    configurable : { value : true  },       //  TEMPORARY!
-                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
                 //  writable     : { value : false }//,     //  Default value, no need to set
                 }//,
             )
@@ -816,8 +816,8 @@ Gem.Core.execute(
             //      Super simple version: No clarity or trace mode.
             //
             var _method__simple = function _method__simple(instance, who, method) {
-                visible_constant_attribute.value = method
-                define_property(instance, who, visible_constant_attribute)
+                constant_attribute.value = method
+                define_property(instance, who, constant_attribute)
             }
         } else {
             //
@@ -832,43 +832,43 @@ Gem.Core.execute(
                         //
                         //  Version with clarity & tracing.
                         //
-                        visible_constant_attribute.value = function_name
-                        define_property(method, '$who', visible_constant_attribute)
+                        constant_attribute.value = function_name
+                        define_property(method, '$who', constant_attribute)
 
-                        visible_constant_attribute.value = $what
-                        define_property(method, '$what', visible_constant_attribute)
+                        constant_attribute.value = $what
+                        define_property(method, '$what', constant_attribute)
 
                         var traced_method = wrap_function(method)
 
-                        visible_constant_attribute.value = traced_method
-                        define_property(instance, who, visible_constant_attribute)
+                        constant_attribute.value = traced_method
+                        define_property(instance, who, constant_attribute)
 
-                        visible_constant_attribute.value = method
-                        define_property(traced_method, '$tracing', visible_constant_attribute)
+                        constant_attribute.value = method
+                        define_property(traced_method, '$tracing', constant_attribute)
 
-                        visible_constant_attribute.value = 'TRACED: ' + function_name
-                        define_property(traced_method, '$who', visible_constant_attribute)
+                        constant_attribute.value = 'TRACED: ' + function_name
+                        define_property(traced_method, '$who', constant_attribute)
 
-                        visible_constant_attribute.value = 'TRACED: ' + $what
-                        define_property(traced_method, '$what', visible_constant_attribute)
+                        constant_attribute.value = 'TRACED: ' + $what
+                        define_property(traced_method, '$what', constant_attribute)
 
-                        delete visible_constant_attribute.value
+                        delete constant_attribute.value
                         return
                     }
 
                     //
                     //  Version with clarity (but without tracing).
                     //
-                    visible_constant_attribute.value = function_name
-                    define_property(method, '$who', visible_constant_attribute)
+                    constant_attribute.value = function_name
+                    define_property(method, '$who', constant_attribute)
 
-                    visible_constant_attribute.value = $what
-                    define_property(method, '$what', visible_constant_attribute)
+                    constant_attribute.value = $what
+                    define_property(method, '$what', constant_attribute)
 
-                    visible_constant_attribute.value = method
-                    define_property(instance, who, visible_constant_attribute)
+                    constant_attribute.value = method
+                    define_property(instance, who, constant_attribute)
 
-                    delete visible_constant_attribute.value
+                    delete constant_attribute.value
                     return
                 }
 
@@ -878,13 +878,28 @@ Gem.Core.execute(
                 //
                 //      Do *NOT* need `$what` (on `method`)
                 //
-                visible_constant_attribute.value = function_name
-                define_property(method, '$who', visible_constant_attribute)
+                /*=*/ {
+                    //
+                    //  NOTE:
+                    //      This assignment is needed first, as `wrap_function` below needs `method[$who]` defined.
+                    //
+
+                    //  constant method.$who = function_name
+                    constant_attribute.value = function_name
+                    define_property(method, '$who', constant_attribute)
+                //  delete constant_attribute.value         //  Done below
+                }
 
                 var traced_method = wrap_function(method)
+                
+                /*=*/ {
+                    //  constant instance.*who = traced_method
 
-                visible_constant_attribute.value = traced_method
-                define_property(instance, who, visible_constant_attribute)
+                    constant_attribute.value = traced_method
+                    define_property(instance, who, constant_attribute)
+                //  delete constant_attribute.value         //  Done below
+                }
+
 
                 //
                 //  trace mode without clarity mode:
@@ -892,10 +907,15 @@ Gem.Core.execute(
                 //
                 //      Do *NOT* need `$who` & `$what` (on `traced_method`)
                 //
-                visible_constant_attribute.value = method
-                define_property(traced_method, '$tracing', visible_constant_attribute)
+                /*=*/ {
+                    //  constant traced_method.$tracing = method
 
-                delete visible_constant_attribute.value
+                    constant_attribute.value = method
+                    define_property(traced_method, '$tracing', constant_attribute)
+                //  delete constant_attribute.value         //  Done below
+                }
+
+                delete constant_attribute.value
             }
         }
 
@@ -933,9 +953,9 @@ Gem.Core.execute(
             'Temporary stub for Gem.Core.clarity_note',
             function STUB$Gem__Core__clarity_note(who, $what) {
                 if (clarity) {
-                    visible_constant_attribute.value = $what
-                    define_property(this, who + '$NOTE', visible_constant_attribute)
-                    delete visible_constant_attribute.value
+                    constant_attribute.value = $what
+                    define_property(this, who + '$NOTE', constant_attribute)
+                    delete constant_attribute.value
                 }
             }
         )
@@ -969,15 +989,15 @@ Gem.Core.execute(
             'constant',
             'Temporary stub for Gem.Core.constant',
             function STUB$Gem__Core__constant(who, $what, constant) {
-                visible_constant_attribute.value = constant
-                define_property(this, who, visible_constant_attribute)
+                constant_attribute.value = constant
+                define_property(this, who, constant_attribute)
 
                 if (clarity) {
-                    visible_constant_attribute.value = $what
-                    define_property(this, who + '$', visible_constant_attribute)
+                    constant_attribute.value = $what
+                    define_property(this, who + '$', constant_attribute)
                 }
 
-                delete visible_constant_attribute.value
+                delete constant_attribute.value
             }
         )
 
@@ -986,18 +1006,29 @@ Gem.Core.execute(
             'qualify_constant',
             'Temporary stub for Gem.Core.qualify_constant',
             function STUB$Gem__Core__qualify_constant(who, $what, qualifier) {
-                visible_constant_attribute.value = (trace ? wrap_function(qualifier) : qualifier)()
-                define_property(this, who, visible_constant_attribute)
+                constant_attribute.value = (trace ? wrap_function(qualifier) : qualifier)()
+                define_property(this, who, constant_attribute)
 
                 if (clarity) {
-                    visible_constant_attribute.value = $what
-                    define_property(this, who + '$', visible_constant_attribute)
+                    constant_attribute.value = $what
+                    define_property(this, who + '$', constant_attribute)
                 }
 
-                delete visible_constant_attribute.value
+                delete constant_attribute.value
             }
         )
 //  </stubs>                                                //   End of stubs
+
+
+        //
+        //  constant_attribute
+        //      A property used to create visible (i.e.: enumerable) constant attributes
+        //
+        Gem.Core.constant(
+            'constant_attribute',
+            'A property used to create visible (i.e.: enumerable) constant attributes.',
+            constant_attribute//,
+        )
 
 
         //
@@ -1008,17 +1039,6 @@ Gem.Core.execute(
             'invisible_constant_attribute',
             'A property used to create invisible (i.e.: not enumerable) constant attributes.',
             invisible_constant_attribute//,
-        )
-
-
-        //
-        //  visible_constant_attribute
-        //      A property used to create visible (i.e.: enumerable) constant attributes
-        //
-        Gem.Core.constant(
-            'visible_constant_attribute',
-            'A property used to create visible (i.e.: enumerable) constant attributes.',
-            visible_constant_attribute//,
         )
     }
 )

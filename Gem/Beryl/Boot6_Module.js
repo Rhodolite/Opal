@@ -26,9 +26,9 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var simple                     = ( ! Gem.Configuration.clarity)
-        var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Core.visible_constant_attribute
+        var constant_attribute = Gem.Core.constant_attribute
+        var define_property    = Object.defineProperty
+        var simple             = ( ! Gem.Configuration.clarity)
 
 
         //
@@ -40,9 +40,9 @@ Gem.Core.codify_method(
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
 
-                visible_constant_attribute.value = constant
-                define_property(this, who, visible_constant_attribute)
-                delete visible_constant_attribute.value
+                constant_attribute.value = constant
+                define_property(this, who, constant_attribute)
+                delete constant_attribute.value
             }
         }
 
@@ -88,15 +88,15 @@ Gem.Core.codify_method(
                 }
             }
 
-            visible_constant_attribute.value = constant
-            define_property(this, who, visible_constant_attribute)
+            constant_attribute.value = constant
+            define_property(this, who, constant_attribute)
 
             /*clarity*/ {
-                visible_constant_attribute.value = $what
-                define_property(this, who + '$', visible_constant_attribute)
+                constant_attribute.value = $what
+                define_property(this, who + '$', constant_attribute)
             }
 
-            delete visible_constant_attribute.value
+            delete constant_attribute.value
         }
     }//,
 )

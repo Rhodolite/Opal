@@ -221,46 +221,45 @@ Gem.Core.codify_method(
     'codify_bound_method',
     'Stub for Gem.Core.codify_bound_method',
     function codifier$Gem__Core__codify_bound_method() {
-        var clarity                    = Gem.Configuration.clarity
-        var define_property            = Object.defineProperty
-        var visible_constant_attribute = Gem.Core.visible_constant_attribute
+        var clarity            = Gem.Configuration.clarity
+        var constant_attribute = Gem.Core.constant_attribute
+        var define_property    = Object.defineProperty
 
 
         return function Gem__Core__codify_bound_method(who, $what, $which, codifier, codifier_trace) {
             var bound_method = codifier()
 
             if (clarity) {
-                var full_name = (
-                        visible_constant_attribute.value = this.$who + '.' + who
-                    )
+                var full_name                    = 
+                        constant_attribute.value = this.$who + '.' + who
 
-                define_property(bound_method, '$who', visible_constant_attribute)
+                define_property(bound_method, '$who', constant_attribute)
 
-                visible_constant_attribute.value = $what
-                define_property(bound_method, '$what', visible_constant_attribute)
+                constant_attribute.value = $what
+                define_property(bound_method, '$what', constant_attribute)
 
-                visible_constant_attribute.value = $which
-                define_property(bound_method, '$which', visible_constant_attribute)
+                constant_attribute.value = $which
+                define_property(bound_method, '$which', constant_attribute)
             }
 
             if (codifier_trace) {
                 bound_method = codifier_trace(bound_method)
 
                 if (clarity) {
-                    visible_constant_attribute.value = full_name
-                    define_property(bound_method, '$who', visible_constant_attribute)
+                    constant_attribute.value = full_name
+                    define_property(bound_method, '$who', constant_attribute)
 
-                    visible_constant_attribute.value = 'Trace: ' + full_name
-                    define_property(bound_method, '$what', visible_constant_attribute)
+                    constant_attribute.value = 'Trace: ' + full_name
+                    define_property(bound_method, '$what', constant_attribute)
 
-                    visible_constant_attribute.value = 'Trace: ' + $which
-                    define_property(bound_method, '$which', visible_constant_attribute)
+                    constant_attribute.value = 'Trace: ' + $which
+                    define_property(bound_method, '$which', constant_attribute)
                 }
             }
 
-            visible_constant_attribute.value = bound_method
-            define_property(this, who, visible_constant_attribute)
-            delete visible_constant_attribute.value
+            constant_attribute.value = bound_method
+            define_property(this, who, constant_attribute)
+            delete constant_attribute.value
         }
     }//,
 )
