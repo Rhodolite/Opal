@@ -696,14 +696,6 @@ Gem.Core.execute(
             var attribute_$what    = create_Object(null, { enumerable : { value : true } })
             var attribute___prefix = create_Object(null)                                    //  3 underscores
 
-            var method_attributes = create_Object(
-                    null,
-                    {
-                        '$what' : { enumerable : true, value : attribute_$what    },
-                        '$who'  : { enumerable : true, value : attribute_$who     },
-                    }//,
-                )
-
             var module_attributes = create_Object(
                     null,
                     {
@@ -712,6 +704,31 @@ Gem.Core.execute(
                         '_prefix' : { enumerable : true, value : attribute___prefix },
                     }//,
                 )
+
+            var who_what_attributes = create_Object(
+                    null,
+                    {
+                        '$what' : { enumerable : true, value : attribute_$what    },
+                        '$who'  : { enumerable : true, value : attribute_$who     },
+                    }//,
+                )
+
+
+            var save_who_what = function save_who_what(instance, $who, $what) {
+                /*=*/ {
+                    //
+                    //  constant module.$who  = $who
+                    //  constant module.$what = $what
+                    //
+                    attribute_$who .value = $who
+                    attribute_$what.value = $what
+
+                    define_properties(instance, who_what_attributes)
+
+                    delete attribute_$who .value
+                    delete attribute_$what.value
+                }
+            }
         }
 
         var interim_constant_attribute = create_Object(
@@ -762,46 +779,58 @@ Gem.Core.execute(
 
 
         if (clarity || trace) {
-            if (clarity) {
-                //
-                //  NOTE:
-                //      This stub implementation of `who_what` only replaces a single "." since it does not use
-                //      regular expressions with the "g" flag.
-                //
-                var who_what = function Gem__private__who_what(module, $who, $what) {
-                    if ($who.startsWith('Gem._.')) {
-                        var _prefix = $who.replace('Gem._.', 'Gem__private__')
-                    } else {
-                        var _prefix = $who.replace('.', '__')
+            //
+            //  NOTE:
+            //      This stub implementation of `who_what` only replaces a single "." since it does not use
+            //      regular expressions with the "g" flag.
+            //
+            var who_what = function Gem__private__who_what(module, $who, $what, create_prefix) {
+                if (clarity) {
+                    if (create_prefix) {
+                        if ($who.startsWith('Gem._.')) {
+                            var _prefix = $who.replace('Gem._.', 'Gem__private__')
+                        } else {
+                            var _prefix = $who.replace('.', '__')
+                        }
+
+
+                        /*=*/ {
+                            //
+                            //  constant           module.$who    = $who
+                            //  constant           module.$what   = $what
+                            //  invisible constant module._prefix = $who.replace('.', '__')
+                            //
+                            attribute_$who    .value = $who
+                            attribute_$what   .value = $what
+                            attribute___prefix.value = _prefix
+
+                            define_properties(module, module_attributes)
+
+                            delete attribute_$who    .value
+                            delete attribute_$what   .value
+                            delete attribute___prefix.value
+                        }
+
+                        return
                     }
 
-
-                    /*=*/ {
-                        //
-                        //  constant           module.$who    = $who
-                        //  constant           module.$what   = $what
-                        //  invisible constant module._prefix = $who.replace('.', '__')
-                        //
-                        attribute_$who.value     = $who
-                        attribute_$what   .value = $what
-                        attribute___prefix.value = _prefix
-
-                        define_properties(module, module_attributes)
-
-                        delete attribute_$who    .value
-                        delete attribute_$what   .value
-                        delete attribute___prefix.value
+                    /*=*/
+                    {
+                        //  constant module.$who  = $who
+                        //  constant module.$what = $what
+                        save_who_what(module, $who, $what)
                     }
-                }
-            } else {
-                var who_what = function Gem__private__Core__who_what(module, $who, $what) {
-                    //
-                    //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                    // 
 
-                    //  constant module.$who = $who
-                    _save_constant(module, '$who', $who)
+                    return
                 }
+
+
+                //
+                //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
+                // 
+
+                //  constant module.$who = $who
+                _save_constant(module, '$who', $who)
             }
 
 
@@ -832,11 +861,11 @@ Gem.Core.execute(
             }
 
 
-            who_what(Gem,            'Gem',            'The only global variable used by Gem.')
-            who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.')
-            who_what(Gem.Script,     'Gem.Script',     '`<script>` handling.')
-            who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods.')
-            who_what(Gem._.Core,     'Gem._.Core',     'Private members & methods of the Core Gem module.')
+            who_what(Gem,            'Gem',            'The only global variable used by Gem.',             false)
+            who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.',       true)
+            who_what(Gem.Script,     'Gem.Script',     '`<script>` handling.',                              true)
+            who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods.',                    true)
+            who_what(Gem._.Core,     'Gem._.Core',     'Private members & methods of the Core Gem module.', true)
         }
 
 
@@ -928,7 +957,7 @@ Gem.Core.execute(
                         attribute_$who .value = who
                         attribute_$what.value = $what
 
-                        define_properties(method, method_attributes)
+                        define_properties(method, who_what_attributes)
 
                         delete attribute_$who .value
                         delete attribute_$what.value

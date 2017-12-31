@@ -27,25 +27,30 @@
 //
 Gem.Core.execute(
     function execute$Gem__add_clarity() {
-        Gem.Configuration.$who  = 'Gem.Configuration'
-        Gem.Configuration.$what = 'Gem Configuration values'
+        //
+        //  Imports
+        //
+        var who_what = Gem._.Core.who_what
 
-        Gem.Script.script_map.$who  = 'Gem.Script.script_map'
-        Gem.Script.script_map.$what = 'Map of all the scripts loaded (or loading).'
 
-        Gem.Source.$who  = 'Gem.Source'
-        Gem.Source.$what = 'A map, for each `<script>` tag, a function from the source file to "hold onto"'
-                         + ' to avoid garbage collection of all functions from that source file,'
-                         + ' which causes the source file to disappear from the "Sources" tab of Developer Tools'
+        //
+        //  Implementation
+        //
+        who_what(Gem.Configuration,     'Gem.Configuration',     'Gem Configuration values.',                   false)
+        who_what(Gem.Script.script_map, 'Gem.Script.script_map', 'Map of all the scripts loaded (or loading).', false)
 
-        Gem.Tracing.$who  = 'Gem.Trace'
-        Gem.Tracing.$what = 'Map of functions, methods & bound_methods being traced.'
+        who_what(
+            Gem.Source,
+            'Gem.Source',
+            (
+                  'A map, for each `<script>` tag, a function from the source file to "hold onto"'
+                + ' to avoid garbage collection of all functions from that source file'
+                + ', which causes the source file to disappear from the "Sources" tab of Developer Tools.'
+            ),
+            false//,
+        )
 
-        Gem._.$who  = 'Gem._'
-        Gem._.$what = 'Private members & methods of all Gem modules.'
-
-        Gem._.Trace.$who  = 'Gem._.Trace'
-        Gem._.Trace.$what = 'Private members & methods of the Trace module.'
+        who_what(Gem._, 'Gem._', 'Private members & methods of all Gem modules.', false)
     }
 )
 
