@@ -404,3 +404,10 @@ Gem.Core.execute(
             return r
         }
     }//,
+        if (0 && tracing) {
+            var attribute___name = create_Object(null)                                          //  3 underscores
+
+            define_property(attribute_module, '__name__', { enumerable : true, value : attribute___name})
+        }
+
+

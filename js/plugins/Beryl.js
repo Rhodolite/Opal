@@ -15,7 +15,7 @@ window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         box_name      : true,                               //      Name 'box' instances 'Box' in Developer Tools.
         capture_error : true,                               //      Try to capture errors
-        clarity       : true,                               //      Set Gem clarity mode to true.
+        clarity       : 0,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
         trace         : 1,                                  //      Trace function, method & bound method calls.
@@ -101,7 +101,7 @@ Gem.Core.execute(
     function execute$setup_Tracing() {
         //
         //  Imports
-        // 
+        //
         var Configuration = Gem.Configuration
         var Tracing       = Gem.Tracing
 
@@ -160,7 +160,7 @@ Gem.Core.execute(
         //
         //  Clarity
         //
-        if (clarity) {
+        if (clarity || trace) {
             Gem.Core.execute.$who = 'Gem.Core.execute'
         }
 
@@ -515,18 +515,27 @@ Gem.Core.execute(
             }
 
 
-            var wrap_function = function Gem__Trace__wrap_function(f) {
-                var name = f.name
+            var wrap_function = function Gem__Trace__wrap_function(f, /*optional*/ name) {
+                if (arguments.length === 1) {
+                    if ('$who' in f) {
+                        var function_name = f.$who
+                    } else {
+                        var function_name = f.name
+                    }
+                } else {
+                    var function_name = name
+                }
+                    
 
-                if ( ! (name in Tracing)) {
-                    Tracing[name] = 0
+                if ( ! (function_name in Tracing)) {
+                    Tracing[function_name] = 0
                 }
 
 
                 return function STUB$trace_wrapper(/*...*/) {
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    if (trace === 7 || (trace && Tracing[name])) {
+                    if (trace === 7 || (trace && Tracing[function_name])) {
                         function_call(f, arguments)
 
                         var r = f.apply(this, arguments)
@@ -685,13 +694,6 @@ Gem.Core.execute(
                 }//,
             )
 
-        if (0 && tracing) {
-            var attribute___name = create_Object(null)                                          //  3 underscores
-
-            define_property(attribute_module, '__name__', { enumerable : true, value : attribute___name})
-        }
-
-
         var invisible_constant_attribute = create_Object(
                 null,
                 {
@@ -713,22 +715,33 @@ Gem.Core.execute(
             )
 
 
-        if (clarity) {
+        if (clarity || trace) {
             //
             //  NOTE:
             //      This sub implementation of 'who_what' only replaces a single '.' since it does not use
             //      regular expressions with the 'g' flag.
             //
             var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
-                attribute_$who    .value = $who
-                attribute_$what   .value = $what
-                attribute___prefix.value = $who.replace('.', '__')
+                attribute_$who.value = $who
 
-                define_properties(module, module_attributes)
+                if (clarity) {
+                    attribute_$what   .value = $what
+                    attribute___prefix.value = $who.replace('.', '__')
 
-                delete attribute_$who    .value
-                delete attribute_$what   .value
-                delete attribute___prefix.value
+                    define_properties(module, module_attributes)
+
+                    delete attribute_$who    .value
+                    delete attribute_$what   .value
+                    delete attribute___prefix.value
+
+                    return
+                }
+
+                //
+                //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
+                // 
+                define_property(module, '$who', attribute_$who)
+                delete attribute_$who.value
             }
 
 
@@ -794,33 +807,112 @@ Gem.Core.execute(
         //      to follow so much contorted code ...
         //
         //      (Was not an easy choice to create the stubs, hopefully was the right one).
-        //
-        var method = function STUB$Gem__Core__method(who, $what, method) {
-            var traced_method = (trace ? wrap_function(method) : method)
 
-            visible_constant_attribute.value = traced_method
-            define_property(this, who, visible_constant_attribute)
+        if ( ! clarity && ! trace) {
+            //
+            //  _method__simple
+            //      Common code to define a method.
+            //
+            //      Super simple version: No clarity or trace mode.
+            //
+            var _method__simple = function _method__simple(instance, who, method) {
+                visible_constant_attribute.value = method
+                define_property(instance, who, visible_constant_attribute)
+            }
+        } else {
+            //
+            //  _method__complex
+            //      Common code to define a method.
+            //
+            //      More complicated version: clarity and/or trace mode
+            //
+            var _method__complex = function __method__complex(instance, who, $what, method, function_name) {
+                if (clarity) {
+                    if (trace) {
+                        //
+                        //  Version with clarity & tracing.
+                        //
+                        visible_constant_attribute.value = function_name
+                        define_property(method, '$who', visible_constant_attribute)
 
-            if (clarity) {
-                visible_constant_attribute.value = this.$who + '.' + who
+                        visible_constant_attribute.value = $what
+                        define_property(method, '$what', visible_constant_attribute)
+
+                        var traced_method = wrap_function(method)
+
+                        visible_constant_attribute.value = traced_method
+                        define_property(instance, who, visible_constant_attribute)
+
+                        visible_constant_attribute.value = method
+                        define_property(traced_method, '$tracing', visible_constant_attribute)
+
+                        visible_constant_attribute.value = 'TRACED: ' + function_name
+                        define_property(traced_method, '$who', visible_constant_attribute)
+
+                        visible_constant_attribute.value = 'TRACED: ' + $what
+                        define_property(traced_method, '$what', visible_constant_attribute)
+
+                        delete visible_constant_attribute.value
+                        return
+                    }
+
+                    //
+                    //  Version with clarity (but without tracing).
+                    //
+                    visible_constant_attribute.value = function_name
+                    define_property(method, '$who', visible_constant_attribute)
+
+                    visible_constant_attribute.value = $what
+                    define_property(method, '$what', visible_constant_attribute)
+
+                    visible_constant_attribute.value = method
+                    define_property(instance, who, visible_constant_attribute)
+
+                    delete visible_constant_attribute.value
+                    return
+                }
+
+                //
+                //  trace mode without clarity mode:
+                //      Only need `$who` (on `method`)
+                //
+                //      Do *NOT* need `$what` (on `method`)
+                //
+                visible_constant_attribute.value = function_name
                 define_property(method, '$who', visible_constant_attribute)
 
-                visible_constant_attribute.value = $what
-                define_property(method, '$what', visible_constant_attribute)
+                var traced_method = wrap_function(method)
 
-                if (trace) {
-                    visible_constant_attribute.value = method
-                    define_property(traced_method, '$tracing', visible_constant_attribute)
+                visible_constant_attribute.value = traced_method
+                define_property(instance, who, visible_constant_attribute)
 
-                    visible_constant_attribute.value = 'TRACED: ' + this.$who + '.' + who
-                    define_property(traced_method, '$who', visible_constant_attribute)
+                //
+                //  trace mode without clarity mode:
+                //      Only need `$tracing` (on `traced_method`)
+                //
+                //      Do *NOT* need `$who` & `$what` (on `traced_method`)
+                //
+                visible_constant_attribute.value = method
+                define_property(traced_method, '$tracing', visible_constant_attribute)
 
-                    visible_constant_attribute.value = 'TRACED: ' + $what
-                    define_property(traced_method, '$what', visible_constant_attribute)
-                }
+                delete visible_constant_attribute.value
+            }
+        }
+
+
+        var method = function STUB$Gem__Core__method(who, $what, method) {
+            if ( ! clarity && ! trace) {
+                _method__simple(this, who, method)
+                return
             }
 
-            delete visible_constant_attribute.value
+            if ( ! ('$who' in this)) {
+                throw new Error('missing $who in object')
+            }
+
+            var function_name = this.$who + '.' + who
+
+            _method__complex(this, who, $what, method, function_name)
         }
 
 
@@ -853,34 +945,22 @@ Gem.Core.execute(
             'codify_method',
             'Temporary stub for Gem.Core.codify_method',
             function STUB$Gem__Core__codify_method(who, $what, codifier) {
+                if ( ! clarity && ! trace) {
+                    _method__simple(this, who, codifier())
+                    return
+                }
+
+                if ( ! ('$who' in this)) {
+                    throw new Error('missing $who in object')
+                }
+
+                var function_name = this.$who + '.' + who
+
                 if (trace) {
-                    var method        = wrap_function(codifier)()
-                    var traced_method = wrap_function(method)
-                } else {
-                    var method        = codifier()
-                    var traced_method = method
+                    codifier = wrap_function(codifier, function_name)
                 }
 
-                visible_constant_attribute.value = traced_method
-                define_property(this, who, visible_constant_attribute)
-
-                if (clarity) {
-                    visible_constant_attribute.value = this.$who + '.' + who
-                    define_property(method, '$who', visible_constant_attribute)
-
-                    visible_constant_attribute.value = $what
-                    define_property(method, '$what', visible_constant_attribute)
-
-                    if (trace) {
-                        visible_constant_attribute.value = 'TRACED: ' + this.$who + '.' + who
-                        define_property(traced_method, '$who', visible_constant_attribute)
-
-                        visible_constant_attribute.value = 'TRACED: ' + $what
-                        define_property(traced_method, '$what', visible_constant_attribute)
-                    }
-                }
-
-                delete visible_constant_attribute.value
+                _method__complex(this, who, $what, codifier(), function_name)
             }
         )
 
