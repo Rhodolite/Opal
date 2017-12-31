@@ -690,17 +690,16 @@ Gem.Core.execute(
         //      Enumerable properties are shown better in Developer Tools (at the top of the list,
         //      and not grayed out).
         //
-        var attribute_$who = create_Object(null, { enumerable : { value : true } })
-
         if (clarity) {
+            var attribute_$who     = create_Object(null, { enumerable : { value : true } })
             var attribute_$what    = create_Object(null, { enumerable : { value : true } })
             var attribute___prefix = create_Object(null)                                    //  3 underscores
 
             var module_attributes = create_Object(
                     null,
                     {
-                        '$what'   : { enumerable : true, value : attribute_$what    },
                         '$who'    : { enumerable : true, value : attribute_$who     },
+                        '$what'   : { enumerable : true, value : attribute_$what    },
                         '_prefix' : { enumerable : true, value : attribute___prefix },
                     }//,
                 )
@@ -708,8 +707,8 @@ Gem.Core.execute(
             var who_what_attributes = create_Object(
                     null,
                     {
-                        '$what' : { enumerable : true, value : attribute_$what    },
-                        '$who'  : { enumerable : true, value : attribute_$who     },
+                        '$who'  : { enumerable : true, value : attribute_$who  },
+                        '$what' : { enumerable : true, value : attribute_$what },
                     }//,
                 )
 
@@ -1130,13 +1129,39 @@ Gem.Core.execute(
 //  </stubs>                                                //   End of stubs
 
 
+        if (clarity) {
+            //
+            //  attribute_$what
+            //      A property used to create a visible (i.e.: enumerable) constant `.$what` attribute.
+            //
+            Gem.Core.constant.call(
+                Gem._.Core,
+                'attribute_$what',
+                'A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.',
+                attribute_$what//,
+            )
+
+
+            //
+            //  attribute_$who
+            //      A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.
+            //
+            Gem.Core.constant.call(
+                Gem._.Core,
+                'attribute_$who',
+                'A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.',
+                attribute_$who//,
+            )
+        }
+
+
         //
         //  constant_attribute
-        //      A property used to create visible (i.e.: enumerable) constant attributes
+        //      A property used to create a visible (i.e.: enumerable) constant attributes
         //
         Gem.Core.constant(
             'constant_attribute',
-            'A property used to create visible (i.e.: enumerable) constant attributes.',
+            'A property used to create  visible (i.e.: enumerable) constant attributes.',
             constant_attribute//,
         )
 

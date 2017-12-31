@@ -223,25 +223,75 @@ Gem.Core.codify_method(
     'codify_bound_method',
     'Stub for Gem.Core.codify_bound_method',
     function codifier$Gem__Core__codify_bound_method() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
         var clarity            = Gem.Configuration.clarity
         var constant_attribute = Gem.Core.constant_attribute
+        var create_Object      = Object.create
+        var define_properties  = Object.defineProperties
         var define_property    = Object.defineProperty
+       
+
+        if (clarity) {
+            var _Core = Gem._.Core
+
+            var attribute_$what = _Core.attribute_$what
+            var attribute_$who  = _Core.attribute_$who
+        }
 
 
+        //
+        //  Closures
+        //
+        if (clarity) {
+            var attribute_$which = create_Object(null, { enumerable : { value : true } })
+
+            var who_what_which_attributes = create_Object(
+                    null,
+                    {
+                        '$who'   : { enumerable : true, value : attribute_$who  },
+                        '$what'  : { enumerable : true, value : attribute_$what },
+                        '$which' : { enumerable : true, value : attribute_$what },
+                    }//,
+                )
+        }
+
+
+        //
+        //  Implementation
+        //
         return function Gem__Core__codify_bound_method(who, $what, $which, codifier, codifier_trace) {
             var bound_method = codifier()
 
             if (clarity) {
-                var full_name                    = 
-                        constant_attribute.value = this.$who + '.' + who
+                if ( ! ('$who' in this)) {
+                    throw new Error('missing $who in object')
+                }
 
-                define_property(bound_method, '$who', constant_attribute)
+                var full_name = this.$who + '.' + who
+            }
 
-                constant_attribute.value = $what
-                define_property(bound_method, '$what', constant_attribute)
 
-                constant_attribute.value = $which
-                define_property(bound_method, '$which', constant_attribute)
+            if (clarity) {
+                /*=*/ {
+                    //
+                    //  constant bound_method.$who   = full_name
+                    //  constant bound_method.$what  = $what
+                    //  constant bound_method.$which = $which
+                    //
+                    attribute_$who  .value = full_name
+                    attribute_$what .value = $what
+                    attribute_$which.value = $which
+
+                    define_properties(bound_method, who_what_which_attributes)
+
+                    delete attribute_$who  .value
+                    delete attribute_$what .value
+                    delete attribute_$which.value
+                }
             }
 
             if (codifier_trace) {
