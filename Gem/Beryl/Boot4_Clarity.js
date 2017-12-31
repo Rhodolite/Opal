@@ -44,9 +44,6 @@ Gem.Core.execute(
         Gem._.$who  = 'Gem._'
         Gem._.$what = 'Private members & methods of all Gem modules.'
 
-        Gem._.Core.$who  = 'Gem._.Core'
-        Gem._.Core.$what = 'Private members & methods of the Core Gem module.'
-
         Gem._.Trace.$who  = 'Gem._.Trace'
         Gem._.Trace.$what = 'Private members & methods of the Trace module.'
     }

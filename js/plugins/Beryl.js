@@ -22,11 +22,12 @@ window.Gem = {
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
-        Gem__Core__execute                      : 0,        //      Means 'Gem.Core.execute'
-        execute$setup_Tracing                   : 0,
+        Gem__Core__execute           : 0,                   //      Means 'Gem.Core.execute'
+        Gem__private__Core__who_what : 0,                   //      Means 'Gem._.Core.who_what'
+
         execute$codify$trace$Gem__Core__execute : 0,
         execute$setup_Gem                       : 0,
-        execute$setup_Gem$STUB$who_what         : 0//,
+        execute$setup_Tracing                   : 0//,
     },
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -144,10 +145,17 @@ Gem.Core.execute(
         var double_underscore__pattern = new Pattern('__', 'g')
 
 
+
         for (var i = keys.length - 1; i >= 0; i --) {
             var k = keys[i]
 
-            if ((k.indexOf('__') !== -1) && (k.indexOf('$') === -1)) {
+            if (k.startsWith('Gem__private__')) {
+                var dotted = k.replace('Gem__private__', 'Gem._.').replace('__', '.')
+
+                Tracing[dotted] = Tracing[k]
+
+                delete Tracing[k]
+            } else if ((k.indexOf('__') !== -1) && (k.indexOf('$') === -1)) {
                 var dotted = k.replace(double_underscore__pattern, '.')
 
                 Tracing[dotted] = Tracing[k]
@@ -760,7 +768,14 @@ Gem.Core.execute(
                 //      This stub implementation of `who_what` only replaces a single "." since it does not use
                 //      regular expressions with the "g" flag.
                 //
-                var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
+                var who_what = function Gem__private__who_what(module, $who, $what) {
+                    if ($who.startsWith('Gem._.')) {
+                        var _prefix = $who.replace('Gem._.', 'Gem__private__')
+                    } else {
+                        var _prefix = $who.replace('.', '__')
+                    }
+
+
                     /*=*/ {
                         //
                         //  constant           module.$who    = $who
@@ -769,7 +784,7 @@ Gem.Core.execute(
                         //
                         attribute_$who.value     = $who
                         attribute_$what   .value = $what
-                        attribute___prefix.value = $who.replace('.', '__')
+                        attribute___prefix.value = _prefix
 
                         define_properties(module, module_attributes)
 
@@ -779,22 +794,18 @@ Gem.Core.execute(
                     }
                 }
             } else {
-                var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
+                var who_what = function Gem__private__Core__who_what(module, $who, $what) {
                     //
                     //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
                     // 
 
-                    /*=*/ {
-                        //  constant module.$who = $who
-                        attribute_$who.value = $who
-                        define_property(module, '$who', attribute_$who)
-                        delete attribute_$who.value
-                    }
+                    //  constant module.$who = $who
+                    _save_constant(module, '$who', $who)
                 }
             }
 
 
-            if (trace && tracing('execute$setup_Gem$STUB$who_what')) {
+            if (trace && tracing('Gem._.who_what')) {
                 var original_who_what = who_what
 
 
@@ -803,15 +814,13 @@ Gem.Core.execute(
                 //      This special version of tracing has to set `module.$who` before calling `function_call`,
                 //      so that `function_call` can properly identify `module`.
                 //
-                var who_what = function trace$execute$setup_Gem$STUB$who_what(module, $who, $what) {
+                var who_what = function trace$Gem__private__Core__who_what(module, $who, $what) {
                     //
                     //  ... Must do this first before calling `function_call` ...
                     //
-                    /*=*/ {
+                    /*first*/ {
                         //  constant module.$who = $who
-                        attribute_$who.value = $who
-                        define_property(module, '$who', attribute_$who)
-                        delete attribute_$who.value
+                        _save_constant(module, '$who', $who)
                     }
 
                     function_call(original_who_what, arguments)
@@ -826,7 +835,8 @@ Gem.Core.execute(
             who_what(Gem,            'Gem',            'The only global variable used by Gem.')
             who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.')
             who_what(Gem.Script,     'Gem.Script',     '`<script>` handling.')
-            who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods')
+            who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods.')
+            who_what(Gem._.Core,     'Gem._.Core',     'Private members & methods of the Core Gem module.')
         }
 
 
@@ -1074,6 +1084,20 @@ Gem.Core.execute(
                 delete constant_attribute.value
             }
         )
+
+
+        if (clarity || trace) {
+            Gem.Core.method.call(
+                    Gem._.Core,
+                    'who_what',
+                    (
+                        clarity
+                            ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
+                            : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
+                    ),
+                    who_what//,
+                )
+        }
 //  </stubs>                                                //   End of stubs
 
 
