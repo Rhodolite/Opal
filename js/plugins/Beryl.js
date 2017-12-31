@@ -15,10 +15,10 @@ window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         box_name      : true,                               //      Name 'box' instances 'Box' in Developer Tools.
         capture_error : true,                               //      Try to capture errors
-        clarity       : 0,                                  //      Set Gem clarity mode to true.
+        clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 1,                                  //      Trace function, method & bound method calls.
+        trace         : 0,                                  //      Trace function, method & bound method calls.
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
@@ -676,21 +676,42 @@ Gem.Core.execute(
 
         //
         //  Closures
+        //      Read 'invisible' to mean 'not enumerable'.
         //      Read 'visible' to mean 'enumerable'.
         //
         //      Enumerable properties are shown better in Developer Tools (at the top of the list,
         //      and not grayed out).
         //
-        var attribute_$who        = create_Object(null, { enumerable : { value : true } })
-        var attribute_$what       = create_Object(null, { enumerable : { value : true } })
-        var attribute___prefix    = create_Object(null)                                         //  3 underscores
+        var attribute_$who = create_Object(null, { enumerable : { value : true } })
 
-        var module_attributes = create_Object(
+        if (clarity) {
+            var attribute_$what    = create_Object(null, { enumerable : { value : true } })
+            var attribute___prefix = create_Object(null)                                    //  3 underscores
+
+            var method_attributes = create_Object(
+                    null,
+                    {
+                        '$what' : { enumerable : true, value : attribute_$what    },
+                        '$who'  : { enumerable : true, value : attribute_$who     },
+                    }//,
+                )
+
+            var module_attributes = create_Object(
+                    null,
+                    {
+                        '$what'   : { enumerable : true, value : attribute_$what    },
+                        '$who'    : { enumerable : true, value : attribute_$who     },
+                        '_prefix' : { enumerable : true, value : attribute___prefix },
+                    }//,
+                )
+        }
+
+        var interim_constant_attribute = create_Object(
                 null,
                 {
-                    '$what'    : { enumerable : true, value : attribute_$what    },
-                    '$who'     : { enumerable : true, value : attribute_$who     },
-                    '__prefix' : { enumerable : true, value : attribute___prefix },
+                    configurable : { value : true  },       //  Can be reconfigured (the constant can be changed!).
+                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+                //  writable     : { value : false }//,     //  Default value, no need to set
                 }//,
             )
 
@@ -698,7 +719,7 @@ Gem.Core.execute(
                 null,
                 {
                 //  configurable : { value : false },       //  Default value, no need to set
-                    configurable : { value : true  },       //  TEMPORARY!
+                //  configurable : { value : false },       //  FIXING THIS: TEMPORARY!
                     enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
                 //  writable     : { value : false }//,     //  Default value, no need to set
                 }//,
@@ -715,33 +736,61 @@ Gem.Core.execute(
             )
 
 
+
+        function _save_interim_constant(instance, name, value) {
+            //  interim constant instance.*name = value
+            interim_constant_attribute.value = value
+            define_property(instance, name, interim_constant_attribute)
+            delete interim_constant_attribute.value
+        }
+
+
+        function _save_constant(instance, name, value) {
+            //  constant instance.*name = value
+            constant_attribute.value = value
+            define_property(instance, name, constant_atribute)
+            delete constant_attribute.value
+        }
+
+
         if (clarity || trace) {
-            //
-            //  NOTE:
-            //      This sub implementation of 'who_what' only replaces a single '.' since it does not use
-            //      regular expressions with the 'g' flag.
-            //
-            var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
-                attribute_$who.value = $who
-
-                if (clarity) {
-                    attribute_$what   .value = $what
-                    attribute___prefix.value = $who.replace('.', '__')
-
-                    define_properties(module, module_attributes)
-
-                    delete attribute_$who    .value
-                    delete attribute_$what   .value
-                    delete attribute___prefix.value
-
-                    return
-                }
-
+            if (clarity) {
                 //
-                //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                // 
-                define_property(module, '$who', attribute_$who)
-                delete attribute_$who.value
+                //  NOTE:
+                //      This stub implementation of `who_what` only replaces a single "." since it does not use
+                //      regular expressions with the "g" flag.
+                //
+                var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
+                    /*=*/ {
+                        //
+                        //  constant           module.$who    = $who
+                        //  constant           module.$what   = $what
+                        //  invisible constant module._prefix = $who.replace('.', '__')
+                        //
+                        attribute_$who.value     = $who
+                        attribute_$what   .value = $what
+                        attribute___prefix.value = $who.replace('.', '__')
+
+                        define_properties(module, module_attributes)
+
+                        delete attribute_$who    .value
+                        delete attribute_$what   .value
+                        delete attribute___prefix.value
+                    }
+                }
+            } else {
+                var who_what = function execute$setup_Gem$STUB$who_what(module, $who, $what) {
+                    //
+                    //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
+                    // 
+
+                    /*=*/ {
+                        //  constant module.$who = $who
+                        attribute_$who.value = $who
+                        define_property(module, '$who', attribute_$who)
+                        delete attribute_$who.value
+                    }
+                }
             }
 
 
@@ -756,9 +805,10 @@ Gem.Core.execute(
                 //
                 var who_what = function trace$execute$setup_Gem$STUB$who_what(module, $who, $what) {
                     //
-                    //  ... Must do this first before calling trace start ...
+                    //  ... Must do this first before calling `function_call` ...
                     //
-                    /*first*/ {
+                    /*=*/ {
+                        //  constant module.$who = $who
                         attribute_$who.value = $who
                         define_property(module, '$who', attribute_$who)
                         delete attribute_$who.value
@@ -856,19 +906,26 @@ Gem.Core.execute(
                         return
                     }
 
+
                     //
                     //  Version with clarity (but without tracing).
                     //
-                    constant_attribute.value = function_name
-                    define_property(method, '$who', constant_attribute)
+                    /*=*/ {
+                        //
+                        //  constant method.$who  = who
+                        //  constant method.$what = $what
+                        //
+                        attribute_$who .value = who
+                        attribute_$what.value = $what
 
-                    constant_attribute.value = $what
-                    define_property(method, '$what', constant_attribute)
+                        define_properties(method, method_attributes)
 
-                    constant_attribute.value = method
-                    define_property(instance, who, constant_attribute)
+                        delete attribute_$who .value
+                        delete attribute_$what.value
+                    }
 
-                    delete constant_attribute.value
+                    //  interim constant instance.*who = method
+                    _save_interim_constant(instance, who, method)
                     return
                 }
 

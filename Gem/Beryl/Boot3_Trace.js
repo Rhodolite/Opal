@@ -10,6 +10,13 @@
 //
 
 
+Gem.Core.execute(
+    function execute$Gem__add_trace_clarity() {
+        Gem._.Trace.$who  = 'Gem._.Trace'
+    }
+)
+
+
 //
 //  Gem._.Trace.wrap_function
 //      Trace a function, method, or bound method.
