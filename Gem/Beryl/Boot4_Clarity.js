@@ -211,6 +211,24 @@ Gem.Core.execute(
 )
 
 
+if (Gem.Configuration.clarity) {
+    Gem.Core.qualify_constant.call(
+        Gem._.Core,
+        'attribute_$which',
+        'A property used to create a visible (i.e.: enumerable) constant `.$which` attribute.',
+        function qualifier$Gem__private__Core__attribute_$which() {
+            //
+            //  Imports
+            //
+            var create_Object = Object.create
+
+            return create_Object(null, { enumerable : { value : true } })
+        }//,
+    )
+}
+
+
+
 //
 //  Gem.Core.codify_bound_method
 //      Stub for Gem.Core.codify_bound_method
@@ -228,11 +246,15 @@ Gem.Core.codify_method(
         //
         var Gem = window.Gem
 
-        var clarity            = Gem.Configuration.clarity
-        var constant_attribute = Gem.Core.constant_attribute
+        var _Core         = Gem._.Core
+        var Configuration = Gem.Configuration
+
+        var clarity            = Configuration.clarity
+        var constant_attribute = _Core.constant_attribute
         var create_Object      = Object.create
         var define_properties  = Object.defineProperties
         var define_property    = Object.defineProperty
+        var trace              = Configuration.trace
        
 
         if (clarity) {
@@ -249,14 +271,28 @@ Gem.Core.codify_method(
         if (clarity) {
             var attribute_$which = create_Object(null, { enumerable : { value : true } })
 
-            var who_what_which_attributes = create_Object(
+            var $who_$what_$which_attributes = create_Object(
                     null,
                     {
-                        '$who'   : { enumerable : true, value : attribute_$who  },
-                        '$what'  : { enumerable : true, value : attribute_$what },
-                        '$which' : { enumerable : true, value : attribute_$what },
+                        '$who'   : { enumerable : true, value : attribute_$who   },
+                        '$what'  : { enumerable : true, value : attribute_$what  },
+                        '$which' : { enumerable : true, value : attribute_$which },
                     }//,
                 )
+
+            if (trace) {
+                var attribute___trace = create_Object(null)                         //  3 underscores
+
+                var _trace_$who_$what_$which_attributes = create_Object(
+                    null,
+                    {
+                        '_trace' : { enumerable : true, value : attribute___trace  },
+                        '$who'   : { enumerable : true, value : attribute_$who     },
+                        '$what'  : { enumerable : true, value : attribute_$what    },
+                        '$which' : { enumerable : true, value : attribute_$what    },
+                    }//,
+                )
+            }
         }
 
 
@@ -277,16 +313,14 @@ Gem.Core.codify_method(
 
             if (clarity) {
                 /*=*/ {
-                    //
                     //  constant bound_method.$who   = full_name
                     //  constant bound_method.$what  = $what
                     //  constant bound_method.$which = $which
-                    //
                     attribute_$who  .value = full_name
                     attribute_$what .value = $what
                     attribute_$which.value = $which
 
-                    define_properties(bound_method, who_what_which_attributes)
+                    define_properties(bound_method, $who_$what_$which_attributes)
 
                     delete attribute_$who  .value
                     delete attribute_$what .value
@@ -294,24 +328,40 @@ Gem.Core.codify_method(
                 }
             }
 
-            if (codifier_trace) {
-                bound_method = codifier_trace(bound_method)
+            if (codifier_trace && trace) {
+                var traced_bound_method = codifier_trace(bound_method)
 
-                if (clarity) {
-                    constant_attribute.value = full_name
-                    define_property(bound_method, '$who', constant_attribute)
+                /*=*/ {
+                    //  constant traced_bound_method._trace = bound_method
+                    attribute___trace.value = bound_method
 
-                    constant_attribute.value = 'Trace: ' + full_name
-                    define_property(bound_method, '$what', constant_attribute)
+                    if (clarity) {
+                        //  constant traced_bound_method.$who   = full_name
+                        //  constant traced_bound_method.$what  = 'TRACING: ' + $what
+                        //  constant traced_bound_method.$which = 'TRACING: ' + $which
+                        attribute_$who  .value = full_name
+                        attribute_$what .value = 'TRACING: ' + $what
+                        attribute_$which.value = 'TRACING: ' + $which
 
-                    constant_attribute.value = 'Trace: ' + $which
-                    define_property(bound_method, '$which', constant_attribute)
+                        define_properties(traced_bound_method, $who_$what_$which_attributes)
+
+                        delete attribute_$who  .value
+                        delete attribute_$what .value
+                        delete attribute_$which.value
+                    } else {
+                        define_property(traced_bound_method, '_trace', attribute___trace.value)
+                    }
+
+                    delete attribute___trace.value
                 }
+
+                //  constant this.*who = traced_bound_method
+                constant_attribute(this, who, traced_bound_method)
+                return
             }
 
-            constant_attribute.value = bound_method
-            define_property(this, who, constant_attribute)
-            delete constant_attribute.value
+            //  constant this.*who = bound_method
+            constant_attribute(this, who, bound_method)
         }
     }//,
 )
