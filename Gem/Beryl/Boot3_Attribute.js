@@ -32,7 +32,7 @@ Gem.Core.codify_method(
         //
         //  Implementation
         //
-        return function Gem__Core__produce_create_FrozenBox__nullify_012_prototype(named_constructor, properties) {
+        return function Gem__Core__produce_create_FrozenBox__nullify_012_prototype(named_constructor) {
             //  A factory of factories.  The created factories each creates a Frozen Box -- a frozen Object with
             //  a "class name".
             //
@@ -62,7 +62,7 @@ Gem.Core.codify_method(
             named_constructor.prototype = null
 
 
-            return function create_Box__nullify_012_prototype() {
+            return function create_Box__nullify_012_prototype(properties) {
                 var result = new named_constructor()
 
                 set_prototype(result, null)
@@ -77,9 +77,94 @@ Gem.Core.codify_method(
 
 
 Gem.Core.codify_method(
+    'create_InvisibleConstantAttributeBox',
+    (
+          'Create a sealed object with a class name of "InvisibleConstantAttributeBox" (used for creating invisible'
+        + ' constant attributes).'
+    ),
+    function codifier$Gem__Core__create_InvisibleConstantAttributeBox() {
+        var define_properties = Object.defineProperties
+        var seal              = Object.seal
+
+
+        function InvisibleConstantAttributeBox() {
+            //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
+            //  created using this constructor as "InvisibleConstantAttributeBox".
+        }
+
+
+        InvisibleConstantAttributeBox.prototype = null
+
+
+        return function Gem__Core__create_InvisibleConstantAttributeBox(properties) {
+            //  Create a sealed object named "InvisibleConstantAttributeBox" (used for creating invisible constant
+            //  attributes).
+
+            var result = new InvisibleConstantAttributeBox()
+
+            define_properties(result, properties)
+            seal(result)
+
+            return result
+        }
+    }
+)
+
+
+Gem.Core.qualify_constant(
+    'attribute_constructor',
+    'A property to create an invisible constant `.constructor` attribute',
+    function qualifier$Gem__Core__attribute_constructor() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+
+        var clarity = Configuration.clarity
+
+
+        //
+        //  Implementation
+        //
+        if (clarity) {
+            return Gem.Core.create_InvisibleConstantAttributeBox(
+                {
+                    $what : { value : 'A property to create an invisible constant `.constructor` attribute' },
+                    value : { value : undefined, writable: true }//,
+                }//
+            )
+        }
+
+        return Gem.Core.create_InvisibleConstantAttributeBox(
+            {
+                value : { value : undefined }//,
+            }//,
+        )
+    }
+)
+
+
+
+Gem.Core.codify_method(
     'test1',
     'Test 1 of produce_create_FrozenBox__nullify_012_prototype',
     function codifier$Gem__Core__test1() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Core = Gem.Core
+
+        var attribute_constructor                           = Core.attribute_constructor
+        var produce_create_FrozenBox__nullify_012_prototype = Core.produce_create_FrozenBox__nullify_012_prototype
+
+
+        //
+        //  Implementation
+        //
         return function Gem__Core__test1() {
             function BoxPrototype() {
                 //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
@@ -91,19 +176,25 @@ Gem.Core.codify_method(
                 //  (using this in it's next segment) as 'RootPrototype'.
             }
 
-            var create_RootPrototype = Gem.Core.produce_create_FrozenBox__nullify_012_prototype(
-                    RootPrototype,
+            var create_RootPrototype = produce_create_FrozenBox__nullify_012_prototype(RootPrototype)
+
+            attribute_constructor.value = BoxPrototype
+
+            var result = create_RootPrototype(
                     {
-                        constructor : { value : BoxPrototype }//,
+                        constructor : attribute_constructor//,
                     }//,
                 )
 
-            return create_RootPrototype()
+            attribute_constructor.value = undefined
+
+            return result
         }
     }//,
 )
 
 
 window.z = Gem.Core.test1
+
 
 console.log('%o', z())
