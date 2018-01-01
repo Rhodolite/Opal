@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot3_Tracing: Boot - Phase 3 - Add Tracing
+//  Boot4_Tracing: Boot - Phase 4 - Add Tracing
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 

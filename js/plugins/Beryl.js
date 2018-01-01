@@ -743,7 +743,7 @@ Gem.Core.execute(
                 null,
                 {
                 //  configurable : { value : false },       //  Default value, no need to set
-                //  configurable : { value : false },       //  FIXING THIS: TEMPORARY!
+                    configurable : { value : true  },       //  FIXING THIS: TEMPORARY!
                     enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
                 //  writable     : { value : false }//,     //  Default value, no need to set
                 }//,
@@ -870,13 +870,13 @@ Gem.Core.execute(
 //  <stubs>                                                 //  Start of stubs
         //
         //  Stubs:
-        //      See "Gem/Beryl/Boot5_Methods.js" for full implementation
+        //      See "Gem/Beryl/Boot6_Methods.js" for full implementation
         //
         //  NOTE:
         //      These stubs are ~100 lines long ...
         //
         //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~200 lines
-        //          of extra error handling code) in "Gem/Beryl/Boot5_Methods.js ...
+        //          of extra error handling code) in "Gem/Beryl/Boot6_Methods.js ...
         //
         //      ... Thus, the full implementation, was moved to a separate file, for readability ...
         //

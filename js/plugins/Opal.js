@@ -6,20 +6,21 @@
     var debug          = true
     var machine        = 'Other'                    //  Used in debug mode to configure environment for Gem
     var module_name    = 'Opal'
-    var module_version = '0.0.35'
+    var module_version = '0.0.36'
 
 //  var watching       = 'Gem/Beryl/Boot2_Manifest.js'
-//  var watching       = 'Gem/Beryl/Boot3_Trace.js'
-//  var watching       = 'Gem/Beryl/Boot4_Clarity.js'
-//  var watching       = 'Gem/Beryl/Boot6_Module.js'
-//  var watching       = 'Gem/Beryl/Boot7.js'
+//  var watching       = 'Gem/Beryl/Boot3_Attribute.js'
+//  var watching       = 'Gem/Beryl/Boot4_Trace.js'
+//  var watching       = 'Gem/Beryl/Boot5_Clarity.js'
+//  var watching       = 'Gem/Beryl/Boot7_Module.js'
+//  var watching       = 'Gem/Beryl/Boot8_Bind.js'
 //  var watching       = 'js/plugins/Beryl.js'
 //  var watching       = 'js/plugins/Gem.js'
 //  var watching       = 'js/plugins/Jasper.js'
 //  var watching       = 'js/plugins/Silver.js'
 
-    var watching       = 'Gem/Beryl/Boot3_Trace.js'
-    var watching_2     = 'Gem/Beryl/Boot4_Clarity.js'
+    var watching       = 'Gem/Beryl/Boot3_Attribute.js'
+    var watching_2     = 'Gem/Beryl/Boot5_Clarity.js'
 
 
     "use strict"
@@ -76,7 +77,7 @@
     function path_changed(event, path) {
         if (event != 'change') { return }
 
-        z();
+        z1();
     }
 
     function path_changed_2(event, path_2) {
@@ -111,11 +112,11 @@
         }
 
         //
-        //  In debug module create an alias "z", which reloads this module.
-        //  The reason 'z' is chosen is it is easy to type & there will be no "suggestions" when it is
+        //  In debug module create an alias "z1", which reloads this module.
+        //  The reason 'z1' is chosen is it is easy to type & there will be no "suggestions" when it is
         //  entered into developer tools
         //
-        window.z = function reload() {
+        window.z1 = function reload() {
             var script = document.createElement('script')
 
             console.log('Adding:', watching)

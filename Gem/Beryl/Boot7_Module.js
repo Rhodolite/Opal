@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot6_Module: Boot - Phase 6 - Add Method to define a module
+//  Boot7_Module: Boot - Phase 7 - Add Method to define a module
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 

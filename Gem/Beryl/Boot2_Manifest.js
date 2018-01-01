@@ -7,11 +7,12 @@
 
 //
 //  Load next scripts:
-//      "Gem/Beryl/Boot3_Trace.js"      - Trace functions, methods & bound_methods           (clarity mode only)
-//      "Gem/Beryl/Boot4_Clarity.js"    - Add `.$who`, and `.$what`, prepare to reload `Gem` (clarity mode only)
-//      "Gem/Beryl/Boot5_Methods.js"    - Initial Methods
-//      "Gem/Beryl/Boot6_Module.js"     - Method to define a module
-//      "Gem/Beryl/Boot7.js"            - Rest of code under development
+//      "Gem/Beryl/Boot4_Trace.js"          - Trace functions, methods & bound_methods           (clarity mode only)
+//      "Gem/Beryl/Boot5_Clarity.js"        - Add `.$who`, and `.$what`, prepare to reload `Gem` (clarity mode only)
+//      "Gem/Beryl/Boot6_Methods.js"        - Initial Methods
+//      "Gem/Beryl/Boot7_Module.js"         - Method to define a module
+//      "Gem/Beryl/Boot8_Bind.js"           - Binding code
+//      "Gem/Beryl/Boot9_Development.js"    - Rest of code under development
 //
 Gem.Core.execute(
     function execute$load_next_scripts() {
@@ -23,13 +24,20 @@ Gem.Core.execute(
 
 
         //
+        //  Rest of immediate boot code:
+        //      "Gem/Beryl/Boot3_Attribute.js"
+        //
+        load('Gem/Beryl/Boot3_Attribute.js')
+
+
+        //
         //  Clarity mode only: Load:
-        //      "Gem/Beryl/Boot3_Trace.js"
-        //      "Gem/Beryl/Boot4_Clarity.js"
+        //      "Gem/Beryl/Boot4_Trace.js"
+        //      "Gem/Beryl/Boot5_Clarity.js"
         //
         if (clarity) {
-            load('Gem/Beryl/Boot3_Trace.js')
-            load('Gem/Beryl/Boot4_Clarity.js')
+            load('Gem/Beryl/Boot4_Trace.js')
+            load('Gem/Beryl/Boot5_Clarity.js')
         }
 
 
@@ -37,9 +45,10 @@ Gem.Core.execute(
         //  Load rest of scripts
         //
         var manifest_list = [
-                'Gem/Beryl/Boot5_Methods.js',
-                'Gem/Beryl/Boot6_Module.js',
-                'Gem/Beryl/Boot7.js'//,
+                'Gem/Beryl/Boot6_Methods.js',
+                'Gem/Beryl/Boot7_Module.js',
+                'Gem/Beryl/Boot8_Bind.js',
+                'Gem/Beryl/Boot9_Development.js'//,
             ]
 
 

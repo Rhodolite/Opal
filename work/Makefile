@@ -5,11 +5,13 @@ BERYL_FILES = \
 	../js/plugins/Beryl.js \
 	../js/plugins/Beryl1.js \
 	../Gem/Beryl/Boot2_Manifest.js \
-	../Gem/Beryl/Boot3_Trace.js \
-	../Gem/Beryl/Boot4_Clarity.js \
-	../Gem/Beryl/Boot5_Methods.js \
-	../Gem/Beryl/Boot6_Module.js \
-	../Gem/Beryl/Boot7.js
+	../Gem/Beryl/Boot3_Attribute.js \
+	../Gem/Beryl/Boot4_Trace.js \
+	../Gem/Beryl/Boot5_Clarity.js \
+	../Gem/Beryl/Boot6_Methods.js \
+	../Gem/Beryl/Boot7_Module.js \
+	../Gem/Beryl/Boot8_Bind.js \
+	../Gem/Beryl/Boot9_Development.js
 #../Gem/Clarity/DomainObjectModel.js \
 
 CRYSTAL_FILES = \
@@ -44,7 +46,7 @@ FILES = \
 all: clean files links
 
 clean:
-	rm -f b.js b1.js b2.js b3.js b4.js b5.js b6.js b7.js bs.js
+	rm -f b.js b1.js b2.js b3.js b3j.js b4.js b5.js b6.js b7.js b8.js b9.js bs.js
 	rm -f c.js cd.js
 	rm -f files files.new
 	rm -f g.js
@@ -65,11 +67,14 @@ links:
 	ln -s ../js/plugins/Beryl.js     	        b.js
 	ln -s ../js/plugins/Beryl1.js     	        b1.js
 	ln -s ../Gem/Beryl/Boot2_Manifest.js     	b2.js
-	ln -s ../Gem/Beryl/Boot3_Trace.js      	    b3.js
-	ln -s ../Gem/Beryl/Boot4_Clarity.js      	b4.js
-	ln -s ../Gem/Beryl/Boot5_Methods.js      	b5.js
-	ln -s ../Gem/Beryl/Boot6_Module.js       	b6.js
-	ln -s ../Gem/Beryl/Boot7.js      	        b7.js
+	ln -s ../Gem/Beryl/Boot3_Attribute.js  	    b3.js
+	ln -s ../Junk/Boot3_Attribute.js  	        b3j.js
+	ln -s ../Gem/Beryl/Boot4_Trace.js      	    b4.js
+	ln -s ../Gem/Beryl/Boot5_Clarity.js      	b5.js
+	ln -s ../Gem/Beryl/Boot6_Methods.js      	b6.js
+	ln -s ../Gem/Beryl/Boot7_Module.js       	b7.js
+	ln -s ../Gem/Beryl/Boot8_Bind.js      	    b8.js
+	ln -s ../Gem/Beryl/Boot9_Development.js     b9.js
 	ln -s ../js/plugins/Bloodstone.js	        bs.js
 	ln -s ../Junk/Crystal.js	    	        c.js
 	ln -s ../Gem/Clarity/DomainObjectModel.js   cd.js

@@ -798,18 +798,3 @@ if (Gem.Configuration.clarity) {
         }//,
     )
 }
-
-
-Gem.Core.execute(
-    function execute$Gem__clear__and__log_Gem() {
-        Gem.NodeWebKit.show_developer_tools()
-        //console.clear()
-        console.log('%o', Gem)
-    }//,
-)
-
-
-Gem.Core.execute(
-    function execute$development_code() {
-    }//,
-)
