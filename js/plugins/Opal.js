@@ -6,11 +6,12 @@
     var debug          = true
     var machine        = 'Other'                    //  Used in debug mode to configure environment for Gem
     var module_name    = 'Opal'
-    var module_version = '0.0.37'
+    var module_version = '0.0.38'
 
 //  var watching       = 'Gem/Beryl/Boot2_Manifest.js'
-//  var watching       = 'Gem/Beryl/Boot3_StubAnonymousBox.js'
 //  var watching       = 'Gem/Beryl/Boot3_Attribute.js'
+//  var watching       = 'Gem/Beryl/Boot3_StubAnonymousBox.js'
+//  var watching       = 'Gem/Beryl/Boot4_StubAttribute.js'
 //  var watching       = 'Gem/Beryl/Boot4_Trace.js'
 //  var watching       = 'Gem/Beryl/Boot5_Clarity.js'
 //  var watching       = 'Gem/Beryl/Boot7_Module.js'
@@ -21,7 +22,7 @@
 //  var watching       = 'js/plugins/Silver.js'
 
     var watching       = 'Gem/Beryl/Boot2_Manifest.js'
-    var watching_2     = 'Gem/Beryl/Boot3_StubAnonymousBox.js'
+    var watching_2     = 'Gem/Beryl/Boot4_StubAttribute.js'
 
 
     "use strict"

@@ -27,6 +27,9 @@ Gem.Core.execute(
         //
         var manifest_list = [
             'Gem/Beryl/Boot3_StubAnonymousBox.js',  7,
+            'Gem/Beryl/Boot4_StubAttribute.js',     7,
+
+            // Redo
             'Gem/Beryl/Boot3_Attribute.js',         0,
             'Gem/Beryl/Boot4_Trace.js',             0,  //  trace,
             'Gem/Beryl/Boot5_Clarity.js',           0,  //  clarity,

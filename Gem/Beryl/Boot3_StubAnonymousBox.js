@@ -56,14 +56,31 @@ if (Gem.Configuration.unit_test) {
         function execute$test_AnonymousBox() {
             var module = 'Gem.Beryl.Boot3_StubAnonymousBox'
 
-            var anonymous_box = Gem.Box.create_AnonymousBox({
+            //
+            //  Imports
+            //
+            var Gem = window.Gem
+
+            var Box           = Gem.Box
+            var Configuration = Gem.Configuration
+
+            var create_AnonymousBox = Box.create_AnonymousBox
+            var unit_test           = Configuration.unit_test
+
+
+            //
+            //  Implementation
+            //
+            var anonymous_box = create_AnonymousBox({
                     $what : { enumerable : true, value : 'A test of Gem.Box.create_AnonymousBox()' }//,
                 })
 
-            console.log('%c%s%c: %cAn AnonymousBox%c: %o',
-                        'color:green', module, 'color:none',
-                        'color:orange', 'color:none',
-                        anonymous_box)
+            if (unit_test === 7) {
+                console.log('%c%s%c: %cAn AnonymousBox%c: %o',
+                            'color:green', module, 'color:none',
+                            'color:orange', 'color:none',
+                            anonymous_box)
+            }
         }//,
     )
 }
