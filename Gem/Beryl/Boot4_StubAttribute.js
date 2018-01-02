@@ -54,7 +54,7 @@ if (Gem.Configuration.unit_test) {
 
             var create_AnonymousBox                  = Box.create_AnonymousBox
             var create_InvisibleConstructorAttribute = Box.create_InvisibleConstructorAttribute
-            var get_own_property_descriptor          = Object.getOwnPropertyDescriptor
+            var own_property_descriptor              = Object.getOwnPropertyDescriptor
             var unit_test                            = Configuration.unit_test
 
 
@@ -98,7 +98,7 @@ if (Gem.Configuration.unit_test) {
                 //      3.  constant attribute
                 //      4.  with a value of `Test_Of_A_Fake_Invisible_Constructor`.
 
-                var property = get_own_property_descriptor(test_of_a_fake_invisible_constructor, 'constructor')
+                var property = own_property_descriptor(test_of_a_fake_invisible_constructor, 'constructor')
 
                 console.assert(
                     property.configurable === false,                                        //  1.  Non Configurable

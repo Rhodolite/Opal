@@ -64,8 +64,9 @@ if (Gem.Configuration.unit_test) {
             var Box           = Gem.Box
             var Configuration = Gem.Configuration
 
-            var create_AnonymousBox = Box.create_AnonymousBox
-            var unit_test           = Configuration.unit_test
+            var create_AnonymousBox     = Box.create_AnonymousBox
+            var own_property_descriptor = Object.getOwnPropertyDescriptor
+            var unit_test               = Configuration.unit_test
 
 
             //
@@ -74,6 +75,38 @@ if (Gem.Configuration.unit_test) {
             var anonymous_box = create_AnonymousBox({
                     $what : { enumerable : true, value : 'A test of Gem.Box.create_AnonymousBox()' }//,
                 })
+
+
+            /*verify*/ {
+                //  Verify the `.$what` property created is a
+                //      1.  non-configurable
+                //      2.  visible
+                //      3.  constant attribute
+                //      4.  with a string value
+
+                var property = own_property_descriptor(anonymous_box, '$what')
+
+                console.assert(
+                    property.configurable === false,                                        //  1.  Non Configurable
+                    'The `$what` attribute must be non configurable'//,
+                )
+
+                console.assert(
+                    property.enumerable === true,                                           //  2.  Invisible
+                    'The `$what` attribute must be visible (enumerable)'//,
+                )
+
+                console.assert(
+                    property.writable === false,                                            //  3.  Constant
+                    'The `$what` attribute must be constant (not writable)'//,
+                )
+
+                console.assert(
+                    typeof(property.value) === 'string',                                    //  4.  String value
+                    'The `$what` attribute must be a string'//,
+                )
+            }
+
 
             if (unit_test === 7) {
                 console.log('%c%s%c: %cAn AnonymousBox%c: %o',

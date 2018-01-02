@@ -21,7 +21,7 @@
 //  var watching       = 'js/plugins/Jasper.js'
 //  var watching       = 'js/plugins/Silver.js'
 
-    var watching       = 'Gem/Beryl/Boot2_Manifest.js'
+    var watching       = 'Gem/Beryl/Boot3_StubAnonymousBox.js'
     var watching_2     = 'Gem/Beryl/Boot4_StubAttribute.js'
 
 
