@@ -222,6 +222,10 @@ if (Gem.Configuration.clarity) {
             //
             var create_Object = Object.create
 
+
+            //
+            //  Implementation
+            //
             return create_Object(null, { enumerable : { value : true } })
         }//,
     )

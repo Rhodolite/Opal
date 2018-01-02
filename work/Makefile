@@ -6,6 +6,7 @@ BERYL_FILES = \
 	../js/plugins/Beryl1.js \
 	../Gem/Beryl/Boot2_Manifest.js \
 	../Gem/Beryl/Boot3_Attribute.js \
+	../Gem/Beryl/Boot3_StubAnonymousBox.js \
 	../Gem/Beryl/Boot4_Trace.js \
 	../Gem/Beryl/Boot5_Clarity.js \
 	../Gem/Beryl/Boot6_Methods.js \
@@ -46,7 +47,7 @@ FILES = \
 all: clean files links
 
 clean:
-	rm -f b.js b1.js b2.js b3.js b3j.js b4.js b5.js b6.js b7.js b8.js b9.js bs.js
+	rm -f b.js b1.js b2.js b3.js b3x.js b3j.js b4.js b5.js b6.js b7.js b8.js b9.js bs.js
 	rm -f c.js cd.js
 	rm -f files files.new
 	rm -f g.js
@@ -64,33 +65,34 @@ files:
 	mv files.tmp1 files
 
 links:
-	ln -s ../js/plugins/Beryl.js     	        b.js
-	ln -s ../js/plugins/Beryl1.js     	        b1.js
-	ln -s ../Gem/Beryl/Boot2_Manifest.js     	b2.js
-	ln -s ../Gem/Beryl/Boot3_Attribute.js  	    b3.js
-	ln -s ../Junk/Boot3_Attribute.js  	        b3j.js
-	ln -s ../Gem/Beryl/Boot4_Trace.js      	    b4.js
-	ln -s ../Gem/Beryl/Boot5_Clarity.js      	b5.js
-	ln -s ../Gem/Beryl/Boot6_Methods.js      	b6.js
-	ln -s ../Gem/Beryl/Boot7_Module.js       	b7.js
-	ln -s ../Gem/Beryl/Boot8_Bind.js      	    b8.js
-	ln -s ../Gem/Beryl/Boot9_Development.js     b9.js
-	ln -s ../js/plugins/Bloodstone.js	        bs.js
-	ln -s ../Junk/Crystal.js	    	        c.js
-	ln -s ../Gem/Clarity/DomainObjectModel.js   cd.js
-	ln -s ../js/plugins/Gem.js    		        g.js
-	ln -s ../index.html           		        i.html
-	ln -s ../js/plugins/Jasper.js 		        j.js
-	ln -s ../Junk/Junk0.js         		        j0.js
-	ln -s ../Junk/Junk.js         		        jk.js
-	ln -s Makefile						        m
-	ln -s ../js/rpg_core.js         	        rc.js
-	ln -s ../js/rpg_managers.js			        rm.js
-	ln -s ../js/plugins/Opal.js	    	        o.js
-	ln -s ../js/plugins/Opal1.js		        o1.js
-	ln -s ../Junk/Jasper.js         	        oj.js
-	ln -s ../js/plugins/Silver.js 		        s.js
-	ln -s ../js/plugins/Silver_Core.js 	        sc.js
+	ln -s ../js/plugins/Beryl.js     	            b.js
+	ln -s ../js/plugins/Beryl1.js     	            b1.js
+	ln -s ../Gem/Beryl/Boot2_Manifest.js     	    b2.js
+	ln -s ../Gem/Beryl/Boot3_Attribute.js  	        b3.js
+	ln -s ../Junk/Boot3_Attribute.js  	            b3j.js
+	ln -s ../Gem/Beryl/Boot3_StubAnonymousBox.js  	b3x.js
+	ln -s ../Gem/Beryl/Boot4_Trace.js      	        b4.js
+	ln -s ../Gem/Beryl/Boot5_Clarity.js      	    b5.js
+	ln -s ../Gem/Beryl/Boot6_Methods.js      	    b6.js
+	ln -s ../Gem/Beryl/Boot7_Module.js       	    b7.js
+	ln -s ../Gem/Beryl/Boot8_Bind.js      	        b8.js
+	ln -s ../Gem/Beryl/Boot9_Development.js         b9.js
+	ln -s ../js/plugins/Bloodstone.js	            bs.js
+	ln -s ../Junk/Crystal.js	    	            c.js
+	ln -s ../Gem/Clarity/DomainObjectModel.js       cd.js
+	ln -s ../js/plugins/Gem.js    		            g.js
+	ln -s ../index.html           		            i.html
+	ln -s ../js/plugins/Jasper.js 		            j.js
+	ln -s ../Junk/Junk0.js         		            j0.js
+	ln -s ../Junk/Junk.js         		            jk.js
+	ln -s Makefile						            m
+	ln -s ../js/rpg_core.js         	            rc.js
+	ln -s ../js/rpg_managers.js			            rm.js
+	ln -s ../js/plugins/Opal.js	    	            o.js
+	ln -s ../js/plugins/Opal1.js		            o1.js
+	ln -s ../Junk/Jasper.js         	            oj.js
+	ln -s ../js/plugins/Silver.js 		            s.js
+	ln -s ../js/plugins/Silver_Core.js 	            sc.js
 
 wc:
 	#

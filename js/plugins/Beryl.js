@@ -18,7 +18,8 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 0,                                  //      Trace function, method & bound method calls.
+        trace         : 1,                                  //      Trace function, method & bound method calls.
+        unit_test     : 7//,                                //      Run unit tests.
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.

@@ -6,56 +6,44 @@
 
 
 //
-//  Load next scripts:
-//      "Gem/Beryl/Boot4_Trace.js"          - Trace functions, methods & bound_methods           (clarity mode only)
-//      "Gem/Beryl/Boot5_Clarity.js"        - Add `.$who`, and `.$what`, prepare to reload `Gem` (clarity mode only)
-//      "Gem/Beryl/Boot6_Methods.js"        - Initial Methods
-//      "Gem/Beryl/Boot7_Module.js"         - Method to define a module
-//      "Gem/Beryl/Boot8_Bind.js"           - Binding code
-//      "Gem/Beryl/Boot9_Development.js"    - Rest of code under development
+//  Load next scripts
 //
 Gem.Core.execute(
     function execute$load_next_scripts() {
         //
         //  Imports
         //
-        var clarity = Gem.Configuration.clarity
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+
+        var clarity = Configuration.clarity
         var load    = Gem.Script.load
+        var trace   = Configuration.clarity
 
 
         //
-        //  Rest of immediate boot code:
-        //      "Gem/Beryl/Boot3_Attribute.js"
-        //
-        load('Gem/Beryl/Boot3_Attribute.js')
-
-
-        //
-        //  Clarity mode only: Load:
-        //      "Gem/Beryl/Boot4_Trace.js"
-        //      "Gem/Beryl/Boot5_Clarity.js"
-        //
-        if (clarity) {
-            load('Gem/Beryl/Boot4_Trace.js')
-            load('Gem/Beryl/Boot5_Clarity.js')
-        }
-
-
-        //
-        //  Load rest of scripts
+        //  Rest of immediate boot code
         //
         var manifest_list = [
-                'Gem/Beryl/Boot6_Methods.js',
-                'Gem/Beryl/Boot7_Module.js',
-                'Gem/Beryl/Boot8_Bind.js',
-                'Gem/Beryl/Boot9_Development.js'//,
-            ]
+            'Gem/Beryl/Boot3_StubAnonymousBox.js',  7,
+            'Gem/Beryl/Boot3_Attribute.js',         0,
+            'Gem/Beryl/Boot4_Trace.js',             0,  //  trace,
+            'Gem/Beryl/Boot5_Clarity.js',           0,  //  clarity,
+            'Gem/Beryl/Boot6_Methods.js',           0,
+            'Gem/Beryl/Boot7_Module.js',            0,
+            'Gem/Beryl/Boot8_Bind.js',              0,
+            'Gem/Beryl/Boot9_Development.js',       0,
+        ]
 
 
-        for (var i = 0; i < manifest_list.length; i ++) {
+        for (var i = 0; i < manifest_list.length; i += 2) {
             var manifest = manifest_list[i]
+            var use      = manifest_list[i + 1]
 
-            load(manifest)
+            if (use) {
+                load(manifest)
+            }
         }
     }//,
 )

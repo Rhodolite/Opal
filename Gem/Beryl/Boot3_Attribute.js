@@ -6,6 +6,54 @@
 
 
 Gem.Core.codify_method(
+    'produce_create_FrozenBox__keep_normal_prototype',
+    (
+          'A factory of factories.  The created factories each creates a Frozen Box -- a frozen object with'
+        + ' a "class name".\n'
+        + '\n'
+        + 'The "class name" comes from the name of parameter `named_constructor` (i.e.: `named_constructor.name`).\n'
+        + '\n'
+        + 'In Developer tools for nw.js 0.12, when an object is created using `new`, it permenantly acquires'
+        + ' "class name" from the constructor to display in Developer Tools -- even if the object is no longer linked'
+        + ' to the constructor when displayed.  This code uses this "feature" of Developer Tools for nw.js 0.12.'
+    ),
+    function codifier$Gem__Core__produce_create_FrozenBox__keep_normal_prototype() {
+        //
+        //  Imports
+        //
+        var define_properties = Object.defineProperties
+        var freeze            = Object.freeze
+
+
+        //
+        //  Implementation
+        //
+        return function Gem__Core__produce_create_FrozenBox__keep_normal_prototype(named_constructor) {
+            //  A factory of factories.  The created factories each creates a Frozen Box -- a frozen Object with
+            //  a "class name".
+            //
+            //  The "class name" comes from the name of parameter `named_constructor`
+            //  (i.e.: `named_constructor.name`).
+            //
+            //  In Developer tools for nw.js 0.12, when an object is created using `new`, it permenantly acquires
+            //  a "class name" from the constructor to display in Developer Tools -- even if the object is no longer
+            //  linked to the constructor when displayed.  This code uses this "feature" of Developer Tools for
+            //  nw.js 0.12.
+
+            return function create_FrozenBox__keep_normal_prototype(properties) {
+                var result = new named_constructor()
+
+                define_properties(result, properties)
+                freeze(result)
+
+                return result
+            }
+        }
+    }//,
+)
+
+
+Gem.Core.codify_method(
     'produce_create_FrozenBox__nullify_012_prototype',
     (
           'A factory of factories.  The created factories each creates a Frozen Box -- a frozen object with'
@@ -16,7 +64,7 @@ Gem.Core.codify_method(
         + 'The `.__proto__` attribute is set to null after the frozen Box object is created (due to a "bug" in'
         + ' nw.js 0.12 an object cannot be created with it\'s `.__proto__` member set to null).'
         + '\n'
-        + 'In Developer tools for nw.js 0.12, when an object is created using `new`, it premenantly acquires'
+        + 'In Developer tools for nw.js 0.12, when an object is created using `new`, it permenantly acquires'
         + ' "class name" from the constructor to display in Developer Tools -- even if the object is no longer linked'
         + ' to the constructor when displayed.  This code uses this "feature" of Developer Tools for nw.js 0.12.'
     ),
@@ -42,7 +90,7 @@ Gem.Core.codify_method(
             //  The `.__proto__` attribute is set to null after the frozen Box object is created (due to a "bug" in
             //  nw.js 0.12 an object cannot be created with it's `.__proto__` member set to null).
             //
-            //  In Developer tools for nw.js 0.12, when an object is created using `new`, it premenantly acquires
+            //  In Developer tools for nw.js 0.12, when an object is created using `new`, it permenantly acquires
             //  a "class name" from the constructor to display in Developer Tools -- even if the object is no longer
             //  linked to the constructor when displayed.  This code uses this "feature" of Developer Tools for
             //  nw.js 0.12.
@@ -62,7 +110,7 @@ Gem.Core.codify_method(
             named_constructor.prototype = null
 
 
-            return function create_Box__nullify_012_prototype(properties) {
+            return function create_FrozenBox__nullify_012_prototype(properties) {
                 var result = new named_constructor()
 
                 set_prototype(result, null)
@@ -146,11 +194,10 @@ Gem.Core.qualify_constant(
 )
 
 
-
 Gem.Core.codify_method(
-    'test1',
-    'Test 1 of produce_create_FrozenBox__nullify_012_prototype',
-    function codifier$Gem__Core__test1() {
+    'create_RootPrototype',
+    'Create a root prototype box.',
+    function codifier$Gem__Core__create_RootPrototype() {
         //
         //  Imports
         //
@@ -158,29 +205,30 @@ Gem.Core.codify_method(
 
         var Core = Gem.Core
 
-        var attribute_constructor                           = Core.attribute_constructor
-        var produce_create_FrozenBox__nullify_012_prototype = Core.produce_create_FrozenBox__nullify_012_prototype
+        var attribute_constructor    = Core.attribute_constructor
+        var produce_create_FrozenBox = Core.produce_create_FrozenBox__keep_normal_prototype
+
+
+        //
+        //  Closures
+        //
+        function RootPrototype() {
+            //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
+            //  (using this in it's next segment) as 'RootPrototype'.
+        }
+
+        RootPrototype.prototype = null
+
+        var create__FrozenBox__RootPrototype = produce_create_FrozenBox(RootPrototype)
 
 
         //
         //  Implementation
         //
-        return function Gem__Core__test1() {
-            function BoxPrototype() {
-                //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
-                //  (using this in it's next segment) as 'BoxPrototype'.
-            }
+        return function Gem__Core__create_RootPrototype(constructor) {
+            attribute_constructor.value = constructor
 
-            function RootPrototype() {
-                //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
-                //  (using this in it's next segment) as 'RootPrototype'.
-            }
-
-            var create_RootPrototype = produce_create_FrozenBox__nullify_012_prototype(RootPrototype)
-
-            attribute_constructor.value = BoxPrototype
-
-            var result = create_RootPrototype(
+            var result = create__FrozenBox__RootPrototype(
                     {
                         constructor : attribute_constructor//,
                     }//,
@@ -194,7 +242,39 @@ Gem.Core.codify_method(
 )
 
 
+Gem.Core.codify_method(
+    'test1',
+    'Test 1 of produce_create_FrozenBox__nullify_012_prototype',
+    function codifier$Gem__Core__test1() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Core = Gem.Core
+
+        var create__RootPrototype = Core.create_RootPrototype
+
+
+        //
+        //  Implementation
+        //
+        return function Gem__Core__test1() {
+            function BoxPrototype() {
+                //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
+                //  (using this in it's next segment) as 'BoxPrototype'.
+            }
+
+
+            BoxPrototype.prototype = create__RootPrototype(BoxPrototype)
+
+            return BoxPrototype
+        }
+    }//,
+)
+
+
 window.z = Gem.Core.test1
 
 
-console.log('%o', z())
+console.log('%o', z().prototype)
