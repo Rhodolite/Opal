@@ -9,7 +9,7 @@ Gem.Core.codify_method.call(
     Gem.Box,
     'create_InvisibleConstructorAttribute',
     (
-            'Stub for a sealed object with a class name of "InvisibleConstructorAttribute" (used for creating an'
+            'Stub for a sealed box with a class name of "InvisibleConstructorAttribute" (used for creating an'
           + ' invisible `.constructor` attribute).'
     ),
     function codifier$Gem__Core__create_InvisibleConstructorAttribute() {
@@ -19,17 +19,17 @@ Gem.Core.codify_method.call(
 
         function InvisibleConstructorAttribute() {
             //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
-            //  created using this constructor as "InvisibleConstantAttributeBox".
+            //  created using this constructor as "InvisibleConstantAttribute".
         }
 
 
         return function Gem__Core__create_InvisibleConstructorAttribute(properties) {
-            //  Create a sealed object named "InvisibleConstructorAttribute" (used for creating an invisible
-            //  `.constructor` attribute.
+            //  Create a sealed box named "InvisibleConstructorAttribute" (used for creating an invisible
+            //  `.constructor` attribute).
 
             return seal(                                            //  #3: Seal
                     define_properties(
-                        new InvisibleConstructorAttribute(),        //  #1: Create InvisibleConstructorAttribute
+                        new InvisibleConstructorAttribute(),        //  #1: Create InvisibleConstructorAttribute Box
                         properties//,                               //  #2: Define properties
                     )//,
                 )
@@ -67,15 +67,55 @@ if (Gem.Configuration.unit_test) {
             }
 
 
+            //
+            //  The three values `configurable`, `enumerable`, and `writable` are set to their default values:
+            //
+            //      1.  This is unncessary, but makes the unit test code clearer.
+            //
+            //      2.  Also when examining the result in Developer Tools, it is a lot cleaer.
+            //
             var invisible_constructor_attribute = create_InvisibleConstructorAttribute({
                     $what : {
                         enumerable : true,
-                        value      : 'A test of Gem.Box.create_InvisibleConstructorAttribute()'//,
+                        value      : 'A test of Gem.Box.create_InvisibleConstructorAttribute().'//,
                     },
-                    configurable : { enumerable: true, value : false                      },
-                    enumerable   : { enumerable: true, value : false                      },
+
+                    configurable : { enumerable: true, value : false                      },    //  Default
+                    enumerable   : { enumerable: true, value : false                      },    //  Default
                     value        : { enumerable: true, value : undefined, writable : true },
-                    writeable    : { enumerable: true, value : false                      }//,
+                    writable     : { enumerable: true, value : false                      },    //  Default
+
+                    configurable$ : {
+                        enumerable : true,
+                        value : '`.configurable = false`: non configurable {default value, but set for clarity}.'//,
+                    },
+
+                    enumerable$ : {
+                        enumerable : true,
+                        value : (
+                                      '`.enumerable = false`: invisible (non enumerable)'
+                                    + ' {default value, but set for clarity}.'
+                                )//,
+                    },
+
+                    value$ : {
+                        enumerable : true,
+
+                        value : (
+                                      '`.value` is initialized as `undefined`, and is replaced with an actual'
+                                    + ' constructor when used; and then restored to `undefined`.\n'
+                                    + '\n'
+                                    + 'Since `.value` is changed, then it is mutable (i.e.: writable).\n'
+                                    + '\n'
+                                    + 'Since `.value` is non-configurable, then it cannot be deleted; hence it is'
+                                    + ' replaced with `undefined` after being used (important for garbage collection).'
+                                )//,
+                    },
+
+                    writable$ : {
+                        enumerable : true,
+                        value : '`.writable = true`: constant (not writable) {default value, but set for clarity).'//,
+                    }//,
                 })
 
 
