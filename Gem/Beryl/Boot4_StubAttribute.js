@@ -18,32 +18,47 @@ Gem.Core.qualify_constant.call(
         var Box           = Gem.Box
         var Configuration = Gem.Configuration
 
-        var clarity           = Configuration.clarity
-        var define_properties = Object.defineProperties
-        var seal              = Object.seal
+        var box_name = Configuration.Box.box_name
+        var clarity  = Configuration.clarity
+        var seal     = Object.seal
 
-
-        function InvisibleConstructorProperty() {
-            //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
-            //  created using this constructor as "InvisibleConstantAttribute".
+        if (box_name) {
+            var define_properties = Object.defineProperties
+        } else {
+            var create_Object = Object.create
         }
 
 
-        function create_InvisibleConstructorProperty(properties) {
+        //
+        //  Implementation
+        //
+        if (box_name) {
+            var InvisibleConstructorProperty$Crate = function InvisibleConstructorProperty$Crate() {
+                //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
+                //  created using this constructor as "InvisibleConstantProperty$Crate".
+            }
+        }
+
+
+        function create_InvisibleConstructorProperty$Crate(properties) {
             //  Stub to create a sealed box with a class name of "InvisibleConstructorProperty" (used for creating an'
             //  creating an invisible `.constructor` attribute).
 
-            return seal(                                            //  #3: Seal
-                       define_properties(
-                           new InvisibleConstructorProperty(),      //  #1: Create InvisibleConstructorProperty Box
-                           properties//,                            //  #2: Define properties
-                       )//,
-                   )
+            if (box_name) {
+                return seal(                                                //  #3: Seal
+                           define_properties(
+                               new InvisibleConstructorProperty$Crate(),    //  #1: Create InvisibleConstructor...
+                               properties//,                                //  #2: Define properties
+                           )//,
+                       )
+            }
+
+            return seal(create_Object(null, properties))                //  #1: Create object with properties; #2: Seal
         }
 
 
         if ( ! clarity) {
-            return create_InvisibleConstructorProperty({
+            return create_InvisibleConstructorProperty$Crate({
                        value : { enumerable: true, value : undefined, writable : true },
                    })
         }
@@ -56,10 +71,15 @@ Gem.Core.qualify_constant.call(
         //
         //      2.  Also when examining the result in Developer Tools, it is a lot clearer.
         //
-        return create_InvisibleConstructorProperty({
+        return create_InvisibleConstructorProperty$Crate({
+                $who : {
+                    enumerable : true,
+                    value      : 'Gem.Box.invisible_constructor_property',
+                },
+
                 $what : {
                     enumerable : true,
-                    value      : 'A test of Gem.Box.create_InvisibleConstructorProperty().'//,
+                    value      : 'Stub for a property to create an invisible `.constructor` attribute.'//,
                 },
 
                 configurable : { enumerable: true, value : false                      },    //  Default

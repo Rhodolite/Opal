@@ -6,6 +6,7 @@ BERYL_FILES = \
 	../js/plugins/Beryl1.js \
 	../Gem/Beryl/Boot2_Manifest.js \
 	../Gem/Beryl/Boot3_Attribute.js \
+	../Gem/Beryl/Boot3_StubBox.js \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
 	../Gem/Beryl/Boot4_StubAttribute.js \
 	../Gem/Beryl/Boot4_Trace.js \
@@ -48,7 +49,7 @@ FILES = \
 all: clean files links
 
 clean:
-	rm -f b.js b1.js b2.js b3.js b3x.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
+	rm -f b.js b1.js b2.js b3.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
 	rm -f c.js cd.js
 	rm -f files files.new
 	rm -f g.js
@@ -57,7 +58,7 @@ clean:
 	rm -f m
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
-	rm -f s.js sc.js
+	rm -f s.js sax.js sc.js sx.js
 
 files:
 	echo $(FILES) >files.tmp1
@@ -71,7 +72,6 @@ links:
 	ln -s ../Gem/Beryl/Boot2_Manifest.js     	    b2.js
 	ln -s ../Gem/Beryl/Boot3_Attribute.js  	        b3.js
 	ln -s ../Junk/Boot3_Attribute.js  	            b3j.js
-	ln -s ../Gem/Beryl/Boot3_StubAnonymousBox.js  	b3x.js
 	ln -s ../Gem/Beryl/Boot4_StubAttribute.js     	b4a.js
 	ln -s ../Gem/Beryl/Boot4_Trace.js      	        b4.js
 	ln -s ../Gem/Beryl/Boot5_Clarity.js      	    b5.js
@@ -94,7 +94,9 @@ links:
 	ln -s ../js/plugins/Opal1.js		            o1.js
 	ln -s ../Junk/Jasper.js         	            oj.js
 	ln -s ../js/plugins/Silver.js 		            s.js
+	ln -s ../Gem/Beryl/Boot3_StubAnonymousBox.js  	sax.js
 	ln -s ../js/plugins/Silver_Core.js 	            sc.js
+	ln -s ../Gem/Beryl/Boot3_StubBox.js           	sx.js
 
 wc:
 	#

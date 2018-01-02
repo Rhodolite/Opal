@@ -13,13 +13,15 @@
 //
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
-        box_name      : true,                               //      Name 'box' instances 'Box' in Developer Tools.
         capture_error : true,                               //      Try to capture errors
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 1,                                  //      Trace function, method & bound method calls.
-        unit_test     : 7//,                                //      Run unit tests.
+        trace         : 0,                                  //      Trace function, method & bound method calls.
+        unit_test     : 7,                                  //      Run unit tests.
+        Box : {                                             //      Box configuration values.
+            box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
+        }//,
     },
 
     Tracing : {                                             //  Map of functions, methods & bound_methods being traced.

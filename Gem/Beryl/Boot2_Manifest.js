@@ -26,6 +26,7 @@ Gem.Core.execute(
         //  Rest of immediate boot code
         //
         var manifest_list = [
+            'Gem/Beryl/Boot3_StubBox.js',           1,
             'Gem/Beryl/Boot3_StubAnonymousBox.js',  7,
             'Gem/Beryl/Boot4_StubAttribute.js',     7,
 

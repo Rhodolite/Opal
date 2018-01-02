@@ -5,29 +5,6 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.execute(
-    function execute$setup__Gem_Box() {
-        //
-        //  Imports
-        //
-        var Gem = window.Gem
-
-        var _Core = Gem._.Core
-
-        var who_what = _Core.who_what
-
-
-        //
-        //  Implementation
-        //
-        Gem.Box = {}
-
-
-        who_what(Gem.Box, 'Gem.Box', 'Exports of the Box module.', true)
-    }
-)
-
-
 Gem.Core.codify_method.call(
     Gem.Box,
     'create_AnonymousBox',
@@ -119,12 +96,4 @@ if (Gem.Configuration.unit_test) {
 }
 
 
-//--------------------------------------------------------+
-//  This code is formatted for clarity.                   |
-//  Hence this code does not use unnecessary semicolons.  |
-//  Reasoning: https://mislav.net/2010/05/semicolons/     |
-//--------------------------------------------------------+
-
-
 //  The full MIT License is available here: https://github.com/Rhodolite/Opal/blob/master/LICENSE
-/*: @plugindesc Boot Engine, Reliable Yet Limber */
