@@ -5,42 +5,107 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method.call(
+Gem.Core.qualify_constant.call(
     Gem.Box,
-    'create_InvisibleConstructorAttribute',
-    (
-            'Stub for a sealed box with a class name of "InvisibleConstructorAttribute" (used for creating an'
-          + ' invisible `.constructor` attribute).'
-    ),
-    function codifier$Gem__Core__create_InvisibleConstructorAttribute() {
+    'invisible_constructor_property',
+    'Stub for a property to create an invisible `.constructor` attribute.',
+    function qualifier$Gem__Core__invisible_constructor_property() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Box           = Gem.Box
+        var Configuration = Gem.Configuration
+
+        var clarity           = Configuration.clarity
         var define_properties = Object.defineProperties
         var seal              = Object.seal
 
 
-        function InvisibleConstructorAttribute() {
+        function InvisibleConstructorProperty() {
             //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
             //  created using this constructor as "InvisibleConstantAttribute".
         }
 
 
-        return function Gem__Core__create_InvisibleConstructorAttribute(properties) {
-            //  Create a sealed box named "InvisibleConstructorAttribute" (used for creating an invisible
-            //  `.constructor` attribute).
+        function create_InvisibleConstructorProperty(properties) {
+            //  Stub to create a sealed box with a class name of "InvisibleConstructorProperty" (used for creating an'
+            //  creating an invisible `.constructor` attribute).
 
             return seal(                                            //  #3: Seal
-                    define_properties(
-                        new InvisibleConstructorAttribute(),        //  #1: Create InvisibleConstructorAttribute Box
-                        properties//,                               //  #2: Define properties
-                    )//,
-                )
+                       define_properties(
+                           new InvisibleConstructorProperty(),      //  #1: Create InvisibleConstructorProperty Box
+                           properties//,                            //  #2: Define properties
+                       )//,
+                   )
         }
+
+
+        if ( ! clarity) {
+            return create_InvisibleConstructorProperty({
+                       value : { enumerable: true, value : undefined, writable : true },
+                   })
+        }
+
+
+        //
+        //  The three values `configurable`, `enumerable`, and `writable` are set to their default values:
+        //
+        //      1.  This is unncessary, but makes the unit test code clearer.
+        //
+        //      2.  Also when examining the result in Developer Tools, it is a lot clearer.
+        //
+        return create_InvisibleConstructorProperty({
+                $what : {
+                    enumerable : true,
+                    value      : 'A test of Gem.Box.create_InvisibleConstructorProperty().'//,
+                },
+
+                configurable : { enumerable: true, value : false                      },    //  Default
+                enumerable   : { enumerable: true, value : false                      },    //  Default
+                value        : { enumerable: true, value : undefined, writable : true },
+                writable     : { enumerable: true, value : false                      },    //  Default
+
+                configurable$ : {
+                    enumerable : true,
+                    value : '`.configurable = false`: non configurable {default value, but set for clarity}.'//,
+                },
+
+                enumerable$ : {
+                    enumerable : true,
+                    value : (
+                                  '`.enumerable = false`: invisible (non enumerable)'
+                                + ' {default value, but set for clarity}.'
+                            )//,
+                },
+
+                value$ : {
+                    enumerable : true,
+
+                    value : (
+                                  '`.value` is initialized as `undefined`, and is replaced with an actual'
+                                + ' constructor when used; and then restored to `undefined`.\n'
+                                + '\n'
+                                + 'Since `.value` is changed, then it is mutable (i.e.: writable).\n'
+                                + '\n'
+                                + 'Since `.value` is non-configurable, then it cannot be deleted; hence it is'
+                                + ' replaced with `undefined` after being used (important for garbage collection).'
+                            )//,
+                },
+
+                writable$ : {
+                    enumerable : true,
+                    value : '`.writable = true`: constant (not writable) {default value, but set for clarity).'//,
+                }//,
+            })
     }
 )
 
 
 if (Gem.Configuration.unit_test) {
     Gem.Core.execute(
-        function execute$test_InvisibleConstructorAttribute() {
+        function execute$test_InvisibleConstructorProperty() {
             var module = 'Gem.Beryl.Boot4_StubAttribute'
 
 
@@ -52,10 +117,10 @@ if (Gem.Configuration.unit_test) {
             var Box           = Gem.Box
             var Configuration = Gem.Configuration
 
-            var create_AnonymousBox                  = Box.create_AnonymousBox
-            var create_InvisibleConstructorAttribute = Box.create_InvisibleConstructorAttribute
-            var own_property_descriptor              = Object.getOwnPropertyDescriptor
-            var unit_test                            = Configuration.unit_test
+            var create_AnonymousBox            = Box.create_AnonymousBox
+            var invisible_constructor_property = Box.invisible_constructor_property
+            var own_property_descriptor        = Object.getOwnPropertyDescriptor
+            var unit_test                      = Configuration.unit_test
 
 
             //
@@ -67,68 +132,16 @@ if (Gem.Configuration.unit_test) {
             }
 
 
-            //
-            //  The three values `configurable`, `enumerable`, and `writable` are set to their default values:
-            //
-            //      1.  This is unncessary, but makes the unit test code clearer.
-            //
-            //      2.  Also when examining the result in Developer Tools, it is a lot cleaer.
-            //
-            var invisible_constructor_attribute = create_InvisibleConstructorAttribute({
-                    $what : {
-                        enumerable : true,
-                        value      : 'A test of Gem.Box.create_InvisibleConstructorAttribute().'//,
-                    },
+            /*create*/ {
+                invisible_constructor_property.value = Test_Of_A_Fake_Invisible_Constructor
 
-                    configurable : { enumerable: true, value : false                      },    //  Default
-                    enumerable   : { enumerable: true, value : false                      },    //  Default
-                    value        : { enumerable: true, value : undefined, writable : true },
-                    writable     : { enumerable: true, value : false                      },    //  Default
+                var test_of_a_fake_invisible_constructor = create_AnonymousBox({
+                        $what       : { enumerable : true, value : 'A test of invisible_constructor_property' },
+                        constructor : invisible_constructor_property//,
+                    })
 
-                    configurable$ : {
-                        enumerable : true,
-                        value : '`.configurable = false`: non configurable {default value, but set for clarity}.'//,
-                    },
-
-                    enumerable$ : {
-                        enumerable : true,
-                        value : (
-                                      '`.enumerable = false`: invisible (non enumerable)'
-                                    + ' {default value, but set for clarity}.'
-                                )//,
-                    },
-
-                    value$ : {
-                        enumerable : true,
-
-                        value : (
-                                      '`.value` is initialized as `undefined`, and is replaced with an actual'
-                                    + ' constructor when used; and then restored to `undefined`.\n'
-                                    + '\n'
-                                    + 'Since `.value` is changed, then it is mutable (i.e.: writable).\n'
-                                    + '\n'
-                                    + 'Since `.value` is non-configurable, then it cannot be deleted; hence it is'
-                                    + ' replaced with `undefined` after being used (important for garbage collection).'
-                                )//,
-                    },
-
-                    writable$ : {
-                        enumerable : true,
-                        value : '`.writable = true`: constant (not writable) {default value, but set for clarity).'//,
-                    }//,
-                })
-
-
-            invisible_constructor_attribute.value = Test_Of_A_Fake_Invisible_Constructor
-
-
-            var test_of_a_fake_invisible_constructor  = create_AnonymousBox({
-                    $what       : { enumerable : true, value : 'A test of invisible_constructor_attribute' },
-                    constructor : invisible_constructor_attribute//,
-                })
-
-
-            invisible_constructor_attribute.value = undefined
+                invisible_constructor_property.value = undefined
+            }
 
 
             /*verify*/ {
@@ -165,11 +178,11 @@ if (Gem.Configuration.unit_test) {
             if (unit_test === 7) {
                 console.log((
                                   '%c%s%c'
-                                + ': %cinvisible_constructor_attribute%c: %o'
+                                + ': %cinvisible_constructor_property%c: %o'
                                 + '; %ctest_of_a_fake_invisible_constructor%c: %o'
                             ),
                             'color:green', module, 'color:none',
-                            'color:orange', 'color:none', invisible_constructor_attribute,
+                            'color:orange', 'color:none', invisible_constructor_property,
                             'color:orange', 'color:none', test_of_a_fake_invisible_constructor)
             }
         }//,
