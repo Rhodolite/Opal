@@ -17,21 +17,21 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 0,                                  //      Trace function, method & bound method calls.
+        trace         : 1,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
         }//,
     },
 
-    Tracing : {                                             //  Map of functions, methods & bound_methods being traced.
-        Gem__Core__execute           : 0,                   //      Means 'Gem.Core.execute'
-        Gem__private__Core__who_what : 0,                   //      Means 'Gem._.Core.who_what'
-
-        execute$codify$trace$Gem__Core__execute : 0,
-        execute$setup_Gem                       : 0,
-        execute$setup_Tracing                   : 0//,
-    },
+    Tracing : [                                             //  Functions, methods, & bound_methods being traced.
+        'execute$codify$trace$Gem__Core__execute',  0,
+        'execute$setup_Gem',                        0,
+        'execute$setup_Tracing',                    0,
+        'Gem._.Core.who_what',                      0,
+        'Gem.Core.execute',                         0,
+        'Gem.Box.create_ModuleExports$Box',         1//,
+    ],
 
     Core : {                                                //  Basic support code for the Core Gem module.
         execute : function Gem__Core__execute(code) {       //      Stub#1 for Gem.Core.execute
@@ -74,10 +74,16 @@ window.Gem = {
         //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'>.
     },
 
-//  Trace : {                                               //  Map of functions, methods & bound_methods being traced.
+    Trace : {                                               //  Map of functions, methods & bound_methods being traced.
 //      //  method_call     : Function          [TODO]      //      Start a trace group for a method call.
 //      //  trace_line      : Function          [MOVE]      //      Start a trace group.
-//  },
+        tracing       : Function,                           //      Returns the trace configuration for a routine.
+
+        //
+        //  The following are used only if `Gem.Configuration.trace` is non-zero
+        //
+        wrap_function : Function//,                         //      Wrap a function with tracing
+    },
 
 
     _ : {                                                   //  Private members & methods of all Gem modules.
@@ -93,8 +99,6 @@ window.Gem = {
         //  group_stop            : Bound Function          //          Stop a group on the console.
         //  procedure_done        : Function                //          Finish a procedure (no result shown).
         //  trace_value           : Function                //          Show a value for tracing.
-        //  tracing               : Function                //          Returns the trace configuration for a routine.
-        //  wrap_function         : Function                //          Wrap a function with tracing.
         //  zap_pending__1_to_end : Function                //          Internal routine to clean up 'Trace.pending'.
         }//,
     }//,
@@ -107,7 +111,6 @@ Gem.Core.execute(
         //  Imports
         //
         var Configuration = Gem.Configuration
-        var Tracing       = Gem.Tracing
 
         var clarity            = Gem.Configuration.clarity
         var get_property_names = Object.getOwnPropertyNames
@@ -116,55 +119,27 @@ Gem.Core.execute(
 
 
         //
-        //  Adjust keys, changing '__' to '.'
+        //  Adjust keys, changing the array to an object.
         //
-        //  NOTE #1:
-        //      Only if the key does not have a '$' in it, keys with '$' are left alone.
-        //
-        //  NOTE #2:
+        //  NOTE2:
         //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
         //
         //          Tracing : {
         //              ['Gem.Core.execute'] : 7,
         //          }
         //
-        //      So to be compatiable with JavaScript 5.0, we do the following instead:
-        //
-        //          Tracing : {
-        //              Gem__Core__execute : 7//,
-        //          }
-        //
-        //      And then convert the key 'Gem__Core__execute' to 'Gem.Core.execute'.
-        //
-        //  NOTE #2:
-        //      Since we are deleting elements from `Tracing`, we can do a `for (k in Tracing)` as you are
-        //      not allowed to delete elements inside an iteration.
-        //
-        //      Hence we use `get_property_names(Tracing).sort` to first get the keys, then we can copy/delete
-        //      keys in the loops safetly.
-        //
-        var keys = get_property_names(Tracing).sort()    //  `sort` makes the for loop deterministic
+        var tracing_list  = Gem.Tracing
+        var tracing_total = tracing_list.length
 
-        var double_underscore__pattern = new Pattern('__', 'g')
+        var Tracing     =
+            Gem.Tracing = {}
 
 
+        for (var i = 0; i < tracing_total; i += 2) {
+            var k = tracing_list[i]
+            var v = tracing_list[i + 1]
 
-        for (var i = keys.length - 1; i >= 0; i --) {
-            var k = keys[i]
-
-            if (k.startsWith('Gem__private__')) {
-                var dotted = k.replace('Gem__private__', 'Gem._.').replace('__', '.')
-
-                Tracing[dotted] = Tracing[k]
-
-                delete Tracing[k]
-            } else if ((k.indexOf('__') !== -1) && (k.indexOf('$') === -1)) {
-                var dotted = k.replace(double_underscore__pattern, '.')
-
-                Tracing[dotted] = Tracing[k]
-
-                delete Tracing[k]
-            }
+            Tracing[k] = v
         }
 
 
@@ -255,7 +230,7 @@ Gem.Core.execute(
             //
             //      Otherwise, return 0 (tracing off).
             //
-            var tracing = function tracing(name) {
+            var tracing = function Gem__Trace__tracing(name) {
                 var trace = Configuration.trace             //  Get newest value of 'trace'
 
                 if (trace === 0 || trace === 7) {
@@ -385,7 +360,7 @@ Gem.Core.execute(
             }
 
 
-            var function_call = function Gem__Trace__function_call(f, /*optional*/ argument_list) {
+            var function_call = function Gem__Trace__function_call(f, /*optional*/ argument_list, function_name) {
                 //  Begin a function call to queue a pending new closed trace group.
                 //
                 //  NOTE #1:
@@ -407,15 +382,23 @@ Gem.Core.execute(
                 push_color_green()
                 push_color_none()
 
+                if (arguments.length === 3) {
+                    var green_function_name = '%c' + function_name + '%c'
+                } else if ('$who' in f) {
+                    var green_function_name = '%c' + f.$who + '%c'
+                } else {
+                    var green_function_name = '%c' + f.name + '%c'
+                }
+
                 if (argument_list === undefined) {
-                    pending[0] = ('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
+                    pending[0] = (green_function_name + '()')
                     return
                 }
 
                 var argument_total = argument_list.length
 
                 if ( ! argument_total) {
-                    pending[0] = ('%c' + (('$who' in f) ? f.$who : f.name) + '%c()')
+                    pending[0] = (green_function_name + '()')
                     return
                 }
 
@@ -428,7 +411,7 @@ Gem.Core.execute(
                         //      Output each argument on a separate line
                         //
 
-                        format = '%c' + (('$who') in f ? f.$who : f.name) + '%c(\n'
+                        format = green_function_name + '(\n'/*)*/
 
                         for (var i = 0; i < argument_total; i ++) {
                             var v = argument_list[i]
@@ -450,7 +433,7 @@ Gem.Core.execute(
                     }
                 }
 
-                format = '%c' + (('$who') in f ? f.$who : f.name) + '%c('
+                format = green_function_name + '('/*)*/
 
                 for (var i = 0; i < argument_total; i ++) {
                     var v = argument_list[i]
@@ -547,7 +530,7 @@ Gem.Core.execute(
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
                     if (trace === 7 || (trace && Tracing[function_name])) {
-                        function_call(f, arguments)
+                        function_call(f, arguments, function_name)
 
                         var r = f.apply(this, arguments)
 
@@ -577,10 +560,23 @@ Gem.Core.execute(
             _Trace.group_stop            = group_stop
             _Trace.procedure_done        = procedure_done
             _Trace.trace_value           = trace_value
-            _Trace.tracing               = tracing
-            _Trace.wrap_function         = wrap_function
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
+        } else {
+            var tracing = function Gem__Trace__tracing(name) {
+                return 0
+            }
+
+            var wrap_function = function Gem__Trace__wrap_function(f, /*optional*/ name) {
+                return f
+            }
         }
+
+
+        //
+        //  Export
+        //
+        Trace.tracing       = tracing
+        Trace.wrap_function = wrap_function
     }
 )
 
@@ -600,11 +596,14 @@ if (Gem.Configuration.trace) {
             //
             //  Imports
             //
+            var Gem = window.Gem
+
             var _Trace = Gem._.Trace
+            var Trace  = Gem.Trace
 
             var function_call  = _Trace.function_call
             var procedure_done = _Trace.procedure_done
-            var tracing        = _Trace.tracing
+            var tracing        = Trace.tracing
 
 
             //
@@ -668,7 +667,8 @@ Gem.Core.execute(
         //
         //  Imports
         //
-        var _Trace        = Gem._.Trace
+        var Gem = window.Gem
+
         var Configuration = Gem.Configuration
 
         var clarity           = Configuration.clarity
@@ -678,10 +678,13 @@ Gem.Core.execute(
         var trace             = Configuration.trace
 
         if (trace) {
+            var Trace         = Gem.Trace
+            var _Trace        = Gem._.Trace
+
             var function_call  = _Trace.function_call
             var procedure_done = _Trace.procedure_done
-            var tracing        = _Trace.tracing
-            var wrap_function  = _Trace.wrap_function
+            var tracing        = Trace.tracing
+            var wrap_function  = Trace.wrap_function
         }
 
 

@@ -13,52 +13,93 @@ Gem.Core.execute(
         var Gem = window.Gem
 
         var Configuration = Gem.Configuration
+        var Trace         = Gem.Trace
 
-        var clarity  = Configuration.clarity
-        var trace    = Configuration.clarity
-        var box_name = Configuration.Box.box_name
+        var clarity       = Configuration.clarity
+        var trace         = Configuration.clarity
+        var box_name      = Configuration.Box.box_name
+        var wrap_function = Trace.wrap_function
+
+        if (clarity || trace) {
+            var _Core = Gem._.Core
+
+            var who_what = _Core.who_what
+        }
+
+        debugger
 
 
         //
         //  Implementation
         //
-        /*create*/ {
-            if (box_name) {
-                function ModuleExports$Box() {
-                    //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
-                    //  created using this constructor as "ModuleExports$Box".
+        if (box_name) {
+            var ModuleExports$Box = function ModuleExports$Box() {
+                //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
+                //  created using this constructor as "ModuleExports$Box".
+            }
+
+            var create_ModuleExports$Box = function Gem__Box__create_ModuleExports$Box($who, $what) {
+                //  Stub to create a box named "ModuleExports" to be used for the exports of a module.
+
+                var result = new ModuleExports$Box()
+
+                if (clarity || trace) {
+                    who_what(result, $who, $what)
                 }
 
-                Gem.Box = new ModuleExports$Box()
-            } else {
-                //
-                //  Imports
-                //
-                var create_Object = Object.create
+                return result
+            }
+        } else {
+            //
+            //  Imports
+            //
+            var create_Object = Object.create
 
 
+            //
+            //  Implementation
+            //
+            var create_ModuleExports$Box = function Gem__Box__create_ModuleExports$Box($who, $what) {
+                //  Stub to create an anonymous box to be used for the exports of a module.
                 //
-                //  Implementation
-                //
-                Gem.Box = create_Object(null)
+                //  NOTE:
+                //      If `Gem.Configuration.Box.box_name` is set to `true` then the box created would have a
+                //      "name" of `ModuleExports$Box" in Developer Tools.
+
+                var result = create_Object(null)
+
+                if (clarity || trace) {
+                    who_what(result, $who, $what)
+                }
+
+                return result
             }
         }
 
-        /*clarity*/ {
-            if (clarity || trace) {
-                //
-                //  Imports
-                //
-                var _Core = Gem._.Core
 
-                var who_what = _Core.who_what
+        var wrapped$create_ModuleExports$Box = wrap_function(
+                create_ModuleExports$Box,
+                'Gem.Box.create_ModuleExports$Box'
+            )
 
-                //
-                //  Implementation
-                //
-                who_what(Gem.Box, 'Gem.Box', 'Exports of the Box module.', true)
-            }
-        }
+        Gem.Box = wrapped$create_ModuleExports$Box('Gem.Box', 'Exports of the Box module.', true)
+
+        Gem.Core.method.call(
+            Gem.Box,
+            'create_ModuleExports$Box',
+            (
+                box_name
+                    ? 'Stub to create a box named "ModuleExports" to be used for the exports of a module.'
+                    : (
+                            'Stub to create an anonymous box to be used for the exports of a module.\n'
+                          + '\n'
+                          + 'NOTE:\n'
+                          + '    If `Gem.Configuration.Box.box_name` is set to `true` then the box created would have'
+                          + ' a "name" of `ModuleExports$Box" in Developer Tools.'
+                      )
+            ),
+            create_ModuleExports$Box//,
+        )
     }
 )
 
