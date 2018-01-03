@@ -25,12 +25,31 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'execute$codify$trace$Gem__Core__execute',  0,
-        'execute$setup_Gem',                        0,
-        'execute$setup_Tracing',                    0,
-        'Gem._.Core.who_what',                      0,
-        'Gem.Core.execute',                         0,
-        'Gem.Box.create_ModuleExports$Box',         1//,
+        'execute$codify$trace$Gem__Core__execute',              0,
+        'execute$setup_Gem',                                    0,
+        'execute$setup_Tracing',                                0,
+        'Gem._.Core.constant_attribute',                        0,
+        'Gem._.Core.who_what',                                  0,
+        'Gem._.Trace.store_codifier_wrap_constructor',          0,
+        'Gem.Box.create_AnonymousBox',                          0,
+        'Gem.Box.create_ModuleExports$Box',                     1,
+        'Gem.Core.codify_method',                               0,
+        'Gem.Core.constant',                                    0,
+        'Gem.Core.execute',                                     0,
+        'Gem.Core.method',                                      0,
+        'Gem.Core.qualify_constant',                            0,
+        'Gem.NodeWebKit.show_developer_tools',                  0,
+        'Gem.Script.codify_method_load',                        0,
+        'Gem.Script.error',                                     0,
+        'Gem.Script.handle_event',                              0,
+        'Gem.Script.handle_global_error',                       0,
+        'Gem.Script.load',                                      0,
+        'Gem.Script.source_attribute',                          0,
+        'Gem.Trace.wrap_constructor',                           0,
+        'ModuleExports$Box',                                    1,
+        'qualifier$Gem__Core__invisible_constructor_property',  0,
+        'qualifier$Gem__Script__gem_scripts',                   0,
+        'STUB$Gem__Core__method',                               0//,
     ],
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -178,19 +197,30 @@ Gem.Core.execute(
 
 
             if ('bind' in unbound__push) {
-                var push_color_blue   = unbound__push.bind(pending, 'color:blue')
-                var push_color_green  = unbound__push.bind(pending, 'color:green')
-                var push_color_none   = unbound__push.bind(pending, 'color:none')
-                var push_color_orange = unbound__push.bind(pending, 'color: #EEA500')
-                var push_color_pink   = unbound__push.bind(pending, 'color: #FF1493')       //  Actually: DeepPink
-                var push_color_purple = unbound__push.bind(pending, 'color:purple')
-                var push_color_red    = unbound__push.bind(pending, 'color:red')
-                var push_color_teal   = unbound__push.bind(pending, 'color:teal')
-                var push_object       = unbound__push.bind(pending)
+                var push_color_bold_cyanish = unbound__push.bind(pending, 'font-weight: bold; color: #00AAFF')
+                var push_color_blue         = unbound__push.bind(pending, 'color:blue')
+                var push_color_green        = unbound__push.bind(pending, 'color:green')
+                var push_color_none         = unbound__push.bind(pending, 'color:none')
+                var push_color_normal_none  = unbound__push.bind(pending, 'font-weight: none; color: none')
+                var push_color_orange       = unbound__push.bind(pending, 'color: #EEA500')
+                var push_color_pink         = unbound__push.bind(pending, 'color: #FF1493')     //  Actually: DeepPink
+                var push_color_purple       = unbound__push.bind(pending, 'color:purple')
+                var push_color_red          = unbound__push.bind(pending, 'color:red')
+                var push_color_teal         = unbound__push.bind(pending, 'color:teal')
+                var push_object             = unbound__push.bind(pending)
             } else {
-                var push_color_blue   = function OLD_WAY$push_color_blue()     { pending.push('color:blue')     }
-                var push_color_green  = function OLD_WAY$push_color_green()    { pending.push('color:green')    }
-                var push_color_none   = function OLD_WAY$push_color_none()     { pending.push('color:none')     }
+                var push_color_bold_cyanish = function OLD_WAY$push_color_blue() {
+                    pending.push('font-weight: bold; color: #00AAFF')
+                } 
+
+                var push_color_blue  = function OLD_WAY$push_color_blue()  { pending.push('color:blue')  }
+                var push_color_green = function OLD_WAY$push_color_green() { pending.push('color:green') }
+                var push_color_none  = function OLD_WAY$push_color_none()  { pending.push('color:none')  }
+
+                var push_color_normal_none = function OLD_WAY$push_color_normal_none() {
+                    pending.push('font-weight: none; color:none')
+                }
+
                 var push_color_orange = function OLD_WAY$push_color_orange()   { pending.push('color: #EEA500') }
                 var push_color_pink   = function OLD_WAY$push_color_pink()     { pending.push('color: #FF1493') }
                 var push_color_purple = function OLD_WAY$push_color_purple()   { pending.push('color:purple')   }
@@ -379,26 +409,38 @@ Gem.Core.execute(
 
                 _Trace.depth += 1
 
-                push_color_green()
-                push_color_none()
-
                 if (arguments.length === 3) {
-                    var green_function_name = '%c' + function_name + '%c'
+                    var colored_function_name = '%c' + function_name + '%c'
+
+                    if (function_name.startsWith('new ')) {
+                        push_color_bold_cyanish()
+                        push_color_normal_none()
+                    } else {
+                        push_color_green()
+                        push_color_none()
+                    }
                 } else if ('$who' in f) {
-                    var green_function_name = '%c' + f.$who + '%c'
+                    var colored_function_name = '%c' + f.$who + '%c'
+
+                    push_color_green()
+                    push_color_none()
                 } else {
-                    var green_function_name = '%c' + f.name + '%c'
+                    var colored_function_name = '%c' + f.name + '%c'
+
+                    push_color_green()
+                    push_color_none()
                 }
 
+
                 if (argument_list === undefined) {
-                    pending[0] = (green_function_name + '()')
+                    pending[0] = (colored_function_name + '()')
                     return
                 }
 
                 var argument_total = argument_list.length
 
                 if ( ! argument_total) {
-                    pending[0] = (green_function_name + '()')
+                    pending[0] = (colored_function_name + '()')
                     return
                 }
 
@@ -411,7 +453,7 @@ Gem.Core.execute(
                         //      Output each argument on a separate line
                         //
 
-                        format = green_function_name + '(\n'/*)*/
+                        format = colored_function_name + '(\n'/*)*/
 
                         for (var i = 0; i < argument_total; i ++) {
                             var v = argument_list[i]
@@ -433,7 +475,7 @@ Gem.Core.execute(
                     }
                 }
 
-                format = green_function_name + '('/*)*/
+                format = colored_function_name + '('/*)*/
 
                 for (var i = 0; i < argument_total; i ++) {
                     var v = argument_list[i]
@@ -510,6 +552,10 @@ Gem.Core.execute(
 
 
             var wrap_function = function Gem__Trace__wrap_function(f, /*optional*/ name) {
+                if (f === undefined) {
+                    debugger
+                }
+
                 if (arguments.length === 1) {
                     if ('$who' in f) {
                         var function_name = f.$who
@@ -920,9 +966,11 @@ Gem.Core.execute(
             //
             //      More complicated version: clarity and/or trace mode
             //
-            var _method__complex = function __method__complex(instance, who, $what, method, function_name) {
+            var _method__complex = function __method__complex(
+                    instance, who, $what, method, function_name, /*optional*/ flags//,
+            ) {
                 if (clarity) {
-                    if (trace) {
+                    if (trace && flags !== 'no-trace') {
                         //
                         //  Version with clarity & tracing.
                         //
@@ -970,6 +1018,13 @@ Gem.Core.execute(
 
                     //  interim constant instance.*who = method
                     _save_interim_constant(instance, who, method)
+                    return
+                }
+
+                if (flags === 'no-trace') {
+                    constant_property.value = method
+                    define_property(instance, who, constant_property)
+                    delete constant_property.value
                     return
                 }
 
@@ -1065,7 +1120,7 @@ Gem.Core.execute(
         Gem.Core.method(
             'codify_method',
             'Temporary stub for Gem.Core.codify_method',
-            function STUB$Gem__Core__codify_method(who, $what, codifier) {
+            function STUB$Gem__Core__codify_method(who, $what, codifier, /*optional*/ flags) {
                 if ( ! clarity && ! trace) {
                     _method__simple(this, who, codifier())
                     return
@@ -1077,11 +1132,11 @@ Gem.Core.execute(
 
                 var function_name = this.$who + '.' + who
 
-                if (trace) {
+                if (trace && flags !== 'no-trace') {
                     codifier = wrap_function(codifier, function_name)
                 }
 
-                _method__complex(this, who, $what, codifier(), function_name)
+                _method__complex(this, who, $what, codifier(), function_name, flags)
             }
         )
 

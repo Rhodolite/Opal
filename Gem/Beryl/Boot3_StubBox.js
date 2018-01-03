@@ -26,17 +26,26 @@ Gem.Core.execute(
             var who_what = _Core.who_what
         }
 
-        debugger
-
 
         //
         //  Implementation
         //
         if (box_name) {
-            var ModuleExports$Box = function ModuleExports$Box() {
-                //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
-                //  created using this constructor as "ModuleExports$Box".
-            }
+            //
+            //  Imports
+            //
+            var wrap_constructor = Trace.wrap_constructor
+
+
+            //
+            //  Implementation
+            //
+            var ModuleExports$Box = wrap_constructor(
+                    function ModuleExports$Box() {
+                        //  A constructor for nw.js 0.12 so that Developer Tools shows the "class name" of an instance
+                        //  created using this constructor as "ModuleExports$Box".
+                    }//,
+                )
 
             var create_ModuleExports$Box = function Gem__Box__create_ModuleExports$Box($who, $what) {
                 //  Stub to create a box named "ModuleExports" to be used for the exports of a module.

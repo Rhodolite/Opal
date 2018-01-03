@@ -10,23 +10,6 @@
 //
 
 
-Gem.Core.execute(
-    function execute$Gem__add_trace_clarity() {
-        //
-        //  Imports
-        //
-        var who_what = Gem._.Core.who_what
-
-
-        //
-        //  Implementation
-        //
-        who_what(Gem._.Trace, 'Gem._.Trace', 'Private members & methods of the Trace module.',          true)
-        who_what(Gem.Tracing, 'Gem.Tracing', 'Map of functions, methods & bound_methods being traced.', false)
-    }
-)
-
-
 //
 //  Gem._.Trace.wrap_function
 //      Trace a function, method, or bound method.
@@ -195,13 +178,6 @@ Gem.Core.codify_method.call(
         }
     }//,
 )
-
-
-//--------------------------------------------------------+
-//  This code is formatted for clarity.                   |
-//  Hence this code does not use unnecessary semicolons.  |
-//  Reasoning: https://mislav.net/2010/05/semicolons/     |
-//--------------------------------------------------------+
 
 
 //  The full MIT License is available here: https://github.com/Rhodolite/Opal/blob/master/LICENSE
