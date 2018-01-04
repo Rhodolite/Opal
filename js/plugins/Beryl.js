@@ -17,7 +17,7 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 7,                                  //      Trace function, method & bound method calls.
+        trace         : 1,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
@@ -134,6 +134,7 @@ Gem.Core.execute(
         //  Imports
         //
         var Configuration = Gem.Configuration
+        var Trace         = Gem.Trace
 
         var clarity            = Gem.Configuration.clarity
         var get_property_names = Object.getOwnPropertyNames
@@ -179,7 +180,6 @@ Gem.Core.execute(
         //
         if (trace) {
             var _Trace = Gem._.Trace
-            var Trace  = Gem.Trace
 
             var console = window.console
             var pending = _Trace.pending
@@ -304,9 +304,9 @@ Gem.Core.execute(
                 if (result__name == '') {
                     if (trace) {
                         if (trace === 'tracing') {
-                            result__keyword = 'tracing'
+                            result__keyword = trace
                         } else {
-                            result__keyword = 'trace-unnamed-function'
+                            result__keyword = 'tracing-unnamed-function'
                         }
                     } else {
                         result__keyword = 'unnamed-function'
@@ -397,7 +397,7 @@ Gem.Core.execute(
                     if ('$trace' in v) {
                         var $trace = v.$trace
 
-                        parse_function($trace, 'trace-function')
+                        parse_function($trace, 'tracing')
 
                         if ('$who' in $trace) {
                             var who = $trace.$who
@@ -1068,6 +1068,10 @@ Gem.Core.execute(
             constant_property.value = value
             define_property(instance, name, constant_property)
             delete constant_property.value
+
+            if (trace && tracing('constant_attribute')) {
+                trace_attribute('constant', instance, name, value)
+            }
         }
 
 
@@ -1223,9 +1227,7 @@ Gem.Core.execute(
             //      Version: No clarity or trace mode.
             //
             var method__simple = function method__simple(instance, who, method) {
-                constant_property.value = method
-                define_property(instance, who, constant_property)
-                delete constant_property.value
+                constant_attribute(instance, who, method)
             }
         } else {
             //
@@ -1366,7 +1368,7 @@ Gem.Core.execute(
             //  Use 'method' on itself
             //
             method.call(
-                Gem.core,
+                Gem.Core,
                 'method',
                 'Temporary stub for Gem.Core.method',
                 method//,
@@ -1375,10 +1377,11 @@ Gem.Core.execute(
 
 
         //
-        //  Export: Gem.Core._.method__simple
+        //  Export: Gem._.Core.method__simple
         //
-        if ( ! clarity) {
+        if ( ! clarity && ! trace) {
             Gem.Core.method.call(
+                Gem._.Core,
                 'method__simple',
                 (
                       'Stub of Private Common method to define a method.\n'
@@ -1473,17 +1476,16 @@ Gem.Core.execute(
         )
 
 
-        if (clarity || trace) {
-            Gem.Trace.traced_method(
-                Gem._.Core,
-                'who_what',
-                (
-                    clarity
-                        ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
-                        : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
-                ),
-                who_what//,
-            )
+        /*who_what*/ {
+            var $what = clarity
+                            ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
+                            : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
+
+            if (trace) {
+                Gem.Trace.traced_method(Gem._.Core, 'who_what', $what, who_what)
+            } else if (clarity) {
+                Gem.Core.method.call(Gem._.Core, 'who_what', $what, who_what)
+            }
         }
 //  </stubs>                                                //   End of stubs
 
