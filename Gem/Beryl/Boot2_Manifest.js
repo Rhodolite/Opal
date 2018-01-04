@@ -28,15 +28,15 @@ Gem.Core.execute(
         //
         var manifest_list = [
             'Gem/Beryl/Boot3_Clarity.js',                   clarity || trace,
-            'Gem/Beryl/Boot4_StubCodifyTracedMethod.js',    trace,
+            'Gem/Beryl/Boot4_StubCodifyTracedMethod.js',    0,//trace,
 
 
             // Renumber
-            'Gem/Beryl/Boot4_StubConstructor.js',           box_name,
-            'Gem/Beryl/Boot3_TraceConstructor.js',          1,
-            'Gem/Beryl/Boot3_StubBox.js',                   1,
-            'Gem/Beryl/Boot3_StubAnonymousBox.js',          7,
-            'Gem/Beryl/Boot4_StubAttribute.js',             7,
+            'Gem/Beryl/Boot4_StubConstructor.js',           0,//box_name,
+            'Gem/Beryl/Boot3_TraceConstructor.js',          0,//1,
+            'Gem/Beryl/Boot3_StubBox.js',                   0,//1,
+            'Gem/Beryl/Boot3_StubAnonymousBox.js',          0,//7,
+            'Gem/Beryl/Boot4_StubAttribute.js',             0,
 
             // Redo
             'Gem/Beryl/Boot3_Attribute.js',         0,

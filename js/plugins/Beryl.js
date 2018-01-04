@@ -17,7 +17,7 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 7,                                  //      Trace function, method & bound method calls.
+        trace         : 1,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
@@ -25,6 +25,8 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
+        'constant_$trace_attribute',                            1,
+        'constant_$who_attribute',                              1,
         'execute$codify$trace$Gem__Core__execute',              0,
         'execute$setup_Gem',                                    0,
         'execute$setup_Tracing',                                0,
@@ -46,8 +48,9 @@ window.Gem = {
         'Gem.Script.load',                                      0,
         'Gem.Script.source_attribute',                          0,
         'Gem.Trace.wrap_constructor',                           0,
-        'interim_constant_attribute',                           1,
-        'ModuleExports$Box',                                    1,
+        'Gem.Trace.wrap_function',                              1,
+        'interim_constant_attribute',                           0,
+        'ModuleExports$Box',                                    0,
         'qualifier$Gem__Core__invisible_constructor_property',  0,
         'qualifier$Gem__Script__gem_scripts',                   0,
         'STUB$Gem__Core__method',                               0//,
@@ -181,7 +184,9 @@ Gem.Core.execute(
             var console = window.console
             var pending = _Trace.pending
 
+            var create_Object               = Object.create
 //          var unbound__group_start_closed = console.groupCollapsed
+            var define_property             = Object.defineProperty
             var unbound__group_start_open   = console.group
             var unbound__group_stop         = console.groupEnd
             var unbound__line               = console.log
@@ -289,18 +294,6 @@ Gem.Core.execute(
             var format
 
 
-            var trace_object_name = function trace_object_name(v) {
-                if ('$who' in v) {
-                    push_color_pink()
-                    push_color_none()
-                    return "`%c" + v.$who + "`%c"
-                }
-
-                push_object(v)
-                return '%o'
-            }
-
-
             var trace_value = function trace_value(v) {
                 var v_type = typeof v
 
@@ -334,7 +327,7 @@ Gem.Core.execute(
                         push_color_pink()
                         push_color_none()
                         push_object(v)
-                        return "`%c" + v.$who + "`%c %o"
+                        return "%c`" + v.$who + "`%c %o"
                     }
 
                     push_object(v)
@@ -342,13 +335,29 @@ Gem.Core.execute(
                 }
 
                 if (v_type === 'function') {
-                    if (v.name === '') {
-                        push_color_blue()
-                        push_color_none()
-                        return '%cunnamed function%c ()'
+                    if ('$trace' in v) {
+                        if (v.name === '') {
+                            push_color_blue()
+                            push_color_none()
+
+                            return '%ctrace unnamed function%c ()'
+                        }
+
+                        var format = '%ctrace%c'
+                        var target = v.$trace
+                    } else {
+                        if (v.name === '') {
+                            push_color_blue()
+                            push_color_none()
+
+                            return '%cunnamed function%c ()'
+                        }
+
+                        var format = '%cfunction%c'
+                        var target = v
                     }
 
-                    var s = v.toString()
+                    var s = target.toString()
 
                     if (s.substr(-18) === ' { [native code] }') {       //  `substr` allows negative indexes
                         push_color_blue()
@@ -356,7 +365,7 @@ Gem.Core.execute(
                         push_color_orange()
                         push_string(s.substring(9, s.length - 29))      //  Cheating a bit: 9..-29 = function name
                         push_color_none()
-                        return '%cfunction%c %c%s%c() { [native code] }'
+                        return format + ' %c%s%c() { [native code] }'
                     }
 
                     var open_left_parenthesis = s.indexOf('(')
@@ -373,15 +382,15 @@ Gem.Core.execute(
                         push_string(s.substring(9, open_left_parenthesis))
                         push_color_none()
                         push_string(s.substring(open_left_parenthesis, open_left_brace__m1))
-                        return '%cfunction%c %c%s%c%s'
+                        return format + ' %c%s%c%s'
                     }
 
                     push_color_blue()
                     push_color_none()
                     push_color_orange()
-                    push_string(v.name)
+                    push_string(target.name)
                     push_color_none()
-                    return '%cfunction%c %s()'
+                    return format + ' %s()'
                 }
 
                 if (v_type === 'symbol') {
@@ -402,6 +411,103 @@ Gem.Core.execute(
                 push_object(v)
                 return '%c<v_type:' + v_type + '>%c %o'
             }
+
+
+            var trace_attribute = function trace_attribute(keyword, instance, name, value) {
+                if (pending.length > 1) {
+                    unbound__group_start_open.apply(console, pending)
+                    zap_pending__1_to_end()
+                }
+
+                /*interim constant*/ {
+                    var format = '%c' + keyword + '%c '
+                    push_color_blue()
+                    push_color_none()
+                }
+
+                /*instance*/ {
+                    var instance_type = typeof instance
+
+                    if (instance_type === 'object' && instance !== null && ('$who' in instance)) {
+                        format += "%c`" + instance.$who + "`%c"
+                        push_color_pink()
+                        push_color_none()
+                    } else if (instance_type === 'function' && instance.name) {
+                        format += "%c`%c%cfunction%c "
+                        push_color_pink()
+                        push_color_none()
+                        push_color_blue()
+                        push_color_none()
+
+                        var s = instance.toString()
+
+                        if (s.substr(-18) === ' { [native code] }') {       //  `substr` allows negative indexes
+                            format += "%c%s%c() { [native code] }"
+                            push_color_pink()
+                            push_string(s.substring(9, s.length - 29))      //  Cheating a bit: 9..-29 = function name
+                            push_color_none()
+                        } else {
+                            var open_left_parenthesis = s.indexOf('(')
+                            var open_left_brace       = s.indexOf('{')
+                            var open_left_brace__m1   = open_left_brace - 1
+
+                            if (
+                                   (0 < open_left_parenthesis && open_left_parenthesis < open_left_brace__m1)
+                                && s[open_left_brace__m1] === ' '
+                            ) {
+                                format += "%c%s%c%s"
+                                push_color_pink()
+                                push_string(s.substring(9, open_left_parenthesis))
+                                push_color_none()
+                                push_string(s.substring(open_left_parenthesis, open_left_brace__m1))
+                            } else {
+                                format += "%s"
+                                push_string(instance.name)
+                            }
+                        }
+
+                        format += "%c`%c"
+                        push_color_pink()
+                        push_color_none()
+                    } else {
+                        format += "%c`%c"
+                        push_color_pink()
+                        push_color_none()
+
+                        format += trace_value(instance)
+
+                        format += "%c`%c"
+                        push_color_pink()
+                        push_color_none()
+                    }
+                }
+                
+                /*.name*/ {
+                    format += '%c.%c%c' + name + '%c'
+
+                    push_color_blue()       //  .
+                    push_color_none()
+                    push_color_green()      //  name
+                    push_color_none()
+                }
+
+                /*=*/ {
+                    format += ' %c=%c '
+                    push_color_blue()
+                    push_color_none()
+                }
+
+                /*value*/ { 
+                    format += trace_value(value)
+                }
+
+                pending[0] = format
+
+                unbound__line.apply(console, pending)
+                zap_pending__1_to_end()
+            }
+
+
 
 
             var function_call = function Gem__Trace__function_call(f, /*optional*/ argument_list, function_name) {
@@ -489,7 +595,7 @@ Gem.Core.execute(
                     }
                 }
 
-                format = colored_function_name + '('/*)*/
+                format = colored_function_name + '('
 
                 for (var i = 0; i < argument_total; i ++) {
                     var v = argument_list[i]
@@ -551,59 +657,136 @@ Gem.Core.execute(
                 //      converted to a normal line.
 
                 if (pending.length > 1) {
-                    pending[0] += ' => '
+                    pending[0] += ' => ' + trace_value(v)
+                    unbound__line.apply(console, pending)
+                    zap_pending__1_to_end()
+
+                    //  *NO* group_stop here, as group was never started ...
                 } else {
+                    pending[0] = '=> ' + trace_value(v)
+                    unbound__line.apply(console, pending)
+                    zap_pending__1_to_end()
+
                     group_stop()
-                    pending[0] = '=> '
                 }
 
-                pending[0] += trace_value(v)
-                unbound__line.apply(console, pending)
-                zap_pending__1_to_end()
 
                 _Trace.depth -= 1
             }
 
 
-            var wrap_function = function Gem__Trace__wrap_function(f, /*optional*/ name) {
-                if (f === undefined) {
-                    debugger
-                }
+            /*wrap_function*/ {
+                var constant_property = create_Object(
+                        null,
+                        {
+                            enumerable : { value : true  },       //  Visible (i.e.: enumerable)
+                        }//,
+                    )
 
-                if (arguments.length === 1) {
-                    if ('$who' in f) {
-                        var function_name = f.$who
-                    } else {
-                        var function_name = f.name
-                    }
-                } else {
-                    var function_name = name
-                }
-                    
-
-                if ( ! (function_name in Tracing)) {
-                    Tracing[function_name] = 0
-                }
-
-
-                return function STUB$trace_wrapper(/*...*/) {
+                //
+                //  wrap_function
+                //      Wrap a function for tracing.
+                //
+                //      For clarity, this function self-traces itself (it could instead be made to wrap itself,
+                //      but that gets too confusing, especially when using F10/F11 in developer tools).
+                var wrap_function = function INTERIM$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    if (trace === 7 || (trace && Tracing[function_name])) {
-                        function_call(f, arguments, function_name)
+                    var trace_wrap = (trace === 7 || (trace && Tracing['Gem.Trace.wrap_function']))
 
-                        var r = f.apply(this, arguments)
-
-                        if (r !== undefined) {
-                            function_result(r)
-                            return r
-                        }
-
-                        procedure_done()
-                        return
+                    if (trace_wrap) {
+                        function_call(wrap_function, arguments)
                     }
 
-                    return f.apply(this, arguments)
+                    if (arguments.length === 1) {
+                        if ('$who' in f) {
+                            var name = f.$who
+                        } else {
+                            var name = f.name
+                        }
+                    } else {
+                        var name = function_name
+
+                        /*=*/ {
+                            constant_property.value = name
+                            define_property(f, '$who', constant_property)
+                            constant_property.value = undefined
+
+                            if (trace_wrap) {
+                                trace_attribute('constant', f, '$who', name)
+                            }
+                        }
+                    }
+
+                    if ( ! (name in Tracing)) {
+                        Tracing[name] = 0
+                    }
+
+
+                    var result = function INTERIM$wrap(/*...*/) {
+                        var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                        if (trace === 7 || (trace && Tracing[name])) {
+                            function_call(f, arguments, name)
+
+                            var r = f.apply(this, arguments)
+
+                            if (r !== undefined) {
+                                function_result(r)
+                                return r
+                            }
+
+                            procedure_done()
+                            return
+                        }
+
+                        return f.apply(this, arguments)
+                    }
+
+
+                    /*=*/ {
+                        constant_property.value = f
+                        define_property(result, '$trace', constant_property)
+                        constant_property.value = undefined
+
+                        if (trace_wrap) {
+                            trace_attribute('constant', result, '$trace', f)
+                        }
+                    }
+
+                    if (trace_wrap) {
+                        function_result(result)
+                    }
+
+                    return result
+                }
+
+
+                //
+                //  Set `wrap_function`:
+                //
+                //      1.  `.$who` to "Gem.Trace.wrap_function"
+                //      2.  `.$trace` to itself.
+                //
+                //  Also trace these two attribute creations
+                //
+                var trace_$who = 'Gem.Trace.wrap_function'
+
+                /*=*/ {
+                    constant_property.value = trace_$who
+                    define_property(wrap_function, '$who', constant_property)
+                    constant_property.value = undefined
+                }
+
+                /*=*/ {
+                    constant_property.value = wrap_function
+                    define_property(wrap_function, '$trace', constant_property)
+                    constant_property.value = undefined
+                }
+
+                if (tracing(trace_$who)) {
+                    trace_attribute('constant', wrap_function, '$who',   trace_$who)
+                    trace_attribute('constant', wrap_function, '$trace', wrap_function)
                 }
             }
 
@@ -622,7 +805,7 @@ Gem.Core.execute(
             _Trace.push_color_green      = push_color_green
             _Trace.push_color_blue       = push_color_blue
             _Trace.push_color_none       = push_color_none
-            _Trace.trace_object_name     = trace_object_name
+            _Trace.trace_attribute       = trace_attribute
             _Trace.trace_value           = trace_value
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
         } else {
@@ -662,12 +845,13 @@ if (Gem.Configuration.trace) {
             //
             var Gem = window.Gem
 
-            var _Trace = Gem._.Trace
-            var Trace  = Gem.Trace
+            var _Trace        = Gem._.Trace
+            var Trace         = Gem.Trace
+            var Configuration = Gem.Trace
 
-            var function_call  = _Trace.function_call
-            var procedure_done = _Trace.procedure_done
-            var tracing        = Trace.tracing
+            var function_call   = _Trace.function_call
+            var procedure_done  = _Trace.procedure_done
+            var tracing         = Trace.tracing
 
 
             //
@@ -744,22 +928,13 @@ Gem.Core.execute(
         var wrap_function     = Trace.wrap_function
 
         if (trace) {
-            var console = window.console
-
             var _Trace = Gem._.Trace
 
-            var function_call             = _Trace.function_call
-            var procedure_done            = _Trace.procedure_done
-            var tracing                   = Trace.tracing
-            var push_color_green          = _Trace.push_color_green
-            var push_color_blue           = _Trace.push_color_blue
-            var push_color_none           = _Trace.push_color_none
-            var trace_object_name         = _Trace.trace_object_name
-            var trace_value               = _Trace.trace_value
-            var pending                   = _Trace.pending
-            var zap_pending__1_to_end     = _Trace.zap_pending__1_to_end
-            var unbound__group_start_open = console.group
-            var unbound__line             = console.log
+            var function_call   = _Trace.function_call
+            var procedure_done  = _Trace.procedure_done
+            var trace_attribute = _Trace.trace_attribute
+            var trace_value     = _Trace.trace_value
+            var tracing         = Trace.tracing
         }
 
 
@@ -823,6 +998,11 @@ Gem.Core.execute(
 
                     constant_$who_property     .value =
                         constant_$what_property.value = undefined
+
+                    if (trace && tracing('save_$who_$what')) {
+                        trace_attribute('constant', instance, '$who',  $who)
+                        trace_attribute('constant', instance, '$what', $what)
+                    }
                 }
             }
         }
@@ -867,7 +1047,7 @@ Gem.Core.execute(
 
         var interim_constant_attribute = wrap_function(
                 function interim_constant_attribute(instance, name, value) {
-                    //  Stub to create an interim (reconfigurable) constant attribute.
+                    //  Create an interim (reconfigurable) constant attribute.
 
                     /*=*/ {
                         //  interim constant instance.*name = value
@@ -876,46 +1056,8 @@ Gem.Core.execute(
                         interim_constant_property.value = undefined
                     }
 
-                    if (trace) {
-                        if (pending.length > 1) {
-                            unbound__group_start_open.apply(console, pending)
-                            zap_pending__1_to_end()
-                        }
-
-
-                        /*interim constant*/ {
-                            var format = '%citerim constant%c '
-                            push_color_blue()
-                            push_color_none()
-                        }
-
-                        /*instance*/ {
-                            format += trace_object_name(instance)
-                        }
-                        
-                        /*.name*/ {
-                            format += '%c.%c%c' + name + '%c'
-
-                            push_color_blue()       //  .
-                            push_color_none()
-                            push_color_green()      //  name
-                            push_color_none()
-                        }
-
-                        /*=*/ {
-                            format += ' %c=%c '
-                            push_color_blue()
-                            push_color_none()
-                        }
-
-                        /*value*/ { 
-                            format += trace_value(value)
-                        }
-
-                        pending[0] = format
-
-                        unbound__line.apply(console, pending)
-                        zap_pending__1_to_end()
+                    if (trace && tracing('interim_constant_attribute')) {
+                        trace_attribute('interim constant', instance, name, value)
                     }
                 }//,
             )
@@ -938,20 +1080,24 @@ Gem.Core.execute(
 
 
                         /*=*/ {
-                            //
                             //  constant           module.$who    = $who
                             //  constant           module.$what   = $what
-                            //  invisible constant module._prefix = $who.replace('.', '__')
-                            //
+                            //  invisible constant module._prefix = _prefix
                             constant_$who_property    .value = $who
                             constant_$what_property   .value = $what
                             constant___prefix_property.value = _prefix
 
                             define_properties(module, module_properties)
 
-                            delete constant_$who_property    .value
-                            delete constant_$what_property   .value
-                            delete constant___prefix_property.value
+                            constant_$who_property        .value =
+                                constant_$what_property   .value =
+                                constant___prefix_property.value = undefined
+
+                            if (trace && tracing('Gem__private__who_what')) {
+                                trace_attribute('constant',           module, '$who',    $who)
+                                trace_attribute('constant',           module, '$what',   $what)
+                                trace_attribute('invisible constant', module, '_prefix', _prefix)
+                            }
                         }
 
                         return
@@ -986,7 +1132,7 @@ Gem.Core.execute(
                 //      This special version of tracing has to set `module.$who` before calling `function_call`,
                 //      so that `function_call` can properly identify `module`.
                 //
-                var who_what = function trace$Gem__private__Core__who_what(module, $who, $what) {
+                var who_what = function trace$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
                     //
                     //  ... Must do this first before calling `function_call` ...
                     //
@@ -997,7 +1143,7 @@ Gem.Core.execute(
 
                     function_call(original_who_what, arguments)
 
-                    original_who_what(module, $who, $what)
+                    original_who_what(module, $who, $what, create_prefix)
 
                     procedure_done()
                 }
@@ -1120,9 +1266,9 @@ Gem.Core.execute(
 
                             define_properties(traced_method, $tracing_$who_$what_properties)
 
-                            delete constant_$tracing_property.value
-                            delete constant_$who_property    .value
-                            delete constant_$what_property   .value
+                            constant_$tracing_property .value =
+                                constant_$who_property .value =
+                                constant_$what_property.value = undefined
                         }
                     }
                 } else {
@@ -1162,7 +1308,6 @@ Gem.Core.execute(
                         //  interim constant instance.*who = traced_method
                         interim_constant_attribute(instance, who, traced_method)
                 
-
                         /*=*/ {
                             //
                             //  trace mode without clarity mode:
@@ -1305,24 +1450,24 @@ Gem.Core.execute(
 
 
         Gem.Core.method.call(
-                Gem._.Core,
-                'constant_attribute',
-                'Create a [non reconfigurable] visible constant attribute.',
-                constant_attribute//,
-            )
+            Gem._.Core,
+            'constant_attribute',
+            'Create a [non reconfigurable] visible constant attribute.',
+            constant_attribute//,
+        )
 
 
         if (clarity || trace) {
             Gem.Core.method.call(
-                    Gem._.Core,
-                    'who_what',
-                    (
-                        clarity
-                            ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
-                            : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
-                    ),
-                    who_what//,
-                )
+                Gem._.Core,
+                'who_what',
+                (
+                    clarity
+                        ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
+                        : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
+                ),
+                who_what//,
+            )
         }
 //  </stubs>                                                //   End of stubs
 

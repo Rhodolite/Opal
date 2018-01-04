@@ -27,7 +27,7 @@
 //  var watching       = 'js/plugins/Silver.js'
 
     var watching       = 'js/plugins/Beryl.js'
-    var watching_2     = 'Gem/Beryl/Boot4_StubCodifyTracedMethod.js'
+    var watching_2     = 'Gem/Beryl/Boot2_Manifest.js'
 
 
     "use strict"
