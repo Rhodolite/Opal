@@ -26,7 +26,7 @@
 //      are named `.$$who` and `.$$what` to avoid conflicts.
 //
 Gem.Core.execute(
-    function execute$Gem__add_clarity() {
+    function execute$add_clarity() {
         //
         //  Imports
         //

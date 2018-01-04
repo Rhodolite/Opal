@@ -16,7 +16,7 @@ Gem.Core.execute(
         var Trace         = Gem.Trace
 
         var clarity       = Configuration.clarity
-        var trace         = Configuration.clarity
+        var trace         = Configuration.trace
         var box_name      = Configuration.Box.box_name
         var wrap_function = Trace.wrap_function
 

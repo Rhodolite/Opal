@@ -2,21 +2,23 @@
 #  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
 #
 BERYL_FILES = \
-	../js/plugins/Beryl.js \
-	../js/plugins/Beryl1.js \
 	../Gem/Beryl/Boot2_Manifest.js \
 	../Gem/Beryl/Boot3_Attribute.js \
 	../Gem/Beryl/Boot3_Clarity.js \
-	../Gem/Beryl/Boot3_StubBox.js \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
-	../Gem/Beryl/Boot4_StubAttribute.js \
+	../Gem/Beryl/Boot3_StubBox.js \
 	../Gem/Beryl/Boot3_TraceConstructor.js \
+	../Gem/Beryl/Boot4_StubAttribute.js \
+	../Gem/Beryl/Boot4_StubCodifyTracedMethod.js \
+	../Gem/Beryl/Boot4_StubConstructor.js \
 	../Gem/Beryl/Boot4_Trace.js \
 	../Gem/Beryl/Boot5_Clarity.js \
 	../Gem/Beryl/Boot6_Methods.js \
 	../Gem/Beryl/Boot7_Module.js \
 	../Gem/Beryl/Boot8_Bind.js \
-	../Gem/Beryl/Boot9_Development.js
+	../Gem/Beryl/Boot9_Development.js \
+	../js/plugins/Beryl.js \
+	../js/plugins/Beryl1.js
 #../Gem/Clarity/DomainObjectModel.js \
 
 CRYSTAL_FILES = \
@@ -60,7 +62,7 @@ clean:
 	rm -f m
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
-	rm -f s.js sax.js sc.js sx.js
+	rm -f s.js sax.js sc.js sctm.js sr.js sx.js
 	rm -f tc.js
 
 files:
@@ -99,7 +101,9 @@ links:
 	ln -s ../Junk/Jasper.js         	                oj.js
 	ln -s ../js/plugins/Silver.js 		                s.js
 	ln -s ../Gem/Beryl/Boot3_StubAnonymousBox.js  	    sax.js
-	ln -s ../js/plugins/Silver_Core.js 	                sc.js
+	ln -s ../Gem/Beryl/Boot4_StubConstructor.js         sc.js
+	ln -s ../Gem/Beryl/Boot4_StubCodifyTracedMethod.js  sctm.js
+	ln -s ../js/plugins/Silver_Core.js 	                sr.js
 	ln -s ../Gem/Beryl/Boot3_StubBox.js           	    sx.js
 	ln -s ../Gem/Beryl/Boot3_TraceConstructor.js        tc.js
 

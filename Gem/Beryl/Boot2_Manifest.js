@@ -17,20 +17,26 @@ Gem.Core.execute(
 
         var Configuration = Gem.Configuration
 
-        var clarity = Configuration.clarity
-        var load    = Gem.Script.load
-        var trace   = Configuration.clarity
+        var box_name = Configuration.Box.box_name
+        var clarity  = Configuration.clarity
+        var load     = Gem.Script.load
+        var trace    = Configuration.trace
 
 
         //
         //  Rest of immediate boot code
         //
         var manifest_list = [
-            'Gem/Beryl/Boot3_Clarity.js',           1,
-            'Gem/Beryl/Boot3_TraceConstructor.js',  1,
-            'Gem/Beryl/Boot3_StubBox.js',           1,
-            'Gem/Beryl/Boot3_StubAnonymousBox.js',  7,
-            'Gem/Beryl/Boot4_StubAttribute.js',     7,
+            'Gem/Beryl/Boot3_Clarity.js',                   clarity || trace,
+            'Gem/Beryl/Boot4_StubCodifyTracedMethod.js',    trace,
+
+
+            // Renumber
+            'Gem/Beryl/Boot4_StubConstructor.js',           box_name,
+            'Gem/Beryl/Boot3_TraceConstructor.js',          1,
+            'Gem/Beryl/Boot3_StubBox.js',                   1,
+            'Gem/Beryl/Boot3_StubAnonymousBox.js',          7,
+            'Gem/Beryl/Boot4_StubAttribute.js',             7,
 
             // Redo
             'Gem/Beryl/Boot3_Attribute.js',         0,
