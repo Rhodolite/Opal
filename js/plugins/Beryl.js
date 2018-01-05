@@ -338,16 +338,27 @@ Gem.Core.execute(
                     return
                 }
 
-                var open_left_parenthesis = s.indexOf('(')
-                var open_left_brace       = s.indexOf('{')
-                var open_left_brace__m1   = open_left_brace - 1
+                var open_left_parenthesis  = s.indexOf('(')
+                var open_right_parenthesis = s.indexOf(')')
 
-                if (
-                       (0 < open_left_parenthesis && open_left_parenthesis < open_left_brace__m1)
-                    && s[open_left_brace__m1] === ' '
-                ) {
-                    result__trailer = s.substring(open_left_parenthesis, open_left_brace__m1)
-                    return
+                if (0 < open_left_parenthesis && open_left_parenthesis < open_right_parenthesis) {
+                    var open_left_parenthesis__p1 = open_left_parenthesis + 1
+
+                    s = s.substring(open_left_parenthesis, open_right_parenthesis + 1)
+
+                    var carriage_return = s.indexOf('\n')
+
+                    if (carriage_return === -1) {
+                        result__trailer = s
+                        return
+                    }
+
+                    s = s.substr(1, s.length - 2).trim()
+
+                    if (s.endsWith('//,') && s.indexOf('\n') === -1) {
+                        result__trailer = '(' + s.substr(0, s.length - 3) + ')'
+                        return
+                    }
                 }
 
                 result__trailer = ''
@@ -1004,7 +1015,8 @@ Gem.Core.execute(
         var wrap_function     = Trace.wrap_function
 
         if (trace) {
-            var _Trace = Gem._.Trace
+            var _Trace  = Gem._.Trace
+            var Tracing = Gem.Tracing
 
             var function_call   = _Trace.function_call
             var procedure_done  = _Trace.procedure_done
@@ -1062,9 +1074,13 @@ Gem.Core.execute(
                             constant_$who_property     .value =
                                 constant_$what_property.value = undefined
 
-                            if (trace && tracing('constant_$who_$what_attributes')) {
-                                trace_attribute('constant', instance, '$who',  $who)
-                                trace_attribute('constant', instance, '$what', $what)
+                            /*trace*/ {
+                                var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                                if (trace === 7 || (trace && Tracing['constant_$who_$what_attributes'])) {
+                                    trace_attribute('constant', instance, '$who',  $who)
+                                    trace_attribute('constant', instance, '$what', $what)
+                                }
                             }
                         }
                     }//,
@@ -1089,13 +1105,21 @@ Gem.Core.execute(
 
         var constant_attribute = wrap_function(
                 function constant_attribute(instance, name, value) {
-                    //  constant instance.*name = value
-                    constant_property.value = value
-                    define_property(instance, name, constant_property)
-                    delete constant_property.value
+                    //  Create a (non reconfigurable) constant attribute.
 
-                    if (trace && tracing('constant_attribute')) {
-                        trace_attribute('constant', instance, name, value)
+                    /*=*/ {
+                        //  constant instance.*name = value
+                        constant_property.value = value
+                        define_property(instance, name, constant_property)
+                        delete constant_property.value
+
+                        /*trace*/ {
+                            var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                            if (trace === 7 || (trace && Tracing['constant_attribute'])) {
+                                trace_attribute('constant', instance, name, value)
+                            }
+                        }
                     }
                 }//,
             )
@@ -1110,10 +1134,14 @@ Gem.Core.execute(
                         interim_constant_property.value = value
                         define_property(instance, name, interim_constant_property)
                         interim_constant_property.value = undefined
-                    }
 
-                    if (trace && tracing('interim_constant_attribute')) {
-                        trace_attribute('interim constant', instance, name, value)
+                        /*trace*/ {
+                            var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                            if (trace === 7 || (trace && Tracing['interim_constant_attribute'])) {
+                                trace_attribute('interim constant', instance, name, value)
+                            }
+                        }
                     }
                 }//,
             )
@@ -1127,8 +1155,49 @@ Gem.Core.execute(
             //      This interim implementation of `who_what` only replaces a single "." since it does not use
             //      regular expressions with the "g" flag.
             //
-            var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
-                if ( ! clarity) {
+            if (clarity) {
+                var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                    if (create_prefix) {
+                        if ($who.startsWith('Gem._.')) {
+                            var _prefix = $who.replace('Gem._.', 'Gem__private__')
+                        } else {
+                            var _prefix = $who.replace('.', '__')
+                        }
+
+                        /*=*/ {
+                            //  constant           module.$who    = $who
+                            //  constant           module.$what   = $what
+                            //  invisible constant module._prefix = _prefix
+                            constant_$who_property    .value = $who
+                            constant_$what_property   .value = $what
+                            constant___prefix_property.value = _prefix
+
+                            define_properties(module, module_properties)
+
+                            constant_$who_property        .value =
+                                constant_$what_property   .value =
+                                constant___prefix_property.value = undefined
+
+                            /*trace*/ {
+                                var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                                if (trace === 7 || (trace && Tracing[who_what__who])) {
+                                    trace_attribute('constant',           module, '$who',    $who)
+                                    trace_attribute('constant',           module, '$what',   $what)
+                                    trace_attribute('invisible constant', module, '_prefix', _prefix)
+                                }
+                            }
+                        }
+                    }
+
+                    /*=*/ {
+                        //  constant module.$who  = $who
+                        //  constant module.$what = $what
+                        constant_$who_$what_attributes(module, $who, $what)
+                    }
+                }
+            } else {
+                var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
                     //
                     //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
                     // 
@@ -1136,44 +1205,6 @@ Gem.Core.execute(
                         //  constant module.$who = $who
                         constant_attribute(module, '$who', $who)
                     }
-
-                    return
-                }
-
-                if (create_prefix) {
-                    if ($who.startsWith('Gem._.')) {
-                        var _prefix = $who.replace('Gem._.', 'Gem__private__')
-                    } else {
-                        var _prefix = $who.replace('.', '__')
-                    }
-
-
-                    /*=*/ {
-                        //  constant           module.$who    = $who
-                        //  constant           module.$what   = $what
-                        //  invisible constant module._prefix = _prefix
-                        constant_$who_property    .value = $who
-                        constant_$what_property   .value = $what
-                        constant___prefix_property.value = _prefix
-
-                        define_properties(module, module_properties)
-
-                        constant_$who_property        .value =
-                            constant_$what_property   .value =
-                            constant___prefix_property.value = undefined
-
-                        if (trace && tracing(who_what__who)) {
-                            trace_attribute('constant',           module, '$who',    $who)
-                            trace_attribute('constant',           module, '$what',   $what)
-                            trace_attribute('invisible constant', module, '_prefix', _prefix)
-                        }
-                    }
-                }
-
-                /*=*/ {
-                    //  constant module.$who  = $who
-                    //  constant module.$what = $what
-                    constant_$who_$what_attributes(module, $who, $what)
                 }
             }
 
