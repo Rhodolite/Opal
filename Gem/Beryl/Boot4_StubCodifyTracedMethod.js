@@ -24,9 +24,9 @@ Gem.Core.codify_method.call(
         var tracing       = Trace.tracing
 
         if (clarity) {
-            var _method__clarity_no_trace = _Core._method__clarity_no_trace
+            var method__clarity_no_trace = Core.method__clarity_no_trace
         } else {
-            var method__simple           = _Core.method__simple
+            var constant_attribute       = _Core.constant_attribute
         }
 
 
@@ -49,9 +49,13 @@ Gem.Core.codify_method.call(
             }
 
             if (clarity) {
-                _method__clarity_no_trace(instance, who, $what, method)
-            } else {
-                method__simple(instance, who, method)
+                method__clarity_no_trace(instance, who, $what, method)
+                return
+            }
+
+            /*=*/ {
+                //  constant instance.*who = value
+                constant_attribute(instance, who, method)
             }
         }
     }
