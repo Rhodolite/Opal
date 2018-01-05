@@ -355,6 +355,7 @@ if (Gem.Core.has_bind) {
     //      emulates it with a double "closure" (making it easier to understand).
     //
     Gem.Core.method(
+        Gem.Core,
         'bind_create_Object',
         (
               'A factory of factories.  The created factories create objects.\n'

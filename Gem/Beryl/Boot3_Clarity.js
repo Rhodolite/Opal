@@ -54,7 +54,6 @@ Gem.Core.execute(
             false//,
         )
 
-        who_what(Gem.Trace,   'Gem.Trace',   'Exports the Trace module.',                               true)
         who_what(Gem.Tracing, 'Gem.Tracing', 'Map of functions, methods & bound_methods being traced.', false)
         who_what(Gem._,       'Gem._',       'Private members & methods of all Gem modules.',           false)
         who_what(Gem._.Trace, 'Gem._.Trace', 'Private members & methods of the Trace module.',          true)

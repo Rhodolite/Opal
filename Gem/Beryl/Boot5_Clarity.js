@@ -170,6 +170,7 @@ Gem.Core.execute(
         //      Throw a type error when a parameter is not a number.
         //
         Gem.Core.method(
+            Gem.Core,
             'throw_must_be_number',
             'Throw a type error when a parameter is not a number.',
             throw_must_be_number//,
@@ -181,6 +182,7 @@ Gem.Core.execute(
         //      Throw a type error when a parameter is not a string.
         //
         Gem.Core.method(
+            Gem.Core,
             'throw_must_be_string',
             'Throw a type error when a parameter is not a string.',
             throw_must_be_string//,
@@ -192,6 +194,7 @@ Gem.Core.execute(
         //      Throw a type error (usually used when a method received invalid parameters).
         //
         Gem.Core.method(
+            Gem.Core,
             'throw_type_error',
             'Throw a type error (usually used when a method received invalid parameters).',
             throw_type_error//,
@@ -203,6 +206,7 @@ Gem.Core.execute(
         //      Throw a type error when a method receives wrong number of arguments.
         //
         Gem.Core.method(
+            Gem.Core,
             'throw_wrong_arguments',
             'Throw a type error when a method receives wrong number of arguments.',
             throw_wrong_arguments//,

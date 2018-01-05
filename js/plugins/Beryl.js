@@ -14,10 +14,10 @@
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         capture_error : true,                               //      Try to capture errors
-        clarity       : 1,                                  //      Set Gem clarity mode to true.
+        clarity       : 0,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 1,                                  //      Trace function, method & bound method calls.
+        trace         : 0,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
@@ -100,6 +100,7 @@ window.Gem = {
     Trace : {                                               //  Map of functions, methods & bound_methods being traced.
 //      //  method_call     : Function          [TODO]      //      Start a trace group for a method call.
 //      //  trace_line      : Function          [MOVE]      //      Start a trace group.
+        traced_method : Function,                           //      Store a traced Gem method.
         tracing       : Function,                           //      Returns the trace configuration for a routine.
 
         //
@@ -1187,6 +1188,7 @@ Gem.Core.execute(
             who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.',       true)
             who_what(Gem.Script,     'Gem.Script',     '`<script>` handling.',                              true)
             who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods.',                    true)
+            who_what(Gem.Trace,      'Gem.Trace',      'Exports the Trace module.',                         true)
             who_what(Gem._.Core,     'Gem._.Core',     'Private members & methods of the Core Gem module.', true)
         }
 
@@ -1238,6 +1240,7 @@ Gem.Core.execute(
             //
             var _method__clarity_no_trace = function __method__clarity_no_trace(instance, who, $what, method) {
                 if ( ! ('$who' in instance)) {
+                    debugger
                     throw new Error('missing $who in object')
                 }
 
@@ -1331,56 +1334,63 @@ Gem.Core.execute(
                     'Gem.Trace.traced_method'//,
                 )
 
-
-            //
-            //  Use `traced_method` on itself
-            //
-            traced_method(
-                Gem.Trace,
-                'traced_method',
-                'Temporary stub for Gem.Trace.traced_method',
-                traced_method
-            )
-
-
-            Gem.Trace.traced_method(
-                Gem.Core,
-                'method',
-                'Temporary stub for Gem.Core.method',
-                wrap_function(
-                    function interim$Gem__Core__method(who, $what, method) {
-                        _method__trace(this, who, $what, method)
+            var method = wrap_function(
+                    function interim$Gem__Core__method(instance, who, $what, method) {
+                        _method__trace(instance, who, $what, method)
                     },
                     'Gem.Core.method'//,
-                )//,
-            )
+                )
         } else {
-            var method = function interim$Gem__Core__method(who, $what, method) {
+            //
+            //  NOTE:
+            //      Without tracing this is identicial to `Gem.Core.Method`
+            //
+            //      (However, different functions are used, so then can each acquire their unique `.$who` and `.$what`
+            //      attributes).
+            //
+            var traced_method = function interim$Gem__Trace__traced_method(instance, who, $what, method) {
                 if (clarity) {
-                    _method__clarity_no_trace(this, who, $what, method)
+                    _method__clarity_no_trace(instance, who, $what, method)
                     return
                 }
 
-                method__simple(this, who, method)
+                method__simple(instance, who, method)
             }
 
-            //
-            //  Use 'method' on itself
-            //
-            method.call(
-                Gem.Core,
-                'method',
-                'Temporary stub for Gem.Core.method',
-                method//,
-            )
+            var method = function interim$Gem__Core__method(instance, who, $what, method) {
+                if (clarity) {
+                    _method__clarity_no_trace(instance, who, $what, method)
+                    return
+                }
+
+                method__simple(instance, who, method)
+            }
         }
+
+
+        //
+        //  Use `traced_method` on itself; and then on `method`.
+        //
+        traced_method(
+            Gem.Trace,
+            'traced_method',
+            'Temporary stub for Gem.Trace.traced_method',
+            traced_method//,
+        ) 
+
+        Gem.Trace.traced_method(
+            Gem.Core,
+            'method',
+            'Temporary stub for Gem.Core.method',
+            method//,
+        )
 
 
         //
         //  Export: Gem._.Core.method__simple
         //
         if ( ! clarity && ! trace) {
-            Gem.Core.method.call(
+            Gem.Core.method(
                 Gem._.Core,
                 'method__simple',
                 (
@@ -1393,6 +1403,7 @@ Gem.Core.execute(
         }
 
         Gem.Core.method(
+            Gem.Core,
             'clarity_note',
             'Temporary stub for Gem.Core.clarity_note',
             function STUB$Gem__Core__clarity_note(who, $what) {
@@ -1406,6 +1417,7 @@ Gem.Core.execute(
 
 
         Gem.Core.method(
+            Gem.Core,
             'codify_method',
             'Temporary stub for Gem.Core.codify_method',
             function STUB$Gem__Core__codify_method(who, $what, codifier, /*optional*/ flags) {
@@ -1435,6 +1447,7 @@ Gem.Core.execute(
 
 
         Gem.Core.method(
+            Gem.Core,
             'constant',
             'Temporary stub for Gem.Core.constant',
             function STUB$Gem__Core__constant(who, $what, constant) {
@@ -1452,6 +1465,7 @@ Gem.Core.execute(
 
 
         Gem.Core.method(
+            Gem.Core,
             'qualify_constant',
             'Temporary stub for Gem.Core.qualify_constant',
             function STUB$Gem__Core__qualify_constant(who, $what, qualifier) {
@@ -1468,7 +1482,7 @@ Gem.Core.execute(
         )
 
 
-        Gem.Core.method.call(
+        Gem.Core.method(
             Gem._.Core,
             'constant_attribute',
             'Create a [non reconfigurable] visible constant attribute.',
@@ -1476,16 +1490,17 @@ Gem.Core.execute(
         )
 
 
-        /*who_what*/ {
-            var $what = clarity
-                            ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
-                            : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
-
-            if (trace) {
-                Gem.Trace.traced_method(Gem._.Core, 'who_what', $what, who_what)
-            } else if (clarity) {
-                Gem.Core.method.call(Gem._.Core, 'who_what', $what, who_what)
-            }
+        if (trace || clarity) {
+            Gem.Trace.traced_method(
+                Gem._.Core,
+                'who_what',
+                (
+                    clarity
+                        ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
+                        : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
+                ),
+                who_what//,
+            )
         }
 //  </stubs>                                                //   End of stubs
 
@@ -1651,7 +1666,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
-    Gem.Core.method.call(
+    Gem.Core.method(
         Gem.NodeWebKit,
         'show_developer_tools',
         "Empty function -- Not using nw.js: Don't show developer tools.",

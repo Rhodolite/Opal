@@ -480,7 +480,7 @@ Gem.Core.codify_method(
 
 
 //
-//  Gem.Core.method
+//  Gem.Core.codify_method
 //      Store a Gem Method.
 //
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
@@ -527,14 +527,18 @@ Gem.Core.codify_method(
         var throw_type_error         = Gem.Core.throw_type_error
 
 
-        return function Gem__Core__method(who, $what, method) {
+        return function Gem__Core__method(instance, who, $what, method) {
             //  Store a Gem Method.
             //
             //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
 
             /*arguments*/ {
-                if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Core.method', 3, arguments.length)
+                if (arguments.length !== 4) {
+                    throw_wrong_arguments('Gem.Core.method', 4, arguments.length)
+                }
+
+                if (typeof instance !== 'object')) {
+                    throw_must_be_object('instance', instance)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
@@ -559,10 +563,10 @@ Gem.Core.codify_method(
             }
 
             constant_property.value = method
-            define_property(this, who, constant_property)
+            define_property(instance, who, constant_property)
 
             /*clarity*/ {
-                constant_property.value = this.$who + '.' + who
+                constant_property.value = instance.$who + '.' + who
                 define_property(method, '$who', constant_property)
 
                 constant_property.value = $what

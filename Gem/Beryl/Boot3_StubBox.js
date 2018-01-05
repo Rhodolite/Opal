@@ -93,7 +93,7 @@ Gem.Core.execute(
 
         Gem.Box = wrapped$create_ModuleExports$Box('Gem.Box', 'Exports of the Box module.', true)
 
-        Gem.Core.method.call(
+        Gem.Core.method(
             Gem.Box,
             'create_ModuleExports$Box',
             (
