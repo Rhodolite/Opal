@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method.call(
+Gem.Core.codify_method(
     Gem.Trace,
     'codify_untraced_method',
     'Temporary stub for `Gem.Trace.codify_untraced_method`',
@@ -15,48 +15,30 @@ Gem.Core.codify_method.call(
         //
         var Gem = window.Gem
 
-        var _Core         = Gem._.Core
-        var Configuration = Gem.Configuration
-        var Trace         = Gem.Trace
+        var _Core = Gem._.Core
+        var Trace = Gem.Trace
 
-        var clarity       = Configuration.clarity
-        var create_Object = Object.create
-        var tracing       = Trace.tracing
-
-        if (clarity) {
-            var method__clarity_no_trace = Core.method__clarity_no_trace
-        } else {
-            var constant_attribute       = _Core.constant_attribute
-        }
+        var method__no_trace = _Core.method__no_trace
+        var tracing          = Trace.tracing
 
 
         //
         //  Implementation
         //
-        return function Gem__Trace__codify_untraced_method(who, $what, codifier_method) {
+        return function Gem__Trace__codify_untraced_method(who, $what, codifier) {
             //  Temporary stub for `Gem.Trace.codify_untraced_method`
 
-            /*method*/ {
-                var trace = Configuration.trace                                     //  Get newest value of 'trace'
+            if (tracing(codifier.name)) {
+                function_call(codifier)
 
-                if (trace && tracing(codifier_method.name)) {
-                    var wrapped_codifier_method = wrap_function(codifier_method)
-                } else {
-                    var wrapped_codifier_method = codifier_method
-                }
+                var method = codifier()
 
-                var method = wrapped_codifier_method()
+                function_result(method)
+            } else {
+                var method = codifier()
             }
 
-            if (clarity) {
-                method__clarity_no_trace(instance, who, $what, method)
-                return
-            }
-
-            /*=*/ {
-                //  constant instance.*who = value
-                constant_attribute(instance, who, method)
-            }
+            method__no_trace(instance, false, who, $what, method)
         }
     }
 )

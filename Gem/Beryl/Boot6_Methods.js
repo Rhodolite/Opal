@@ -48,6 +48,7 @@ Gem.Core.qualify_constant(
 //      Add a note to a variable or set of variables (clarity mode only).
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'clarity_note',
     'Add a note to a variable or set of variables (clarity mode only).',
     function codifier$Gem__Core__clarity_note() {
@@ -125,6 +126,7 @@ Gem.Core.codify_method(
 //      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'codify_bound_method',
     (
           'Codify a global Gem bound method.\n'
@@ -282,6 +284,7 @@ Gem.Core.codify_method(
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'codify_method',
     (
           'Create the code for a method as a closure to avoid the use of any global variables.\n'
@@ -393,6 +396,7 @@ Gem.Core.codify_method(
 //      Also in clarity mode adds an explanation of what the constant does.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'constant',
     (
           'Store a global Gem constant.\n'
@@ -486,6 +490,7 @@ Gem.Core.codify_method(
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'method',
     (
           'Store a Gem Method.\n'
@@ -586,6 +591,7 @@ Gem.Core.codify_method(
 //      Also in clarity mode adds an explanation of what the mutable value does.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'mutable',
     (
           'Initialize a global Gem mutable value.\n'
@@ -679,6 +685,7 @@ Gem.Core.codify_method(
 //      Also in clarity mode adds an explanation of what the variable does.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'qualify_constant',
     (
           'Qualify a global Gem constant.\n'

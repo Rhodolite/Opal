@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method.call(
+Gem.Core.codify_method(
     Gem._.Trace,
     'store_codifier_wrap_constructor',
     (
@@ -38,7 +38,7 @@ Gem.Core.codify_method.call(
 )
 
 
-Gem.Core.codify_method.call(
+Gem.Core.codify_method(
     Gem._.Trace,
     'trace_constructor',
     (
@@ -105,7 +105,7 @@ Gem.Core.codify_method.call(
 )
 
 
-Gem.Core.codify_method.call(
+Gem.Core.codify_method(
     Gem.Trace,
     'wrap_constructor',
     'Create a trace wrapper around a constructor.',

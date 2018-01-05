@@ -6,6 +6,7 @@
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'produce_create_FrozenBox__keep_normal_prototype',
     (
           'A factory of factories.  The created factories each creates a Frozen Box -- a frozen object with'
@@ -54,6 +55,7 @@ Gem.Core.codify_method(
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'produce_create_FrozenBox__nullify_012_prototype',
     (
           'A factory of factories.  The created factories each creates a Frozen Box -- a frozen object with'
@@ -125,6 +127,7 @@ Gem.Core.codify_method(
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'create_InvisibleConstantAttributeBox',
     (
           'Create a sealed object with a class name of "InvisibleConstantAttributeBox" (used for creating invisible'
@@ -195,6 +198,7 @@ Gem.Core.qualify_constant(
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'create_RootPrototype',
     'Create a root prototype box.',
     function codifier$Gem__Core__create_RootPrototype() {
@@ -243,6 +247,7 @@ Gem.Core.codify_method(
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'test1',
     'Test 1 of produce_create_FrozenBox__nullify_012_prototype',
     function codifier$Gem__Core__test1() {

@@ -57,6 +57,7 @@ if (Gem.Core.has_bind) {
     //
     if (Gem.Core.single_step_binding) {
         Gem.Core.codify_method(
+            Gem.Core,
             'bind',
             'Create a new function with a bound `this` value (and optionally other bound arguments).`',
             function codifier$Gem__Core__bind() {
@@ -83,6 +84,7 @@ if (Gem.Core.has_bind) {
     }
 } else {
     Gem.Core.codify_method(
+        Gem.Core,
         'bind',
         'Create a new function with a bound `this` value (and optionally other bound arguments).`',
         //
@@ -506,6 +508,7 @@ Gem.Core.execute(
 //
 if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
     Gem.Core.codify_method(
+        Gem.Core,
         'produce_create_Box',
         (
               'A factory of factories.  The created factories each creates a Box -- an Object with a "class name".\n'
@@ -606,6 +609,7 @@ if (Gem.Configuration.clarity && Gem.Configuration.box_name) {
     )
 } else {
     Gem.Core.codify_method(
+        Gem.Core,
         'produce_create_Box',
         (
               'A factory of factories.\n'
@@ -652,6 +656,7 @@ Gem.Core.codify_bound_method(
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'deep_copy_with_adjustments',
     (
           'Create a deep copy of an object -- with various adjustments.\n'

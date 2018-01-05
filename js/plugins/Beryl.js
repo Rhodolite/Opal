@@ -14,7 +14,7 @@
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         capture_error : true,                               //      Try to capture errors
-        clarity       : 1,                                  //      Set Gem clarity mode to true.
+        clarity       : 0,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
         trace         : 1,                                  //      Trace function, method & bound method calls.
@@ -25,35 +25,37 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'constant_$trace_attribute',                            1,
-        'constant_$who_attribute',                              1,
+        'constant_$trace_attribute',                            0,
+        'constant_$who_attribute',                              0,
         'execute$codify$trace$Gem__Core__execute',              0,
         'execute$setup_Gem',                                    0,
         'execute$setup_Tracing',                                0,
         'Gem._.Core.constant_attribute',                        0,
-        'Gem._.Core.who_what',                                  1,
+        'Gem._.Core.who_what',                                  0,
         'Gem._.Trace.store_codifier_wrap_constructor',          0,
+        'Gem._.Trace.traced_method__common',                    1,
         'Gem.Box.create_AnonymousBox',                          0,
-        'Gem.Box.create_ModuleExports$Box',                     1,
+        'Gem.Box.create_ModuleExports$Box',                     0,
+        'Gem.Core.codify_interim_method',                       0,
         'Gem.Core.codify_method',                               0,
         'Gem.Core.constant',                                    0,
         'Gem.Core.execute',                                     0,
         'Gem.Core.method',                                      0,
         'Gem.Core.qualify_constant',                            0,
         'Gem.NodeWebKit.show_developer_tools',                  0,
-        'Gem.Script.codify_method_load',                        0,
+        'Gem.Script.codify_load',                               0,
         'Gem.Script.error',                                     0,
         'Gem.Script.handle_event',                              0,
         'Gem.Script.handle_global_error',                       0,
         'Gem.Script.load',                                      0,
         'Gem.Script.source_attribute',                          0,
         'Gem.Trace.wrap_constructor',                           0,
-        'Gem.Trace.wrap_function',                              1,
-        'interim_constant_attribute',                           1,
+        'Gem.Trace.wrap_function',                              0,
+        'interim$Gem__Core__method',                            0,
+        'interim_constant_attribute',                           0,
         'ModuleExports$Box',                                    0,
         'qualifier$Gem__Core__invisible_constructor_property',  0,
-        'qualifier$Gem__Script__gem_scripts',                   0,
-        'STUB$Gem__Core__method',                               0//,
+        'qualifier$Gem__Script__gem_scripts',                   0//,
     ],
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -61,11 +63,12 @@ window.Gem = {
             code()
         }
 
-        //  codify_method    : Function                     //      Create the code for a method as a closure.
-        //  clarity_note     : Function                     //      Add a note to a variable or set of variables.
-        //  constant         : Function                     //      Store a global Gem constant.
-        //  method           : Function                     //      Define a Gem method.
-        //  qualify_constant : Function                     //      Qualify a global Gem constant.
+        //  codify_method         : Function                //      Create the code for a method as a closure.
+        //  codify_interim_method : Function                //      Create the code for a method as a closure.
+        //  clarity_note          : Function                //      Add a note to a variable or set of variables.
+        //  constant              : Function                //      Store a global Gem constant.
+        //  method                : Function                //      Define a Gem method.
+        //  qualify_constant      : Function                //      Qualify a global Gem constant.
     },
 
     NodeWebKit: {                                           //  Node WebKit members & methods.
@@ -1004,7 +1007,6 @@ Gem.Core.execute(
                     }//,
                 )
 
-
             var $who_$what_properties = create_Object(
                     null,
                     {
@@ -1014,24 +1016,26 @@ Gem.Core.execute(
                 )
 
 
-            var constant_$who_$what_attributes = function constant_$who_$what_attributes(instance, $who, $what) {
-                /*=*/ {
-                    //  constant module.$who  = $who
-                    //  constant module.$what = $what
-                    constant_$who_property .value = $who
-                    constant_$what_property.value = $what
+            var constant_$who_$what_attributes = wrap_function(
+                    function constant_$who_$what_attributes(instance, $who, $what) {
+                        /*=*/ {
+                            //  constant module.$who  = $who
+                            //  constant module.$what = $what
+                            constant_$who_property .value = $who
+                            constant_$what_property.value = $what
 
-                    define_properties(instance, $who_$what_properties)
+                            define_properties(instance, $who_$what_properties)
 
-                    constant_$who_property     .value =
-                        constant_$what_property.value = undefined
+                            constant_$who_property     .value =
+                                constant_$what_property.value = undefined
 
-                    if (trace && tracing('constant_$who_$what_attributes')) {
-                        trace_attribute('constant', instance, '$who',  $who)
-                        trace_attribute('constant', instance, '$what', $what)
-                    }
-                }
-            }
+                            if (trace && tracing('constant_$who_$what_attributes')) {
+                                trace_attribute('constant', instance, '$who',  $who)
+                                trace_attribute('constant', instance, '$what', $what)
+                            }
+                        }
+                    }//,
+                )
         }
 
         var interim_constant_property = create_Object(
@@ -1039,31 +1043,29 @@ Gem.Core.execute(
                 {
                     configurable : { value : true  },       //  Can be reconfigured (the constant can be changed!).
                     enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
-                //  writable     : { value : false }//,     //  Default value, no need to set
                 }//,
             )
 
         var constant_property = create_Object(
                 null,
                 {
-                //  configurable : { value : false },       //  Default value, no need to set
-                    configurable : { value : true  },       //  FIXING THIS: TEMPORARY!
-                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
-                //  writable     : { value : false }//,     //  Default value, no need to set
+                    enumerable : { value : true  },         //  Visible (i.e.: enumerable)
                 }//,
             )
 
 
-        function constant_attribute(instance, name, value) {
-            //  constant instance.*name = value
-            constant_property.value = value
-            define_property(instance, name, constant_property)
-            delete constant_property.value
+        var constant_attribute = wrap_function(
+                function constant_attribute(instance, name, value) {
+                    //  constant instance.*name = value
+                    constant_property.value = value
+                    define_property(instance, name, constant_property)
+                    delete constant_property.value
 
-            if (trace && tracing('constant_attribute')) {
-                trace_attribute('constant', instance, name, value)
-            }
-        }
+                    if (trace && tracing('constant_attribute')) {
+                        trace_attribute('constant', instance, name, value)
+                    }
+                }//,
+            )
 
 
         var interim_constant_attribute = wrap_function(
@@ -1085,62 +1087,60 @@ Gem.Core.execute(
 
 
         if (clarity || trace) {
+            var who_what__who = 'Gem._.Core.who_what'
+
             //
             //  NOTE:
-            //      This stub implementation of `who_what` only replaces a single "." since it does not use
+            //      This interim implementation of `who_what` only replaces a single "." since it does not use
             //      regular expressions with the "g" flag.
             //
-            var who_what = function Gem__private__who_what(module, $who, $what, create_prefix) {
-                if (clarity) {
-                    if (create_prefix) {
-                        if ($who.startsWith('Gem._.')) {
-                            var _prefix = $who.replace('Gem._.', 'Gem__private__')
-                        } else {
-                            var _prefix = $who.replace('.', '__')
-                        }
-
-
-                        /*=*/ {
-                            //  constant           module.$who    = $who
-                            //  constant           module.$what   = $what
-                            //  invisible constant module._prefix = _prefix
-                            constant_$who_property    .value = $who
-                            constant_$what_property   .value = $what
-                            constant___prefix_property.value = _prefix
-
-                            define_properties(module, module_properties)
-
-                            constant_$who_property        .value =
-                                constant_$what_property   .value =
-                                constant___prefix_property.value = undefined
-
-                            if (trace && tracing('Gem__private__who_what')) {
-                                trace_attribute('constant',           module, '$who',    $who)
-                                trace_attribute('constant',           module, '$what',   $what)
-                                trace_attribute('invisible constant', module, '_prefix', _prefix)
-                            }
-                        }
-
-                        return
-                    }
-
-                    /*=*/
-                    {
-                        //  constant module.$who  = $who
-                        //  constant module.$what = $what
-                        constant_$who_$what_attributes(module, $who, $what)
+            var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                if ( ! clarity) {
+                    //
+                    //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
+                    // 
+                    /*=*/ {
+                        //  constant module.$who = $who
+                        constant_attribute(module, '$who', $who)
                     }
 
                     return
                 }
 
+                if (create_prefix) {
+                    if ($who.startsWith('Gem._.')) {
+                        var _prefix = $who.replace('Gem._.', 'Gem__private__')
+                    } else {
+                        var _prefix = $who.replace('.', '__')
+                    }
 
-                //
-                //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                // 
+
+                    /*=*/ {
+                        //  constant           module.$who    = $who
+                        //  constant           module.$what   = $what
+                        //  invisible constant module._prefix = _prefix
+                        constant_$who_property    .value = $who
+                        constant_$what_property   .value = $what
+                        constant___prefix_property.value = _prefix
+
+                        define_properties(module, module_properties)
+
+                        constant_$who_property        .value =
+                            constant_$what_property   .value =
+                            constant___prefix_property.value = undefined
+
+                        if (trace && tracing(who_what__who)) {
+                            trace_attribute('constant',           module, '$who',    $who)
+                            trace_attribute('constant',           module, '$what',   $what)
+                            trace_attribute('invisible constant', module, '_prefix', _prefix)
+                        }
+                    }
+                }
+
                 /*=*/ {
-                    //  constant module.$who = $who
-                    constant_attribute(module, '$who', $who)
+                    //  constant module.$who  = $who
+                    //  constant module.$what = $what
+                    constant_$who_$what_attributes(module, $who, $what)
                 }
             }
 
@@ -1150,11 +1150,16 @@ Gem.Core.execute(
 
 
                 //
-                //  Trace execute$setup_Gem$STUB$who_what:
+                //  trace$interim$Gem__private__Core__who_what
                 //      This special version of tracing has to set `module.$who` before calling `function_call`,
                 //      so that `function_call` can properly identify `module`.
                 //
-                var who_what = function trace$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                var who_what = function trace$interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                    if ( ! tracing(who_what__who)) {
+                        original_who_what(module, $who, $what, create_prefix)
+                        return
+                    }
+
                     //
                     //  ... Must do this first before calling `function_call` ...
                     //
@@ -1164,13 +1169,11 @@ Gem.Core.execute(
                     }
 
                     function_call(original_who_what, arguments)
-
                     original_who_what(module, $who, $what, create_prefix)
-
                     procedure_done()
                 }
 
-                interim_constant_attribute(original_who_what, '$who',   'Gem._.Core.who_what')
+                interim_constant_attribute(original_who_what, '$who',   who_what__who)
                 interim_constant_attribute(who_what,          '$trace', original_who_what)
             }
 
@@ -1214,37 +1217,77 @@ Gem.Core.execute(
 
         if (clarity) {
             //
-            //  _method__clarity__no_trace
-            //      Common code to define a method.
+            //  method__no_trace
+            //      Common code to define a method without tracing.
             //
             //      Version: Clarity, no trace mode
             //
-            var method__clarity_no_trace = function method__clarity_no_trace(instance, who, $what, method) {
-                if ( ! ('$who' in instance)) {
-                    debugger
-                    throw new Error('missing $who in object')
-                }
+            var method__no_trace = wrap_function(
+                    function interim$Gem__private__Core__method__no_trace(
+                            instance, interim, who, $what, method//,
+                    ) {
+                        if ( ! ('$who' in instance)) {
+                            throw new Error('missing $who in object')
+                        }
 
-                var function_name = instance.$who + '.' + who
+                        var function_name = instance.$who + '.' + who
 
-                /*=*/ {
-                    //  constant method.$who  = function_name
-                    //  constant method.$what = $what
-                    constant_$who_$what_attributes(method, function_name, $what)
-                }
+                        /*=*/ {
+                            //  constant method.$who  = function_name
+                            //  constant method.$what = $what
+                            constant_$who_$what_attributes(method, function_name, $what)
+                        }
 
-                //  interim constant instance.*who = method
-                interim_constant_attribute(instance, who, method)
-            }
+                        if (interim) {
+                            //  interim constant instance.*who = method
+                            interim_constant_attribute(instance, who, method)
+                        } else {
+                            //  constant instance.*who = method
+                            constant_attribute(instance, who, method)
+                        }
+                    },
+                    'Gem._.Core.method__no_trace'//,
+                )
+        } else {
+            //
+            //  method__no_trace
+            //      Common code to define a method without tracing.
+            //
+            //      Version: no clarity, no trace mode
+            //
+            var method__no_trace = wrap_function(
+                    function interim$Gem__private__Core__method__no_trace(
+                            instance, interim, who, $what, method//,
+                    ) {
+                        if (interim) {
+                            //  interim constant instance.*who = method
+                            interim_constant_attribute(instance, who, method)
+                        } else {
+                            //  constant instance.*who = method
+                            constant_attribute(instance, who, method)
+                        }
+                    },
+                    'Gem._.Core.method__no_trace'//,
+                )
         }
+
 
         if (trace) {
             if (clarity) {
                 var traced_method__common = wrap_function(
-                        function traced_method__common(instance, who, $what, wrapped_method) {
-                            /*=*/ {
-                                //  interim constant instance.*who = wrapped_method
-                                interim_constant_attribute(instance, who, wrapped_method)
+                        function interim$Gem__private__Trace__traced_method__common(
+                            instance, interim, who, $what, wrapped_method//,
+                        ) {
+                            if (interim) {
+                                /*=*/ {
+                                    //  interim constant instance.*who = wrapped_method
+                                    interim_constant_attribute(instance, who, wrapped_method)
+                                }
+                            } else {
+                                /*=*/ {
+                                    //  constant instance.*who = wrapped_method
+                                    constant_attribute(instance, who, wrapped_method)
+                                }
                             }
 
                             //
@@ -1267,16 +1310,28 @@ Gem.Core.execute(
                                         'TRACED: ' + $what//,
                                     )
                             }
-                        }//,
+                        },
+                        'Gem._.Trace.traced_method__common'//,
+
                     )
             } else {
                 var traced_method__common = wrap_function(
-                        function traced_method__common(instance, who, $what, wrapped_method) {
-                            /*=*/ {
-                                //  interim constant instance.*who = wrapped_method
-                                interim_constant_attribute(instance, who, wrapped_method)
+                        function interim$Gem__private__Trace__traced_method__common(
+                            instance, interim, who, $what, wrapped_method//,
+                        ) {
+                            if (interim) {
+                                /*=*/ {
+                                    //  interim constant instance.*who = wrapped_method
+                                    interim_constant_attribute(instance, who, wrapped_method)
+                                }
+                            } else {
+                                /*=*/ {
+                                    //  interim constant instance.*who = wrapped_method
+                                    interim_constant_attribute(instance, who, wrapped_method)
+                                }
                             }
-                        }//,
+                        },
+                        'Gem._.Trace.traced_method__common'//,
                     )
             }
 
@@ -1286,10 +1341,10 @@ Gem.Core.execute(
                             throw new Error('missing $who in object')
                         }
 
-                        var function_name = instance.$who + '.' + who
+                        var function_name  = instance.$who + '.' + who
                         var wrapped_method = wrap_function(method, function_name)
 
-                        traced_method__common(instance, who, $what, wrapped_method)
+                        traced_method__common(instance, false, who, $what, wrapped_method)
                     },
                     'Gem.Core.method'//,
                 )
@@ -1300,21 +1355,13 @@ Gem.Core.execute(
                             throw new Error('missing $traced in function "' + wrapped_method.name + '"')
                         }
 
-                        traced_method__common(instance, who, $what, wrapped_method)
+                        traced_method__common(instance, false, who, $what, wrapped_method)
                     },
                     'Gem.Trace.traced_method'//,
                 )
         } else {
             var method = function interim$Gem__Core__method(instance, who, $what, method) {
-                if (clarity) {
-                    method__clarity_no_trace(instance, who, $what, method)
-                    return
-                }
-
-                /*=*/ {
-                    //  constant instance.*who = value
-                    constant_attribute(instance, who, method)
-                }
+                method__no_trace(instance, false, who, $what, method)
             }
 
 
@@ -1326,7 +1373,7 @@ Gem.Core.execute(
             //      attributes).
             //
             var traced_method = function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
-                method(instance, who, $what, wrapped_method)
+                method__no_trace(instance, false, who, $what, method)
             }
         }
 
@@ -1337,14 +1384,14 @@ Gem.Core.execute(
         traced_method(
             Gem.Trace,
             'traced_method',
-            'Temporary stub for Gem.Trace.traced_method',
+            'Interim method for Gem.Trace.traced_method',
             traced_method//,
         ) 
 
         Gem.Trace.traced_method(
             Gem.Core,
             'method',
-            'Temporary stub for Gem.Core.method',
+            'Interim method for Gem.Core.method',
             method//,
         )
 
@@ -1352,8 +1399,8 @@ Gem.Core.execute(
         Gem.Core.method(
             Gem.Core,
             'clarity_note',
-            'Temporary stub for Gem.Core.clarity_note',
-            function STUB$Gem__Core__clarity_note(who, $what) {
+            'Interim method for Gem.Core.clarity_note',
+            function interim$Gem__Core__clarity_note(who, $what) {
                 if (clarity) {
                     constant_property.value = $what
                     define_property(this, who + '$NOTE', constant_property)
@@ -1366,8 +1413,8 @@ Gem.Core.execute(
         Gem.Core.method(
             Gem.Core,
             'codify_method',
-            'Temporary stub for Gem.Core.codify_method',
-            function STUB$Gem__Core__codify_method(who, $what, codifier, /*optional*/ flags) {
+            'Interim method for Gem.Core.codify_method',
+            function interim$Gem__Core__codify_method(instance, who, $what, codifier, /*optional*/ flags) {
                 if (trace) {
                     if (flags !== 'no-trace' && tracing(codifier.name)) {
                         var wrapped_codifier = wrap_function(codifier)
@@ -1378,7 +1425,7 @@ Gem.Core.execute(
                     var wrapped_codifier = codifier
                 }
 
-                method(this, who, $what, wrapped_codifier())
+                method(instance, who, $what, wrapped_codifier())
             }
         )
 
@@ -1386,8 +1433,8 @@ Gem.Core.execute(
         Gem.Core.method(
             Gem.Core,
             'constant',
-            'Temporary stub for Gem.Core.constant',
-            function STUB$Gem__Core__constant(who, $what, constant) {
+            'Interim method for Gem.Core.constant',
+            function interim$Gem__Core__constant(who, $what, constant) {
                 constant_property.value = constant
                 define_property(this, who, constant_property)
 
@@ -1404,8 +1451,8 @@ Gem.Core.execute(
         Gem.Core.method(
             Gem.Core,
             'qualify_constant',
-            'Temporary stub for Gem.Core.qualify_constant',
-            function STUB$Gem__Core__qualify_constant(who, $what, qualifier) {
+            'Interim method for Gem.Core.qualify_constant',
+            function interim$Gem__Core__qualify_constant(who, $what, qualifier) {
                 constant_property.value = (trace ? wrap_function(qualifier) : qualifier)()
                 define_property(this, who, constant_property)
 
@@ -1419,11 +1466,18 @@ Gem.Core.execute(
         )
 
 
-        Gem.Core.method(
+        Gem.Trace.traced_method(
             Gem._.Core,
             'constant_attribute',
             'Create a [non reconfigurable] visible constant attribute.',
             constant_attribute//,
+        )
+
+        Gem.Trace.traced_method(
+            Gem._.Core,
+            'interim_constant_attribute',
+            'Create an iterim (i.e.: reconfigurable) visible constant attribute.',
+            interim_constant_attribute//,
         )
 
 
@@ -1433,10 +1487,27 @@ Gem.Core.execute(
                 'who_what',
                 (
                     clarity
-                        ? 'Temporary stub to set `.$who`, `.$what`, & `prefix` on a module.'
-                        : 'Temporary stub to set `.$who` on a module (`$what` is ignored in non clarity mode).'
+                        ? 'Interim method to set `.$who`, `.$what`, & `prefix` on a module.'
+                        : 'Interim method to set `.$who` on a module (`$what` is ignored in non clarity mode).'
                 ),
                 who_what//,
+            )
+        }
+
+
+        Gem.Trace.traced_method(
+            Gem._.Core,
+            'method__no_trace',
+            'Interim common helper code to create a method (with no tracing).',
+            method__no_trace//,
+        )
+
+        if (trace) {
+            Gem.Trace.traced_method(
+                Gem._.Trace,
+                'traced_method__common',
+                'Interim common helper code to create a traced method.',
+                traced_method__common//,
             )
         }
 //  </stubs>                                                //   End of stubs
@@ -1477,6 +1548,90 @@ Gem.Core.execute(
             'A property used to create visible (i.e.: enumerable) constant attributes.',
             constant_property//,
         )
+    }
+)
+
+
+//
+//  Gem.Core.codify_interim_method
+//      Interim method for Gem.Core.codify_interim_method
+//
+Gem.Core.codify_method(
+    Gem.Core,
+    'codify_interim_method',
+    'Interim method for Gem.Core.codify_interim_method',
+    function codifier$Gem__Core__codify_interim_method() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+
+        var trace = Configuration.trace
+
+
+        //
+        //  Implementation
+        //
+        if ( ! trace) {
+            //
+            //  Imports: non tracing version
+            //
+            var _Core = Gem._.Core
+
+            var method__no_trace = _Core.method__no_trace
+
+
+            //
+            //  Implementation: non tracing method
+            //
+            return function interim$Gem__Core__codify_interim_method(instance, who, $what, codifier) {
+                var method = codifier()
+
+                method__no_trace(instance, true, who, $what, method)
+            }
+        }
+
+
+        //
+        //  Imports: Tracing version
+        //
+        var Error = window.Error
+
+        var _Trace = Gem._.Trace
+        var Trace  = Gem.Trace
+
+        var function_call         = _Trace.function_call
+        var function_result       = _Trace.function_result
+        var traced_method__common = _Trace.traced_method__common
+        var tracing               = Trace.tracing
+        var wrap_function         = Trace.wrap_function
+
+
+        //
+        //  Implementation: Tracing version
+        //
+        return function interim$Gem__Core__codify_interim_method(instance, who, $what, codifier) {
+            if ( ! ('$who' in instance)) {
+                throw new Error('missing $who in object')
+            }
+
+            if (tracing(codifier.name)) {
+                function_call(codifier)
+
+                var method = codifier()
+
+                function_result(method)
+            } else {
+                var method = codifier()
+            }
+
+            var function_name  = instance.$who + '.' + who
+            var wrapped_method = wrap_function(method, function_name)
+
+            traced_method__common(instance, true, who, $what, wrapped_method)
+        }
     }
 )
 
@@ -1556,7 +1711,7 @@ Gem.Core.execute(
 //      Show developer tools.
 //
 if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.NodeWebKit,
         'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower).',
@@ -1571,7 +1726,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
         }
     )
 } else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.NodeWebKit,
         'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher).',
@@ -1646,7 +1801,7 @@ if (Gem.Script.handle_errors) {
     //      Anyway, if we can use `.getAttribute('src')` we do so; otherwise we do it the crazy backwards compatiable
     //      way.
     //
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.Script,
         'source_attribute',
         'Get an unmodified `.src` attribute from a DOM (domain object model) element.',
@@ -1688,7 +1843,7 @@ if (Gem.Script.handle_errors) {
     //  Gem.Script.error
     //      Show an error (either with `alert` or `console.error`).
     //
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.Script,
         'error',
         'Show an error (either with alert or console.error).',
@@ -1726,7 +1881,7 @@ if (Gem.Script.handle_errors) {
     //  Gem.Script.handle_global_error
     //      Handle errors when executing a `<script>` tag.
     //
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.Script,
         'handle_global_error',
         'Handle errors when executing a `<script>` tag.',
@@ -1767,7 +1922,7 @@ if (Gem.Script.handle_errors) {
     //  Gem.Script.handle_event
     //      Handle events of `<script>` tags.
     //
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.Script,
         'handle_event',
         'Handle events of `<script>` tags.',
@@ -1856,9 +2011,9 @@ Gem.Core.qualify_constant.call(
 //          1.  Here;
 //          2.  Again, in clarity mode, after `Gem` is replaced.
 //
-Gem.Core.codify_method.call(
+Gem.Core.codify_interim_method(
     Gem.Script,
-    'codify_method_load',
+    'codify_load',
     (
           'Codify method `Gem.Script.load`.\n'
         + '\n'
@@ -1867,7 +2022,7 @@ Gem.Core.codify_method.call(
         + '    1.  Here;\n'
         + '    2.  Again, in Clarity mode, after global variable `Gem` is replaced.'
     ),
-    function codifier$Gem__Script__codify_method_load() {
+    function codifier$Gem__Script__codify_load() {
         //
         //  Imports
         //
@@ -1918,8 +2073,8 @@ Gem.Core.codify_method.call(
         //          2.  Again, in clarity mode, after `Gem` is replaced.
         //
         if (handle_errors) {
-            return function Gem__Script__codify_method_load() {
-                Gem.Core.codify_method.call(            //  `Gem.Script.codify_method` might not exist; so use `.call`
+            return function Gem__Script__codify_load() {
+                Gem.Core.codify_method(                 //  `Gem.Script.codify_method` might not exist; so use `.call`
                     Gem.Script,
                     'load',
                     (
@@ -1980,8 +2135,8 @@ Gem.Core.codify_method.call(
         }
 
 
-        return function Gem__Script__codify_method_load() {
-            Gem.Core.codify_method.call(
+        return function Gem__Script__codify_load() {
+            Gem.Core.codify_method(
                 Gem.Script,
                 'load',
                 (
@@ -2048,7 +2203,7 @@ Gem.Core.execute(
         //      Gem.Script.load
         //
         //  NOTE #1:
-        //      Also does cleanup of `Gem.Script.codify_method_load` if not in clarity mode.
+        //      Also does cleanup of `Gem.Script.codify_load` if not in clarity mode.
         //          Load JavaScript code using a `<script>` tag.
         //
         //  NOTE #2:
@@ -2058,15 +2213,15 @@ Gem.Core.execute(
             //
             //  Imports
             //
-            var clarity            = Gem.Configuration.clarity
-            var codify_method_load = Gem.Script.codify_method_load
+            var clarity     = Gem.Configuration.clarity
+            var codify_load = Gem.Script.codify_load
 
-            codify_method_load()                                //  Call first time here ...
+            codify_load()                               //  Call first time here ...
 
             if (clarity) {
-                //  Clarity mode will call `codify_method_load` again later.
+                //  Clarity mode will call `codify_load` again later.
             } else {
-                delete Gem.Script.codify_method_load            //  Not clarity mode -- don't need to keep this around
+                delete Gem.Script.codify_load           //  Not clarity mode -- don't need to keep this around
             }
         }
 

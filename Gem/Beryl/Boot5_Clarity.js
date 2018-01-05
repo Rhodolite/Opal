@@ -246,6 +246,7 @@ if (Gem.Configuration.clarity) {
 //      See "Gem/Beryl/Boot6_Methods.js" for full implementation
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'codify_bound_method',
     'Stub for Gem.Core.codify_bound_method',
     function codifier$Gem__Core__codify_bound_method() {
@@ -414,6 +415,7 @@ Gem.Core.codify_bound_method(
 //      Throw a type error when a parameter is not a string representing an identifier.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'throw_must_be_identifier',
     'Throw a type error when a parameter is not a string representing an identifier.',
     function codifier$Gem__Core__throw_must_be_identifier() {
@@ -474,9 +476,9 @@ Gem.Core.codify_method(
 //
 Gem.Core.execute(
     function execute$push_to_callback_later$recodify$Gem__Script__load() {
-        if ( ! ('codify_method_load' in Gem.Script)) {
+        if ( ! ('codify_load' in Gem.Script)) {
             //
-            //  This file is being reloaded by itself, so there is no `Gem.Script.codify_method_load` since
+            //  This file is being reloaded by itself, so there is no `Gem.Script.codify_load` since
             //  it was deleted earlier (and has not been recreated by reloading the original file).
             //
             return
@@ -485,23 +487,23 @@ Gem.Core.execute(
 
         //  Imports
         var clarity_mode$global_variable_Gem_changed = Gem._.Core.clarity_mode$global_variable_Gem_changed
-        var codify_method_load                       = Gem.Script.codify_method_load
+        var codify_load                              = Gem.Script.codify_load
 
 
         //
-        //  Callback to recodify `Gem.Script.load` (and also delete `Gem.Script.codify_method_load`
+        //  Callback to recodify `Gem.Script.load` (and also delete `Gem.Script.codify_load`
         //
         function callback$recodify$Gem__Script__load() {
-            codify_method_load()
+            codify_load()
 
             //
             //  Delayed deletion (instead of now):
-            //      This allows the user to introspect `Gem.Script.codify_method_load` until it is used & deleted.
+            //      This allows the user to introspect `Gem.Script.codify_load` until it is used & deleted.
             //
             //  NOTE:
             //      We have to use the global `Gem` here, as we want to delete it from the currently modified `Gem`.
             //
-            delete window.Gem.Script.codify_method_load
+            delete window.Gem.Script.codify_load
         }
 
 

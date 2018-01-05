@@ -14,6 +14,7 @@
 //      Also in clarity mode adds a `.$who`, and `.$what` to the module.
 //
 Gem.Core.codify_method(
+    Gem.Core,
     'module',
     (
           'Define a Gem Module.\n'

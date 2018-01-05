@@ -6,6 +6,7 @@
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'store_function_from_evaluate',
     (
           'Store a function created inside an eval.\n'
@@ -36,7 +37,7 @@ Gem.Core.codify_method(
 
 
 if (Gem.Configuration.trace) {
-    Gem.Core.codify_method.call(
+    Gem.Core.codify_method(
         Gem.Trace,
         'trace_constructor',
         'Private method used to trace a constructor.\n',
@@ -103,6 +104,7 @@ if (Gem.Configuration.trace) {
 
 
 Gem.Core.codify_method(
+    Gem.Core,
     'create_constructor',
     'Create a constructor.',
     function codifier$Gem__Trace__create_constructor() {

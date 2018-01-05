@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method.call(
+Gem.Core.codify_method(
     Gem.Box,
     'create_AnonymousBox',
     'Stub to create an anonymous box (an object with no `.__proto__`)',
