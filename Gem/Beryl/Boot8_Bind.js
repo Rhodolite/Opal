@@ -22,6 +22,7 @@ Gem.Core.mutable(
 
 
 Gem.Core.constant(
+    Gem.Core,
     'has_bind',
     '`Gem.Core.has_bind` is `true` when `Function.prototype.bind` exists (which it does in all modern browsers).',
     ('bind' in Function) && (Gem.Core.single_step_binding !== 6)//,

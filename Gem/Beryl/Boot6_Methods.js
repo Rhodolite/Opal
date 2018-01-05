@@ -66,7 +66,7 @@ Gem.Core.codify_method(
         //  Implementation: Simple version
         //
         if ( ! clarity) {
-            return function Gem__Core__clarity_note(/*who, $what*/) {
+            return function Gem__Core__clarity_note(/*instance, who, $what*/) {
                 //  Nothing to do, not in clarity mode
             }
         }
@@ -89,12 +89,16 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        return function Gem__Core__clarity_note(who, $what) {
+        return function Gem__Core__clarity_note(instance, who, $what) {
             //  Add a note to a variable or set of variables (clarity mode only)
 
             /*arguments*/ {
-                if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Core.clarity_note', 2, arguments.length)
+                if (arguments.length !== 3) {
+                    throw_wrong_arguments('Gem.Core.clarity_note', 3, arguments.length)
+                }
+
+                if (typeof who !== 'object') {
+                    throw_must_be_object('instance', instance)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
@@ -105,8 +109,8 @@ Gem.Core.codify_method(
             }
 
             /*=*/ {
-                //  constant this[who + '$NOTE'] = $what
-                constant_property(this, who + '$NOTE', $what)
+                //  constant instance[who + '$NOTE'] = $what
+                constant_property(instance, who + '$NOTE', $what)
             }
         }
     }
@@ -416,13 +420,13 @@ Gem.Core.codify_method(
         //  Implementation: Simple version
         //
         if (simple) {
-            return function Gem__Core__constant(who, $what, constant) {
+            return function Gem__Core__constant(instanc, who, $what, constant) {
                 //  Store a global Gem constant.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
 
                 constant_property.value = constant
-                define_property(this, who, constant_property)
+                define_property(instance, who, constant_property)
                 delete constant_property.value
             }
         }
@@ -441,14 +445,18 @@ Gem.Core.codify_method(
         //
         //  Implementation
         //
-        return function Gem__Core__constant(who, $what, constant) {
+        return function Gem__Core__constant(instance, who, $what, constant) {
             //  Store a global Gem constant.
             //
             //  Also in clarity mode adds an explanation of what the constant does.
 
             /*arguments*/ {
-                if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Core.constant', 3, arguments.length)
+                if (arguments.length !== 4) {
+                    throw_wrong_arguments('Gem.Core.constant', 4, arguments.length)
+                }
+
+                if (typeof instance !== 'object') {
+                    throw_must_be_object('instance', instance)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
@@ -469,12 +477,13 @@ Gem.Core.codify_method(
                 }
             }
 
+            // FIX THIS
             constant_property.value = constant
-            define_property(this, who, constant_property)
+            define_property(instance, who, constant_property)
 
             /*clarity*/ {
                 constant_property.value = $what
-                define_property(this, who + '$', constant_property)
+                define_property(instance, who + '$', constant_property)
             }
 
             delete constant_property.value
@@ -510,13 +519,13 @@ Gem.Core.codify_method(
         //  Implementation: Simple version
         //
         if (simple) {
-            var method = function Gem__Core__method(who, $what, method) {
+            var method = function Gem__Core__method(instance, who, $what, method) {
                 //  Store a Gem Method.
                 //
                 //  Ignores the `$what` parameter, which is only used in clarity mode.
 
                 constant_property.value = method
-                define_property(this, who, constant_property)
+                define_property(instance, who, constant_property)
                 delete constant_property.value
             }
         }
@@ -553,7 +562,7 @@ Gem.Core.codify_method(
                 if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
 
                 /*method*/ {
-                    var method_name = this.$who.replace('.', '__') + '__' + who
+                    var method_name = instance.$who.replace('.', '__') + '__' + who
 
                     if (typeof method !== 'function' || method_name !== method.name) {
                         throw_type_error(

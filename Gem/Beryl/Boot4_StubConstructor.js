@@ -37,7 +37,7 @@ Gem.Core.codify_method(
 
 
 if (Gem.Configuration.trace) {
-    Gem.Core.codify_method(
+    Gem.Core.codify_untraced_method(
         Gem.Trace,
         'trace_constructor',
         'Private method used to trace a constructor.\n',
@@ -97,8 +97,7 @@ if (Gem.Configuration.trace) {
                     return
                 }
             }
-        },
-        'no-trace'//,               //  FIX: THIS
+        }//,
     )
 }
 

@@ -38,7 +38,7 @@ Gem.Core.codify_method(
 )
 
 
-Gem.Core.codify_method(
+Gem.Core.codify_untraced_method(
     Gem._.Trace,
     'trace_constructor',
     (
@@ -100,8 +100,7 @@ Gem.Core.codify_method(
 
             return instance
         }
-    },
-    'no-trace'//,
+    }//,
 )
 
 

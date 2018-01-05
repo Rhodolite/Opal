@@ -68,7 +68,7 @@ Gem.Core.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Core.constant', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Core.module', 3, arguments.length)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
