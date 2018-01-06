@@ -18,13 +18,10 @@ Gem.Core.codify_method(
         var _Core = Gem._.Core
         var Trace = Gem.Trace
 
-        var method__no_trace = _Core.method__no_trace
         var trace_call       = Trace.trace_call
+        var method__no_trace = _Core.method__no_trace
 
 
-        //
-        //  Implementation
-        //
         return function interim$Gem__Trace__codify_untraced_method(who, $what, codifier) {
             //  Interim stub for `Gem.Trace.codify_untraced_method`
 
@@ -32,7 +29,7 @@ Gem.Core.codify_method(
 
             method__no_trace(instance, false, who, $what, method)
         }
-    }
+    }//,
 )
 
 

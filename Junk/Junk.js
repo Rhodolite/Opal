@@ -462,3 +462,42 @@ Gem.Core.execute(
                 delete Tracing[k]
             }
         }
+        //
+        //  Gem._.Core.method__common
+        //      Common code to define a method.
+        //
+        //  NOTE:
+        //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten (in clarity
+        //      mode), after which this method is invalid.
+        //
+        var method__common = wrap_function(
+                function interim$Gem__private__Core__method__common(instance, interim, who, method) {
+                    //  Common code to define a method.
+                    //
+                    //  NOTE:
+                    //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
+                    //      (in clarity mode), after which this method is invalid.
+
+                    if (interim || Script.dynamic) {                            //  See NOTE above
+                        //  interim constant instance.*who = method
+                        interim_constant_attribute(instance, who, method)
+                    } else {
+                        //  constant instance.*who = method
+                        constant_attribute(instance, who, method)
+                    }
+                },
+                'Gem._.Core.method__common'//,
+            )
+
+
+        //
+        //  Gem._.Core.method__common
+        //
+        traced_method(
+            Gem._.Core,
+            'method__common',
+            'Interim common helper code to create a method.',
+            method__common//,
+        )
+
+

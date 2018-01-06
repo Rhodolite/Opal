@@ -40,7 +40,6 @@ window.Gem = {
         'Gem._.Core.constant_attribute',                        0,
         'Gem._.Core.who_what',                                  0,
         'Gem._.Trace.store_codifier_wrap_constructor',          0,
-        'Gem._.Trace.traced_method__common',                    0,
         'Gem.Box.create_AnonymousBox',                          0,
         'Gem.Box.create_ModuleExports$Box',                     0,
         'Gem.Core.codify_interim_method',                       0,
@@ -62,7 +61,8 @@ window.Gem = {
         'interim_constant_attribute',                           0,
         'ModuleExports$Box',                                    0,
         'qualifier$Gem__Core__invisible_constructor_property',  0,
-        'qualifier$Gem__Script__gem_scripts',                   0//,
+        'qualifier$Gem__Script__gem_scripts',                   0,
+        'traced_method__common',                                1//,
     ],
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -1005,6 +1005,7 @@ Gem.Core.execute(
         var Gem = window.Gem
 
         var Configuration = Gem.Configuration
+        var Script        = Gem.Script
         var Trace         = Gem.Trace
 
         var clarity           = Configuration.clarity
@@ -1279,18 +1280,26 @@ Gem.Core.execute(
         //      to follow so much contorted code ...
         //
         //      (Was not an easy choice to create the stubs, hopefully was the right one).
+        //
 
-        if (clarity) {
-            //
-            //  method__no_trace
-            //      Common code to define a method without tracing.
-            //
-            //      Version: Clarity, no trace mode
-            //
-            var method__no_trace = wrap_function(
-                    function interim$Gem__private__Core__method__no_trace(
-                            instance, interim, who, $what, method//,
-                    ) {
+
+        //
+        //  method__no_trace
+        //      Common code to define a method with no tracing.
+        //
+        //  NOTE:
+        //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten (in clarity
+        //      mode), after which this method is invalid.
+        //
+        var method__no_trace = wrap_function(
+                function interim$Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
+                    //  Common code to define a method with no tracing.
+                    //
+                    //  NOTE:
+                    //      Due to the call of `Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                    //      rewritten, after which this method is invalid.
+
+                    if (clarity) {
                         if ( ! ('$who' in instance)) {
                             throw new Error('missing $who in object')
                         }
@@ -1302,53 +1311,38 @@ Gem.Core.execute(
                             //  constant method.$what = $what
                             constant_$who_$what_attributes(method, function_name, $what)
                         }
+                    }
 
-                        if (interim) {
-                            //  interim constant instance.*who = method
-                            interim_constant_attribute(instance, who, method)
-                        } else {
-                            //  constant instance.*who = method
-                            constant_attribute(instance, who, method)
-                        }
-                    },
-                    'Gem._.Core.method__no_trace'//,
-                )
-        } else {
-            //
-            //  method__no_trace
-            //      Common code to define a method without tracing.
-            //
-            //      Version: no clarity, no trace mode
-            //
-            var method__no_trace = wrap_function(
-                    function interim$Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
-                        if (interim) {
-                            //  interim constant instance.*who = method
-                            interim_constant_attribute(instance, who, method)
-                        } else {
-                            //  constant instance.*who = method
-                            constant_attribute(instance, who, method)
-                        }
-                    },
-                    'Gem._.Core.method__no_trace'//,
-                )
-        }
+                    if (interim || Script.dynamic) {                            //  See NOTE above
+                        //  interim constant instance.*who = method
+                        interim_constant_attribute(instance, who, method)
+                    } else {
+                        //  constant instance.*who = method
+                        constant_attribute(instance, who, method)
+                    }
+                },
+                'Gem._.Core.method__no_trace'//,
+            )
 
 
         if (trace) {
-            if (clarity) {
-                var traced_method__common = wrap_function(
-                        function interim$Gem__private__Trace__traced_method__common(
-                            instance, interim, who, $what, wrapped_method//,
-                        ) {
-                            if (interim) {
-                                //  interim constant instance.*who = wrapped_method
-                                interim_constant_attribute(instance, who, wrapped_method)
-                            } else {
-                                //  constant instance.*who = wrapped_method
-                                constant_attribute(instance, who, wrapped_method)
-                            }
+            //
+            //  local traced_method__common
+            //      Common code to define a traced method
+            //
+            //  NOTE:
+            //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten (in clarity
+            //      mode), after which this method is invalid.
+            //
+            var traced_method__common = wrap_function(
+                    function traced_method__common(instance, interim, who, $what, wrapped_method) {
+                        //  Common code to define a traced method
+                        //
+                        //  NOTE:
+                        //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                        //      rewritten (in clarity mode), after which this method is invalid.
 
+                        if (clarity) {
                             var method = wrapped_method.$trace
 
                             /*=*/ {
@@ -1365,26 +1359,18 @@ Gem.Core.execute(
                                         'TRACED: ' + $what//,
                                     )
                             }
-                        },
-                        'Gem._.Trace.traced_method__common'//,
+                        }
 
-                    )
-            } else {
-                var traced_method__common = wrap_function(
-                        function interim$Gem__private__Trace__traced_method__common(
-                            instance, interim, who, $what, wrapped_method//,
-                        ) {
-                            if (interim) {
-                                //  interim constant instance.*who = wrapped_method
-                                interim_constant_attribute(instance, who, wrapped_method)
-                            } else {
-                                //  interim constant instance.*who = wrapped_method
-                                interim_constant_attribute(instance, who, wrapped_method)
-                            }
-                        },
-                        'Gem._.Trace.traced_method__common'//,
-                    )
-            }
+                        if (interim || Script.dynamic) {                            //  See NOTE above
+                            //  interim constant instance.*who = wrapped_method
+                            interim_constant_attribute(instance, who, wrapped_method)
+                        } else {
+                            //  constant instance.*who = wrapped_method
+                            constant_attribute(instance, who, wrapped_method)
+                        }
+                    }//,
+                )
+
 
             var interim_method = wrap_function(
                     function interim$Gem__Core__interim_method(instance, who, $what, method) {
@@ -1438,8 +1424,8 @@ Gem.Core.execute(
             //  NOTE:
             //      Without tracing this is identicial to `Gem.Core.Method`
             //
-            //      (However, different functions are used, so then can each acquire their unique `.$who` and `.$what`
-            //      attributes).
+            //      (However, different functions are used, so then can each acquire their unique `.$who` and
+            //      `.$what` attributes in clarity mode).
             //
             var traced_method = function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
                 method__no_trace(instance, false, who, $what, method)
@@ -1592,7 +1578,7 @@ Gem.Core.execute(
         traced_method(
             Gem._.Core,
             'method__no_trace',
-            'Interim common helper code to create a method (with no tracing).',
+            'Interim common helper code to create a method with no tracing.',
             method__no_trace//,
         )
 
@@ -1610,19 +1596,6 @@ Gem.Core.execute(
                         : 'Interim method to set `.$who` on a module (`$what` is ignored in non clarity mode).'
                 ),
                 who_what//,
-            )
-        }
-
-
-        //
-        //  Gem._.Trace.traced_method__common
-        //
-        if (trace) {
-            traced_method(
-                Gem._.Trace,
-                'traced_method__common',
-                'Interim common helper code to create a traced method.',
-                traced_method__common//,
             )
         }
 //  </stubs>                                                //   End of stubs
@@ -1682,9 +1655,11 @@ Gem.Core.codify_method(
         //
         var Gem = window.Gem
 
+        var _Core         = Gem._.Core
         var Configuration = Gem.Configuration
 
-        var trace = Configuration.trace
+        var method__no_trace = _Core.method__no_trace
+        var trace            = Configuration.trace
 
 
         //
@@ -1692,15 +1667,7 @@ Gem.Core.codify_method(
         //
         if ( ! trace) {
             //
-            //  Imports: non tracing version
-            //
-            var _Core = Gem._.Core
-
-            var method__no_trace = _Core.method__no_trace
-
-
-            //
-            //  Implementation: non tracing method
+            //  Implementation: no tracing
             //
             return function interim$Gem__Core__codify_interim_method(instance, who, $what, codifier) {
                 var method = codifier()
@@ -1720,8 +1687,7 @@ Gem.Core.codify_method(
 
         var function_call         = _Trace.function_call
         var function_result       = _Trace.function_result
-        var traced_method__common = _Trace.traced_method__common
-        var tracing               = Trace.tracing
+        var trace_call            = Trace.trace_call
         var wrap_function         = Trace.wrap_function
 
 
@@ -1733,20 +1699,11 @@ Gem.Core.codify_method(
                 throw new Error('missing $who in object')
             }
 
-            if (tracing(codifier.name)) {
-                function_call(codifier)
-
-                var method = codifier()
-
-                function_result(method)
-            } else {
-                var method = codifier()
-            }
-
+            var method         = trace_call(codifier)
             var function_name  = instance.$who + '.' + who
             var wrapped_method = wrap_function(method, function_name)
 
-            traced_method__common(instance, true, who, $what, wrapped_method)
+            method__no_trace(instance, true, who, $what, wrapped_method)
         }
     }
 )

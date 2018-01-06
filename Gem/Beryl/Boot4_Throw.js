@@ -5,6 +5,9 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
+Gem.Script.dynamic = true                                   //  Allow this `<script>` to be reloaded
+
+
 //
 //  The following four methods call each other, hence they have to be defined together in the same closure:
 //
