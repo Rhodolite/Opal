@@ -62,7 +62,7 @@ window.Gem = {
         'ModuleExports$Box',                                    0,
         'qualifier$Gem__Core__invisible_constructor_property',  0,
         'qualifier$Gem__Script__gem_scripts',                   0,
-        'traced_method__common',                                1//,
+        'traced_method__common',                                0//,
     ],
 
     Core : {                                                //  Basic support code for the Core Gem module.
@@ -1428,7 +1428,7 @@ Gem.Core.execute(
             //      `.$what` attributes in clarity mode).
             //
             var traced_method = function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
-                method__no_trace(instance, false, who, $what, method)
+                method__no_trace(instance, false, who, $what, wrapped_method)
             }
         }
 
