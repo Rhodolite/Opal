@@ -17,6 +17,7 @@
 //  var watching       = 'Gem/Beryl/Boot4_StubAttribute.js'
 //  var watching       = 'Gem/Beryl/Boot4_StubCodifyTracedMethod.js'
 //  var watching       = 'Gem/Beryl/Boot4_StubConstructor.js'
+//  var watching       = 'Gem/Beryl/Boot4_Throw.js'
 //  var watching       = 'Gem/Beryl/Boot4_Trace.js'
 //  var watching       = 'Gem/Beryl/Boot5_Clarity.js'
 //  var watching       = 'Gem/Beryl/Boot7_Module.js'
@@ -27,7 +28,7 @@
 //  var watching       = 'js/plugins/Silver.js'
 
     var watching       = 'js/plugins/Beryl.js'
-    var watching_2     = 'Gem/Beryl/Boot2_Manifest.js'
+    var watching_2     = 'Gem/Beryl/Boot4_Throw.js'
 
 
     "use strict"

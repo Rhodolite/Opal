@@ -6,56 +6,6 @@
 
 
 //
-//  In Gem clarity mode, *every* object created has a `.$who` and `.$what` member to help introspect the object
-//  in developer tools:
-//
-//      This makes it a lot clearer what the object is used for.
-//
-//      All "clarity" objects begin with `$` (see below for an exeption, when instead `.$$who` or `.$$what` is used to
-//      avoid conflicts).
-//
-//      Also each module appears in `Gem.$.ModuleName`, with each member of that module having a `.$who` & `.$what`
-//      members.
-//
-//      By *every* object this includes all closure objects that are used.  This make it very easy to examine
-//      the `.[[Scopes]]` member of a function and introspect the value of each of it's closure objects.
-//
-//  Minor Exception:
-//
-//      When an object uses `.$who` or `.$what` members for it's own purposes, then the extra members created
-//      are named `.$$who` and `.$$what` to avoid conflicts.
-//
-Gem.Core.execute(
-    function execute$Gem__add_clarity() {
-        //
-        //  Imports
-        //
-        var who_what = Gem._.Core.who_what
-
-
-        //
-        //  Implementation
-        //
-        who_what(Gem.Configuration,     'Gem.Configuration',     'Gem Configuration values.',                   false)
-        who_what(Gem.Script.script_map, 'Gem.Script.script_map', 'Map of all the scripts loaded (or loading).', false)
-
-        who_what(
-            Gem.Source,
-            'Gem.Source',
-            (
-                  'A map, for each `<script>` tag, a function from the source file to "hold onto"'
-                + ' to avoid garbage collection of all functions from that source file'
-                + ', which causes the source file to disappear from the "Sources" tab of Developer Tools.'
-            ),
-            false//,
-        )
-
-        who_what(Gem._, 'Gem._', 'Private members & methods of all Gem modules.', false)
-    }
-)
-
-
-//
 //  The following four methods call each other, hence they have to be defined together in the same closure:
 //
 //      Gem.Core.throw_must_be_a_number    - Throw a type error when a parameter is not a number.

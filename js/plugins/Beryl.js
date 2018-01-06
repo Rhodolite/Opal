@@ -14,7 +14,7 @@
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         capture_error : true,                               //      Try to capture errors
-        clarity       : 0,                                  //      Set Gem clarity mode to true.
+        clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
         trace         : 1,                                  //      Trace function, method & bound method calls.
@@ -86,6 +86,7 @@ window.Gem = {
     },
 
     Script : {                                              //  `<script>` handling.
+        dynamic    : false,                                 //      Whether the current script can be reloaded.
         event_list : ['abort', 'error', 'load'],            //      [Temporary] List of `<script>` events to listen for.
 
         //  handle_errors : false,                          //      `true` if handling `<script>` errors.
@@ -1320,9 +1321,7 @@ Gem.Core.execute(
             //      Version: no clarity, no trace mode
             //
             var method__no_trace = wrap_function(
-                    function interim$Gem__private__Core__method__no_trace(
-                            instance, interim, who, $what, method//,
-                    ) {
+                    function interim$Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
                         if (interim) {
                             //  interim constant instance.*who = method
                             interim_constant_attribute(instance, who, method)
@@ -1343,22 +1342,14 @@ Gem.Core.execute(
                             instance, interim, who, $what, wrapped_method//,
                         ) {
                             if (interim) {
-                                /*=*/ {
-                                    //  interim constant instance.*who = wrapped_method
-                                    interim_constant_attribute(instance, who, wrapped_method)
-                                }
+                                //  interim constant instance.*who = wrapped_method
+                                interim_constant_attribute(instance, who, wrapped_method)
                             } else {
-                                /*=*/ {
-                                    //  constant instance.*who = wrapped_method
-                                    constant_attribute(instance, who, wrapped_method)
-                                }
+                                //  constant instance.*who = wrapped_method
+                                constant_attribute(instance, who, wrapped_method)
                             }
 
-                            //
-                            //  Version: clarity & tracing
-                            //
                             var method = wrapped_method.$trace
-
 
                             /*=*/ {
                                 //  constant method.$what = $what
@@ -1384,20 +1375,30 @@ Gem.Core.execute(
                             instance, interim, who, $what, wrapped_method//,
                         ) {
                             if (interim) {
-                                /*=*/ {
-                                    //  interim constant instance.*who = wrapped_method
-                                    interim_constant_attribute(instance, who, wrapped_method)
-                                }
+                                //  interim constant instance.*who = wrapped_method
+                                interim_constant_attribute(instance, who, wrapped_method)
                             } else {
-                                /*=*/ {
-                                    //  interim constant instance.*who = wrapped_method
-                                    interim_constant_attribute(instance, who, wrapped_method)
-                                }
+                                //  interim constant instance.*who = wrapped_method
+                                interim_constant_attribute(instance, who, wrapped_method)
                             }
                         },
                         'Gem._.Trace.traced_method__common'//,
                     )
             }
+
+            var interim_method = wrap_function(
+                    function interim$Gem__Core__interim_method(instance, who, $what, method) {
+                        if ( ! ('$who' in instance)) {
+                            throw new Error('missing $who in object')
+                        }
+
+                        var function_name  = instance.$who + '.' + who
+                        var wrapped_method = wrap_function(method, function_name)
+
+                        traced_method__common(instance, true, who, $what, wrapped_method)
+                    },
+                    'Gem.Core.interim_method'//,
+                )
 
             var method = wrap_function(
                     function interim$Gem__Core__method(instance, who, $what, method) {
@@ -1424,6 +1425,10 @@ Gem.Core.execute(
                     'Gem.Trace.traced_method'//,
                 )
         } else {
+            var interim_method = function interim$Gem__Core__interim_method(instance, who, $what, method) {
+                method__no_trace(instance, true, who, $what, method)
+            }
+
             var method = function interim$Gem__Core__method(instance, who, $what, method) {
                 method__no_trace(instance, false, who, $what, method)
             }
@@ -1502,6 +1507,17 @@ Gem.Core.execute(
                           }
                       }
             )//,
+        )
+
+
+        //
+        //  Gem.Core.method
+        //
+        traced_method(
+            Gem.Core,
+            'interim_method',
+            'Interim method for Gem.Core.interim_method',
+            interim_method//,
         )
 
 
@@ -2030,56 +2046,109 @@ if (Gem.Script.handle_errors) {
 
 
     //
-    //  Gem.Script.handle_event
-    //      Handle events of `<script>` tags.
+    //  Gem.Script.codify_handle_event
+    //      Codify method `Gem.Script.handle_event`.
     //
-    Gem.Core.codify_method(
+    //      This routine can be called multiple times:
+    //
+    //          1.  Here;
+    //          2.  Again, in clarity mode, after `Gem` is replaced.
+    //
+    Gem.Core.codify_interim_method(
         Gem.Script,
-        'handle_event',
-        'Handle events of `<script>` tags.',
-        function codifier$Gem__Script__handle_event() {
+        'codify_handle_event',
+        (
+              'Codify method `Gem.Script.handle_event`.\n'
+            + '\n'
+            + 'This routine can be called multiple times:\n'
+            + '\n'
+            + '    1.  Here;\n'
+            + '    2.  Again, in Clarity mode, after global variable `Gem` is replaced.'
+        ),
+        function codifier$interim$Gem__Script__codify_handle_event() {
             //
-            //  NOTE:
-            //      There is no way to get the error message, if there is one, when attempting to load
-            //      a script (You can't use try/catch on a `<script>` tag that is inserted into the DOM).
+            //  Imports
             //
-            //      Hence in case of an error, the following is done:
-            //
-            //          1.  Alert the user with an alert message which says to see Developer Tools for full error;
-            //          2.  Force the user to acknowledge the alert box by hitting 'OK';
-            //          3.  Then, and only then, bring up Developer tool, so the user can read the rest of the error.
-            //
-            //  NOTE #2:
-            //      The previous note means there is no way to get the loading error messge (i.e.: if the file
-            //      does not exist, or there is an error while transferring it HTTP).
-            //
-            //      Any syntax error (on successful load) can be caught & is caught by `Gem.Script.handle_global_error`
-            //      above.
-            //
-            var error             = Gem.Script.error
-            var source_attribute  = Gem.Script.source_attribute
-            var script_event_list = Gem.Script.event_list
+            var Gem = window.Gem
+
+            var Script = Gem.Script
+
+            var script_event_list = Script.event_list
+            var source_attribute  = Script.source_attribute
 
 
-            var script_handle_event = function Gem__Script__handle_event(e) {
-                //  Handle events of `<script>` tags
+            //
+            //  Implementation
+            //
+            return function interim$Gem__Script__codify_handle_event(interim) {
+                //
+                //  Imports
+                //
+                var Gem = window.Gem                                    //  Reload latest `Gem`
 
-                var tag = e.target
+                var Script = Gem.Script                                 //  Reload lastest `Gem.Script`
 
-                for (var i = 0; i < script_event_list.length; i ++) {
-                    var type = script_event_list[i]
 
-                    tag.removeEventListener(type, script_handle_event)
+                //
+                //  Implementation
+                //
+
+                //
+                //  NOTE #1:
+                //      `handle_event` has to refer to itself; hence it has to be stored in variable
+                //      `script_handle_event`.
+                //
+                //  NOTE #1:
+                //      There is no way to get the error message, if there is one, when attempting to load
+                //      a script (You can't use try/catch on a `<script>` tag that is inserted into the DOM).
+                //
+                //      Hence in case of an error, the following is done:
+                //
+                //          1.  Alert the user with an alert message which says to see Developer Tools for full error;
+                //          2.  Force the user to acknowledge the alert box by hitting 'OK';
+                //          3.  Then, and only then, bring up Developer tool, so the user can read the rest of the
+                //              error.
+                //
+                //  NOTE #3:
+                //      The previous note means there is no way to get the loading error messge (i.e.: if the
+                //      file does not exist, or there is an error while transferring it HTTP).
+                //
+                //      Any syntax error (on successful load) can be caught & is caught by
+                //      `Gem.Script.handle_global_error` above.
+                //
+                var script_handle_event = function Gem__Script__handle_event(e) {
+                    //  Handle events of `<script>` tags
+
+                    Script.dynamic = false                                      //  Script done, reset `.dynamic`
+
+                    var tag = e.target
+
+                    for (var i = 0; i < script_event_list.length; i ++) {
+                        var type = script_event_list[i]
+
+                        tag.removeEventListener(type, script_handle_event)      //  Refer to myself. See NOTE #1 above.
+                    }
+
+                    if (e.type === 'abort' || e.type === 'error') {
+                        error(source_attribute(tag) + ': Failed to load')
+                    }
                 }
 
-                if (e.type === 'abort' || e.type === 'error') {
-                    error(source_attribute(tag) + ': Failed to load')
-                }
+
+                //
+                //  Gem.Script.handle_event
+                //      Handle events of `<script>` tags.
+                //
+                var method = (interim ?  Gem.Core.interim_method : Gem.Core.method)
+
+                method(
+                    Gem.Script,
+                    'handle_event',
+                    'Handle events of `<script>` tags.',
+                    script_handle_event//,
+                )
             }
-
-
-            return script_handle_event
-        }
+        }//,
     )
 }
 
@@ -2137,14 +2206,15 @@ Gem.Core.codify_interim_method(
         //
         //  Imports
         //
-        var gem_scripts       = Gem.Script.gem_scripts
-        var handle_errors     = Gem.Script.handle_errors
-        var script_event_list = Gem.Script.event_list
-//      var script_map        = Gem.Script.script_map       //  Not valid here -- *MUST* be done below
+        var Gem = window.Gem
 
-        if (handle_errors) {
-            var script_handle_event = Gem.Script.handle_event
-        }
+        var Script = Gem.Script
+
+        var gem_scripts       = Script.gem_scripts
+        var handle_errors     = Script.handle_errors
+        var script_event_list = Script.event_list
+//      var script_map        = Script.script_map           //  Not valid here -- *MUST* be done below
+
 
 
         //
@@ -2184,116 +2254,139 @@ Gem.Core.codify_interim_method(
         //          2.  Again, in clarity mode, after `Gem` is replaced.
         //
         if (handle_errors) {
-            return function Gem__Script__codify_load() {
-                Gem.Core.codify_method(                 //  `Gem.Script.codify_method` might not exist; so use `.call`
+            return function interim$Gem__Script__codify_load(interim) {
+                //
+                //  Imports
+                //       If Gem has changed in clarity mode, we need to reload a few variables ...
+                //
+                var Gem = window.Gem                                    //  Reload latest `Gem`
+
+                var Core   = Gem.Core
+                var Script = Gem.Script                                 //  Reload latest `Gem.Script`
+
+                var script_map          = Gem.Script.script_map         //  Reload latest `Gem.Script.script_map`
+                var script_handle_event = Gem.Script.handle_event       //  Reload latest `Gem.script.handle_event`
+
+
+                //
+                //  Implementation
+                //
+                var method = (interim ? Core.interim_method : Core.method)
+
+
+                //
+                //  Gem.Script.load
+                //      Load JavaScript code using a `<script>` tag.
+                //      (Version for a modern browser).
+                //
+                //  NOTE #1:
+                //      We have tested above that this is modern browser that supports both `.setAttribute` &
+                //      `.addEventListener`.
+                //
+                //  NOTE #2:
+                //      Annoyingly enough events on `<script>` tags do not bubble on purpose.
+                //
+                //      `<script>` tags fire "simple events" which according to section 7.1.5.3 of
+                //      https://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event means:
+                //
+                //          "Firing a simple event named e means that a trusted event with the name e, which
+                //          does not bubble"
+                //
+                //          Hence we have to set the 'abort', 'error', & 'load' events on each individual
+                //          `<script>` tag.
+                //
+                method(
                     Gem.Script,
                     'load',
                     (
                           'Load JavaScript code using a `<script>` tag.\n'
                         + '(Version for a modern browser).'
                     ),
-                    function codifier$Gem__Script__load() {
-                        //
-                        //  Grab "newest" version of `Gem.Script.gem_scripts`
-                        //  (Needed if global variable `Gem` has changed in clarity mode).
-                        //
-                        var script_map = Gem.Script.script_map
+                    function Gem__Script__load(path) {
+                        //  Load JavaScript code using a `<script>` tag.
+                        //  (Version for a modern browser).
 
+                        var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
+
+                        tag.setAttribute('src', path)               //  Modify to `<script src='path'></script>`
 
                         //
-                        //  Gem.Script.load
-                        //      Load JavaScript code using a `<script>` tag.
-                        //      (Version for a modern browser).
+                        //  Handle script events 'abort', 'error', & 'load'
                         //
-                        //  NOTE #1:
-                        //      We have tested above that this is modern browser that supports both `.setAttribute` &
-                        //      `.addEventListener`.
-                        //
-                        //  NOTE #2:
-                        //      Annoyingly enough events on `<script>` tags do not bubble on purpose.
-                        //
-                        //      `<script>` tags fire "simple events" which according to section 7.1.5.3 of
-                        //      https://www.w3.org/TR/html5/webappapis.html#fire-a-simple-event means:
-                        //
-                        //          "Firing a simple event named e means that a trusted event with the name e, which
-                        //          does not bubble"
-                        //
-                        //          Hence we have to set the 'abort', 'error', & 'load' events on each individual
-                        //          `<script>` tag.
-                        //
-                        return function Gem__Script__load(path) {
-                            //  Load JavaScript code using a `<script>` tag.
-                            //  (Version for a modern browser).
+                        for (var i = 0; i < script_event_list.length; i ++) {
+                            var type = script_event_list[i]
 
-                            var tag = script_map[path] = create_script_tag()    //  Create `<script></script>`
-
-                            tag.setAttribute('src', path)               //  Modify to `<script src='path'></script>`
-
-                            //
-                            //  Handle script events 'abort', 'error', & 'load'
-                            //
-                            for (var i = 0; i < script_event_list.length; i ++) {
-                                var type = script_event_list[i]
-
-                                tag.addEventListener(type, script_handle_event)
-                            }
-
-                            append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
+                            tag.addEventListener(type, script_handle_event)
                         }
-                    }
+
+                        append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
+                    }//,
                 )
             }
         }
 
 
-        return function Gem__Script__codify_load() {
-            Gem.Core.codify_method(
+        return function Gem__Script__codify_load(interim) {
+            //
+            //  Imports
+            //       If Gem has changed in clarity mode, we need to reload a few variables ...
+            //
+            var Gem = window.Gem                                    //  Reload latest `Gem`
+
+            var Core   = Gem.Core
+            var Script = Gem.Script                                 //  Reload latest `Gem.Script`
+
+            var script_map = Gem.Script.script_map                  //  Reload latest `Gem.Script.script_map`
+
+
+            //
+            //  Implementation
+            //
+            var method = (interim ? Core.interim_method : Core.method)
+
+
+            //
+            //  Gem.Script.load:
+            //      Load JavaScript code using a `<script>` tag
+            //      (NO ERROR HANDLING VERSION -- for an ancient browser).
+            //
+            //  NOTE:
+            //      This is not a modern browser.  If there is no 'AddEventListener' we could do:
+            //
+            //          tag.onabort = handle_event
+            //          tag.onerror = handle_event      //  Alert user if any error happens (alternate method)
+            //          tag.onload  = handle_event
+            //
+            //      However, all modern browsers have an 'addEventListener', no need to be backwards
+            //      compatiable with super super old browsers.
+            //
+            //      More importantly, we can't test this code -- untested code should not be inplemented.
+            //
+            //  NOTE #2:
+            //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test
+            //      for it.
+            //
+            method(
                 Gem.Script,
                 'load',
                 (
                       'Load JavaScript code using a `<script>` tag.\n'
                     + '(NO ERROR HANDLING VERSION -- for an ancient browser).'
                 ),
-                function codifier$Gem__Script__load() {
-                    var script_map = Gem.Script.script_map      //  See comment above on Grab "newest" ...
+                function Gem__Script__load(path) {
+                    //  Load JavaScript code using a `<script>` tag
+                    //  (NO ERROR HANDLING VERSION -- for an ancient browser).
 
+                    var tag = script_map[path] = create_script_tag()
 
-                    //
-                    //  Gem.Script.load:
-                    //      Load JavaScript code using a `<script>` tag
-                    //      (NO ERROR HANDLING VERSION -- for an ancient browser).
-                    //
-                    //  NOTE:
-                    //      This is not a modern browser.  If there is no 'AddEventListener' we could do:
-                    //
-                    //          tag.onabort = handle_event
-                    //          tag.onerror = handle_event      //  Alert user if any error happens (alternate method)
-                    //          tag.onload  = handle_event
-                    //
-                    //      However, all modern browsers have an 'addEventListener', no need to be backwards
-                    //      compatiable with super super old browsers.
-                    //
-                    //      More importantly, we can't test this code -- untested code should not be inplemented.
-                    //
-                    //  NOTE #2:
-                    //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test
-                    //      for it.
-                    //
-                    return function Gem__Script__load(path) {
-                        //  Load JavaScript code using a `<script>` tag
-                        //  (NO ERROR HANDLING VERSION -- for an ancient browser).
-
-                        var tag = script_map[path] = create_script_tag()
-
-                        if ('setAttribute' in tag) {        //  Is this a modern browser?
-                            tag.setAttribute('src', path)   //      New way: Modify to `<script src='path`></script>`
-                        } else {                            //  Ancient Browser:
-                            tag.src = path                  //      Old way: Modify to `<script src='path'></script>`
-                        }
-
-                        append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
+                    if ('setAttribute' in tag) {        //  Is this a modern browser?
+                        tag.setAttribute('src', path)   //      New way: Modify to `<script src='path`></script>`
+                    } else {                            //  Ancient Browser:
+                        tag.src = path                  //      Old way: Modify to `<script src='path'></script>`
                     }
-                }
+
+                    append_child(tag)                   //  Attempt to load 'path' via the `<script>` tag.
+                }//,
             )
         }
     }//,
@@ -2324,15 +2417,36 @@ Gem.Core.execute(
             //
             //  Imports
             //
-            var clarity     = Gem.Configuration.clarity
-            var codify_load = Gem.Script.codify_load
+            var Gem = window.Gem
 
-            codify_load()                               //  Call first time here ...
+            var Configuration = Gem.Configuration
+            var Script        = Gem.Script
+
+            var clarity       = Configuration.clarity
+            var handle_errors = Script.handle_errors
+            var codify_load   = Script.codify_load
+
+            if (handle_errors) {
+                var codify_handle_event = Script.codify_handle_event
+            }
+
+            //
+            //  Implementation
+            //
+            if (handle_errors) {
+                codify_handle_event(clarity)            //  Call first time here ...
+            }
+
+            codify_load(clarity)                        //  Call first time here ...
 
             if (clarity) {
-                //  Clarity mode will call `codify_load` again later.
+                //  Clarity mode will call `codify_handle_error` and `codify_load` again later.
             } else {
-                delete Gem.Script.codify_load           //  Not clarity mode -- don't need to keep this around
+                if (handle_errors) {
+                    delete Gem.Script.codify_handle_error   //  Not clarity mode -- don't need to keep this around
+                }
+
+                delete Gem.Script.codify_load               //  Not clarity mode -- don't need to keep this around
             }
         }
 

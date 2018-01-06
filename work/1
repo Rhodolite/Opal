@@ -1,0 +1,7 @@
+                        if (interim) {
+                            //  interim constant instance.*who = method
+                            interim_constant_attribute(instance, who, method)
+                        } else {
+                            //  constant instance.*who = method
+                            constant_attribute(instance, who, method)
+                        }

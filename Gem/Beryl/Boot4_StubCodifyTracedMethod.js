@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License
-//  Boot4_StubCodifyTracedMethod.js: Boot - Phase 4 - Create a stub to codify a traced method
+//  Boot4_StubCodifyUntracedMethod.js: Boot - Phase 4 - Create a stub to codify an untraced method
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
@@ -8,8 +8,8 @@
 Gem.Core.codify_method(
     Gem.Trace,
     'codify_untraced_method',
-    'Temporary stub for `Gem.Trace.codify_untraced_method`',
-    function codifier$Gem__Trace__codify_traced_method() {
+    'Interim stub for `Gem.Trace.codify_untraced_method`',
+    function codifier$Gem__Trace__codify_untraced_method() {
         //
         //  Imports
         //
@@ -19,24 +19,16 @@ Gem.Core.codify_method(
         var Trace = Gem.Trace
 
         var method__no_trace = _Core.method__no_trace
-        var tracing          = Trace.tracing
+        var trace_call       = Trace.trace_call
 
 
         //
         //  Implementation
         //
-        return function Gem__Trace__codify_untraced_method(who, $what, codifier) {
-            //  Temporary stub for `Gem.Trace.codify_untraced_method`
+        return function interim$Gem__Trace__codify_untraced_method(who, $what, codifier) {
+            //  Interim stub for `Gem.Trace.codify_untraced_method`
 
-            if (tracing(codifier.name)) {
-                function_call(codifier)
-
-                var method = codifier()
-
-                function_result(method)
-            } else {
-                var method = codifier()
-            }
+            var method = trace_call(codifier)
 
             method__no_trace(instance, false, who, $what, method)
         }
