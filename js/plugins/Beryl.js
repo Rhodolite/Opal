@@ -17,7 +17,7 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 1,                                  //      Trace function, method & bound method calls.
+        trace         : 0,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
@@ -67,6 +67,8 @@ window.Gem = {
 
     Core : {                                                //  Basic support code for the Core Gem module.
         execute : function Gem__Core__execute(code) {       //      Stub#1 for Gem.Core.execute
+            //  Execute code defined in a function.  This allows the use of local variables.
+
             code()
         }
 
@@ -146,15 +148,27 @@ Gem.Core.execute(
         var Gem     = window.Gem
         var Pattern = window.RegExp
 
+        var _             = Gem._
+        var _Core         = _.Core
         var Core          = Gem.Core
         var Configuration = Gem.Configuration
         var Trace         = Gem.Trace
 
         var clarity            = Configuration.clarity
-        var execute            = Core.execute
-        var get_property_names = Object.getOwnPropertyNames
+        var create_Object      = Object.create
+        var define_property    = Object.defineProperty
         var trace              = Configuration.trace
 
+
+        //
+        //  constant_property
+        //
+        var constant_property = create_Object(
+                null,
+                {
+                    enumerable : { value : true  },       //  Visible (i.e.: enumerable)
+                }//,
+            )
 
 
         //
@@ -183,23 +197,13 @@ Gem.Core.execute(
 
 
         //
-        //  Clarity
-        //
-        if (clarity || trace) {
-            execute.$who = 'Gem.Core.execute'
-        }
-
-
-        //
         //  Define trace functions & trace myself
         //
         if (trace) {
             var console = window.console
 
-            var _Trace = Gem._.Trace
+            var _Trace = _.Trace
 
-            var create_Object               = Object.create
-            var define_property             = Object.defineProperty
             var pending                     = _Trace.pending
 //          var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_start_open   = console.group
@@ -566,10 +570,6 @@ Gem.Core.execute(
 
 
             var function_call = function Gem__Trace__function_call(f, /*optional*/ argument_list, function_name) {
-                if (f === undefined) {
-                    debugger
-                }
-
                 //  Begin a function call to queue a pending new closed trace group.
                 //
                 //  NOTE #1:
@@ -671,6 +671,8 @@ Gem.Core.execute(
 
 
             if (tracing_execute || tracing_myself) {
+                var execute = Core.execute
+
                 //
                 //  NOTE:
                 //      We use a fake `execute$setup_Tracing` here, as we don't have the real one (ourselves).
@@ -756,9 +758,65 @@ Gem.Core.execute(
             }
 
 
+            /*constant_attribute*/ {
+                var constant_attribute__$who = 'Gem._.Core.constant_attribute'
+
+                if ( ! (constant_attribute__$who in Tracing)) {
+                    Tracing[constant_attribute__$who] = 0
+                }
+
+
+                var constant_attribute = function Gem__private__Core__constant_attribute(instance, name, value) {
+                    //  Create a (non reconfigurable) constant attribute.
+
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                    var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
+
+                    if (tracing_self) {
+                        procedure_start(constant_attribute, arguments)
+                    }
+
+                    /*=*/ {
+                        //  constant instance.*name = value
+                        constant_property.value = value
+                        define_property(instance, name, constant_property)
+                        constant_property.value = undefined
+
+                        /*trace*/ {
+                            if (tracing_self) {
+                                trace_attribute('constant', instance, name, value)
+                            }
+                        }
+                    }
+
+                    if (tracing_self) {
+                        procedure_done()
+                    }
+                }
+
+
+                //
+                //  Set `constant_attribute`:
+                //
+                //      1.  `.$who` to "Gem._.Core.constant_attribute"
+                //      2.  `.$trace` to itself.
+                //
+                /*=*/ {
+                    //  constant constant_attribute.$who = 'TRACED: ' + constant_attribute__$who
+                    constant_attribute(constant_attribute, '$who', 'TRACED: ' + constant_attribute__$who)
+
+                    //  constant constant_attribute.$trace = trace_$who
+                    constant_attribute(constant_attribute, '$trace', constant_attribute)
+                }
+            }
+
+
             /*wrap_function*/ {
-                if ( ! ('Gem.Trace.wrap_function' in Tracing)) {
-                    Tracing['Gem.Trace.wrap_function'] = 0
+                var wrap_function__$who = 'Gem.Trace.wrap_function'
+
+                if ( ! (wrap_function__$who in Tracing)) {
+                    Tracing[wrap_function__$who] = 0
                 }
 
 
@@ -772,7 +830,7 @@ Gem.Core.execute(
                 var wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var trace_self = (trace === 7 || (trace && Tracing['Gem.Trace.wrap_function']))
+                    var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
 
                     if (trace_self) {
                         function_call(wrap_function, arguments)
@@ -788,13 +846,8 @@ Gem.Core.execute(
                         var name = function_name
 
                         /*=*/ {
-                            constant_property.value = name
-                            define_property(f, '$who', constant_property)
-                            constant_property.value = undefined
-
-                            if (trace_self) {
-                                trace_attribute('constant', f, '$who', name)
-                            }
+                            //  constant f.$who = name
+                            constant_attribute(f, '$who', name)
                         }
                     }
 
@@ -808,7 +861,7 @@ Gem.Core.execute(
                     }
 
 
-                    var result = function interim$wrap(/*...*/) {
+                    var interim$wrap = function interim$wrap(/*...*/) {
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
                         if (trace === 7 || (trace && Tracing[name])) {
@@ -830,20 +883,15 @@ Gem.Core.execute(
 
 
                     /*=*/ {
-                        constant_property.value = f
-                        define_property(result, '$trace', constant_property)
-                        constant_property.value = undefined
-
-                        if (trace_self) {
-                            trace_attribute('constant', result, '$trace', f)
-                        }
+                        //  constant interim$wrap.$trace = f
+                        constant_attribute(interim$wrap, '$trace', f)
                     }
 
                     if (trace_self) {
-                        function_result(result)
+                        function_result(interim$wrap)
                     }
 
-                    return result
+                    return interim$wrap
                 }
 
 
@@ -853,37 +901,19 @@ Gem.Core.execute(
                 //      1.  `.$who` to "Gem.Trace.wrap_function"
                 //      2.  `.$trace` to itself.
                 //
-                //  Also trace these two attribute creations
-                //
-                var trace_$who = 'Gem.Trace.wrap_function'
-
                 /*=*/ {
-                    constant_property.value = trace_$who
-                    define_property(wrap_function, '$who', constant_property)
-                    constant_property.value = undefined
-                }
+                    //  constant wrap_function.$who = trace_$who
+                    constant_attribute(wrap_function, '$who', wrap_function__$who)
 
-                /*=*/ {
-                    constant_property.value = wrap_function
-                    define_property(wrap_function, '$trace', constant_property)
-                    constant_property.value = undefined
-                }
-
-                if (tracing(trace_$who)) {
-                    trace_attribute('constant', wrap_function, '$who',   trace_$who)
-                    trace_attribute('constant', wrap_function, '$trace', wrap_function)
+                    //  constant wrap_function.$trace = trace_$who
+                    constant_attribute(wrap_function, '$trace', wrap_function)
                 }
             }
-
-
-            if (tracing_myself)  { procedure_done() }
-            if (tracing_execute) { procedure_done() }
 
 
             //
             //  Private
             //
-            _Trace.constant_property     = constant_property
             _Trace.function_call         = function_call
             _Trace.function_result       = function_result
             _Trace.group_stop            = group_stop
@@ -895,13 +925,27 @@ Gem.Core.execute(
             _Trace.trace_value           = trace_value
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
         } else {
+            var constant_attribute = function Gem__private__Core__constant_attribute(instance, name, value) {
+                //  Create a (non reconfigurable) constant attribute.
+
+                /*=*/ {
+                    //  constant instance.*name = value
+                    constant_property.value = value
+                    define_property(instance, name, constant_property)
+                    constant_property.value = undefined
+                }
+            }
+
+
             var trace_call = function interim$Gem__Trace__trace_call(f) {
                 return f()
             }
 
+
             var tracing = function interim$Gem__Trace__tracing(name) {
                 return 0
             }
+
 
             var wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                 return f
@@ -909,48 +953,18 @@ Gem.Core.execute(
         }
 
 
-        //
-        //  constant_attribute
-        //
-        var constant_property = create_Object(
-                null,
-                {
-                    enumerable : { value : true  },       //  Visible (i.e.: enumerable)
-                }//,
-            )
-
-        var constant_attribute = wrap_function(
-                function constant_attribute(instance, name, value) {
-                    //  Create a (non reconfigurable) constant attribute.
-
-                    /*=*/ {
-                        //  constant instance.*name = value
-                        constant_property.value = value
-                        define_property(instance, name, constant_property)
-                        delete constant_property.value
-
-                        /*trace*/ {
-                            var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                            if (trace === 7 || (trace && Tracing['constant_attribute'])) {
-                                trace_attribute('constant', instance, name, value)
-                            }
-                        }
-                    }
-                }//,
-            )
-
-
-        if (clarity || trace) {
-            /*=*/ {
-                constant_attribute(execute, '$who',
-            }
+        if (trace) {
+            if (tracing_myself)  { procedure_done() }
+            if (tracing_execute) { procedure_done() }
         }
 
 
         //
         //  Export
         //
+        _Core.constant_property  = constant_property    //  TEMPORARY, deleted later
+        _Core.constant_attribute = constant_attribute   //  TEMPORARY as "iterim mutable": Changed below to "constant"
+
         Trace.trace_call    = trace_call
         Trace.tracing       = tracing
         Trace.wrap_function = wrap_function
@@ -975,14 +989,18 @@ if (Gem.Configuration.trace) {
             //
             var Gem = window.Gem
 
-            var _Trace        = Gem._.Trace
+            var _             = Gem._
+            var _Core         = _.Core
+            var _Trace        = _.Trace
+            var Core          = Gem.Core
             var Trace         = Gem.Trace
             var Configuration = Gem.Trace
 
-            var constant_property = _Trace.constant_property
-            var function_call     = _Trace.function_call
-            var procedure_done    = _Trace.procedure_done
-            var tracing           = Trace.tracing
+            var constant_attribute = _Core.constant_attribute
+            var execute            = Core.execute
+            var function_call      = _Trace.function_call
+            var procedure_done     = _Trace.procedure_done
+            var tracing            = Trace.tracing
 
 
             //
@@ -1007,40 +1025,48 @@ if (Gem.Configuration.trace) {
             var tracing_execute = tracing('Gem.Core.execute')
             var tracing_myself  = tracing(myself.name)
 
+
             if (tracing_execute) { function_call(execute, [myself]) }
             if (tracing_myself)  { function_call(myself) }
 
 
             /*execute*/ {
-                var execute = function Gem__Core__execute(code) {
+                var trace$execute__$who = 'Gem.Core.execute'
+
+
+                var trace$execute = function trace$Gem__Core__execute(code) {
+                    //  Execute code defined in a function.  This allows the use of local variables.
+
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var trace_code = (trace === 7 || (trace && Tracing[code.name]))
+                    var tracing_execute = (trace === 7 || (trace && Tracing[trace$execute__$who]))
+                    var tracing_code    = (trace === 7 || (trace && Tracing[code.name]))
 
-                    if (tracing_execute) { function_call(execute, arguments) }
-                    if (trace_code)      { function_call(code)               }
+                    if (tracing_execute) { function_call(trace$execute, arguments) }
+                    if (tracing_code)    { function_call(code)                     }
 
                     code()
 
-                    if (trace_code)    { procedure_done() }
+                    if (tracing_code)    { procedure_done() }
                     if (tracing_execute) { procedure_done() }
                 }
 
 
                 //
-                //  Set `execute.$trace` to itself
+                //  Set `execute$trace`:
+                //
+                //      1.  `.$who` to "Gem.Core.execute"
+                //      2.  `.$trace` to itself.
                 //
                 /*=*/ {
-                    constant_property.value = execute
-                    define_property(execute, '$trace', execute)
-                    constant_property.value = undefined
+                    //  constant wrap_function.$who = 'TRACED: ' + trace_$who
+                    constant_attribute(trace$execute, '$who', trace$execute__$who)
+
+                    //  constant wrap_function.$trace = trace_$who
+                    constant_attribute(trace$execute, '$trace', trace$execute)
                 }
 
-                if (tracing_execute) {
-                    trace_attribute('constant', execute, '$trace', execute)
-                }
-
-                Gem.Core.execute = execute
+                Gem.Core.execute = trace$execute    //  TEMPORARY as "iterim mutable": Changed below to "constant"
             }
 
 
@@ -1054,9 +1080,6 @@ if (Gem.Configuration.trace) {
 //
 //  Stubs for:
 //      Gem.Core.{clarity_note,codify_method,constant,method,qualify_constant}
-//
-//  Also:
-//      Gem.Core.constant_property
 //
 Gem.Core.execute(
     function execute$setup_Gem() {
@@ -1074,13 +1097,15 @@ Gem.Core.execute(
         var Script        = Gem.Script
         var Trace         = Gem.Trace
 
-        var clarity           = Configuration.clarity
-        var create_Object     = Object.create
-        var define_properties = Object.defineProperties
-        var define_property   = Object.defineProperty
-        var trace             = Configuration.trace
-        var trace_call        = Trace.trace_call
-        var wrap_function     = Trace.wrap_function
+        var clarity            = Configuration.clarity
+        var constant_attribute = _Core.constant_attribute
+        var constant_property  = _Core.constant_property
+        var create_Object      = Object.create
+        var define_properties  = Object.defineProperties
+        var define_property    = Object.defineProperty
+        var trace              = Configuration.trace
+        var trace_call         = Trace.trace_call
+        var wrap_function      = Trace.wrap_function
 
         if (trace) {
             var _Trace  = Gem._.Trace
@@ -1160,35 +1185,6 @@ Gem.Core.execute(
                 {
                     configurable : { value : true  },       //  Can be reconfigured (the constant can be changed!).
                     enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
-                }//,
-            )
-
-        var constant_property = create_Object(
-                null,
-                {
-                    enumerable : { value : true  },         //  Visible (i.e.: enumerable)
-                }//,
-            )
-
-
-        var constant_attribute = wrap_function(
-                function constant_attribute(instance, name, value) {
-                    //  Create a (non reconfigurable) constant attribute.
-
-                    /*=*/ {
-                        //  constant instance.*name = value
-                        constant_property.value = value
-                        define_property(instance, name, constant_property)
-                        delete constant_property.value
-
-                        /*trace*/ {
-                            var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                            if (trace === 7 || (trace && Tracing['constant_attribute'])) {
-                                trace_attribute('constant', instance, name, value)
-                            }
-                        }
-                    }
                 }//,
             )
 
@@ -1422,14 +1418,26 @@ Gem.Core.execute(
                                 constant_attribute(method, '$what', $what)
                             }
 
-                            /*=*/ {
-                                //  constant wrapped_method.$who  = 'TRACED: ' + method.$who
-                                //  constant wrapped_method.$what = 'TRACED: ' + $what
-                                constant_$who_$what_attributes(
-                                        wrapped_method,
-                                        'TRACED: ' + method.$who,
-                                        'TRACED: ' + $what//,
-                                    )
+                            if (method === wrapped_method) {
+                                if ( ! ('$who' in method)) {
+                                    throw new Error(
+                                            (
+                                                  'method'
+                                                + ' "' + method.name + '"'
+                                                + ' (that traces itself) must have a `.$who` attribute'
+                                            )//,
+                                        )
+                                }
+                            } else {
+                                /*=*/ {
+                                    //  constant wrapped_method.$who  = 'TRACED: ' + method.$who
+                                    //  constant wrapped_method.$what = 'TRACED: ' + $what
+                                    constant_$who_$what_attributes(
+                                            wrapped_method,
+                                            'TRACED: ' + method.$who,
+                                            'TRACED: ' + $what//,
+                                        )
+                                }
                             }
                         }
 
@@ -1612,7 +1620,10 @@ Gem.Core.execute(
             'qualify_constant',
             'Interim method for Gem.Core.qualify_constant',
             function interim$Gem__Core__qualify_constant(who, $what, qualifier) {
-                constant_property.value = (trace ? wrap_function(qualifier) : qualifier)()
+                var value = trace_call(qualifier)
+
+                //FIX THIS to use multiple properties
+                constant_property.value = value
                 define_property(this, who, constant_property)
 
                 if (clarity) {
@@ -1620,7 +1631,7 @@ Gem.Core.execute(
                     define_property(this, who + '$', constant_property)
                 }
 
-                delete constant_property.value
+                constant_property.value = undefined
             }
         )
 
@@ -1636,15 +1647,21 @@ Gem.Core.execute(
         ) 
 
 
-        //
-        //  Gem._.Core.constant_attribute
-        //
-        traced_method(
-            _Core,
-            'constant_attribute',
-            'Create a [non reconfigurable] visible constant attribute.',
-            constant_attribute//,
-        )
+        if (0) {
+            //RESTORE THIS LATER? -- When moving constant_attribute?
+            //
+            //  Gem._.Core.constant_attribute
+            //
+            //  NOTE:
+            //      This was set above as a "visible_mutable", change it now to a "constant".
+            //
+            traced_method(
+                _Core,
+                'constant_attribute',
+                'Create a [non reconfigurable] visible constant attribute.',
+                constant_attribute//,
+            )
+        }
 
 
         //
@@ -1730,19 +1747,35 @@ Gem.Core.execute(
                 constant_$who_property//,
             )
         }
-
-
-        //
-        //  constant_property
-        //      A property used to create a visible (i.e.: enumerable) constant attributes
-        //
-        Gem.Core.constant(
-            Core,
-            'constant_property',
-            'A property used to create visible (i.e.: enumerable) constant attributes.',
-            constant_property//,
-        )
     }
+)
+
+
+//
+//  Gem.Core.constant_attribute
+//      Create a (non reconfigurable) constant attribute.
+//      
+//
+Gem.Trace.traced_method(
+    Gem._.Core,
+    'constant_attribute',
+    'Create a (non reconfigurable) constant attribute.',
+    Gem._.Core.constant_attribute//,
+)
+
+
+//
+//  Gem.Core.execute
+//      Create a (non reconfigurable) constant attribute.
+//      
+//  NOTE:
+//      This was set above as a "visible_mutable", change it now to a "constant".
+//
+Gem.Trace.traced_method(
+    Gem.Core,
+    'execute',
+    'Execute code defined in a function.  This allows the use of local variables.',
+    Gem.Core.execute//,
 )
 
 
@@ -2484,14 +2517,14 @@ Gem.Core.execute(
         //
         var Gem = window.Gem
 
-        var _Trace        = Gem._.Trace
+        var _Core         = Gem._.Core
         var Configuration = Gem.Configuration
         var Source        = Gem.Source
         var Script        = Gem.Script
 
         var clarity = Configuration.clarity
         var debug   = Configuration.debug
-        var load    = Script.load
+//      var load    = Script.load                           //  Must be done below after `codify_load`
         var trace   = Configuration.trace
 
 
@@ -2542,12 +2575,9 @@ Gem.Core.execute(
         //  Cleanup unused attributes
         //
         /*section*/ {
+            delete _Core        .constant_property
             delete Configuration.show_alert
             delete Script       .event_list
-
-            if (trace) {
-                delete _Trace.constant_property
-            }
         }
 
 
@@ -2568,6 +2598,8 @@ Gem.Core.execute(
         //
         //  Load next script
         //
+        var load = Script.load                              //  Must be done after `codify_load` above
+
         load('Gem/Beryl/Boot2_Manifest.js')
     }//,
 )

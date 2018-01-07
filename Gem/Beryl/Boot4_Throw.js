@@ -4,8 +4,6 @@
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
-debugger
-
 Gem.Core.execute(
     function execute$setup__Gem__Throw() {
         //
