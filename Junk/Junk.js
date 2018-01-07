@@ -501,3 +501,6 @@ Gem.Core.execute(
         )
 
 
+Gem.Script.dynamic = true                                   //  Allow this `<script>` to be reloaded
+
+

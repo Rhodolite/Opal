@@ -27,15 +27,20 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var constant_property = Gem.Core.constant_property
-        var define_property    = Object.defineProperty
-        var simple             = ( ! Gem.Configuration.clarity)
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+        var Core          = Gem.Core
+
+        var clarity           = Configuration.clarity
+        var constant_property = Core.constant_property
+        var define_property   = Object.defineProperty
 
 
         //
         //  Implementation: Simple version
         //
-        if (simple) {
+        if ( ! clarity) {
             return function Gem__Core__module(who, $what, dynamic) {
                 //  Store a global Gem constant.
                 //
@@ -51,11 +56,13 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var identifier_test          = Gem.Core.identifier_test
-        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
-        var throw_must_be_string     = Gem.Core.throw_must_be_string
-        var throw_type_error         = Gem.Core.throw_type_error
-        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
+        var Throw = Gem.Throw
+
+        var identifier_test          = Core.identifier_test
+        var throw_must_be_identifier = Throw.throw_must_be_identifier
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_type_error         = Throw.throw_type_error
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
 
 
         //
@@ -75,7 +82,7 @@ Gem.Core.codify_method(
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
 
                 /*constant*/ {
                     var typeof_constant = typeof constant

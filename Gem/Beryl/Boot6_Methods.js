@@ -77,13 +77,15 @@ Gem.Core.codify_method(
         //
         var _Core = Gem._.Core
         var Core  = Gem.Core
+        var Throw = Gem.Throw
 
-        var constant_property       = _Core.constant_property
+        var constant_property        = _Core.constant_property
         var define_property          = Object.defineProperty
         var identifier_test          = Core.identifier_test
-        var throw_must_be_identifier = Core.throw_must_be_identifier
-        var throw_must_be_string     = Core.throw_must_be_string
-        var throw_wrong_arguments    = Core.throw_wrong_arguments
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_must_be_an_object  = Throw.throw_must_be_an_object
+        var throw_must_be_identifier = Throw.throw_must_be_identifier
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
 
 
         //
@@ -98,14 +100,14 @@ Gem.Core.codify_method(
                 }
 
                 if (typeof who !== 'object') {
-                    throw_must_be_object('instance', instance)
+                    throw_must_be_an_object('instance', instance)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
             }
 
             /*=*/ {
@@ -145,10 +147,11 @@ Gem.Core.codify_method(
 
         var _Core         = Gem._.Core
         var Configuration = Gem.Configuration
+        var Core          = Gem.Core
 
         var clarity            = Configuration.clarity
         var constant_attribute = _Core.constant_attribute
-        var constant_property  = Gem.Core.constant_property
+        var constant_property  = Core.constant_property
         var define_property    = Object.defineProperty
 
 
@@ -179,11 +182,13 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var identifier_test          = Gem.Core.identifier_test
-        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
-        var throw_must_be_string     = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
-        var throw_type_error         = Gem.Core.throw_type_error
+        var Throw = Gem.Throw
+
+        var identifier_test          = Core.identifier_test
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_must_be_identifier = Throw.throw_must_be_identifier
+        var throw_type_error         = Throw.throw_type_error
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
 
 
         return function Gem__Core__codify_bound_method(who, $what, $which, codifier) {
@@ -200,8 +205,8 @@ Gem.Core.codify_method(
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what  !== 'string') { throw_must_be_string('$what',  $what) }
-                if (typeof $which !== 'string') { throw_must_be_string('$which', $which) }
+                if (typeof $what  !== 'string') { throw_must_be_a_string('$what',  $what) }
+                if (typeof $which !== 'string') { throw_must_be_a_string('$which', $which) }
 
                 /*codifier*/ {
                     var codifier_name = 'codifier$' + this.$who.replace('.', '__') + '__' + who
@@ -299,15 +304,20 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var constant_property = Gem.Core.constant_property
-        var define_property    = Object.defineProperty
-        var simple             = ( ! Gem.Configuration.clarity)
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+        var Core          = Gem.Core
+
+        var constant_property = Core.constant_property
+        var define_property   = Object.defineProperty
+        var clarity           = Configuration.clarity
 
 
         //
         //  Implementation: Simple version
         //
-        if (simple) {
+        if ( ! clarity) {
             return function Gem__Core__codify_method(who, $what, codifier) {
                 //  Create the code for a method as a closure to avoid the use of any global variables.
                 //
@@ -323,11 +333,13 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var identifier_test          = Gem.Core.identifier_test
-        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
-        var throw_must_be_string     = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
-        var throw_type_error         = Gem.Core.throw_type_error
+        var Throw = Gem.Throw
+
+        var identifier_test          = Core.identifier_test
+        var throw_must_be_identifier = Throw.throw_must_be_identifier
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
+        var throw_type_error         = Throw.throw_type_error
 
 
         return function Gem__Core__codify_method(who, $what, codifier) {
@@ -344,7 +356,7 @@ Gem.Core.codify_method(
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
 
                 /*codifier*/ {
                     var middle        = this.$who.replace('.', '__')
@@ -411,15 +423,20 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var constant_property = Gem.Core.constant_property
-        var define_property    = Object.defineProperty
-        var simple             = ( ! Gem.Configuration.clarity)
+        var Gem = window.Ge
+
+        var Configuration = Gem.Configuration
+        var Core          = Gem.Core
+
+        var constant_property = Core.constant_property
+        var define_property   = Object.defineProperty
+        var clarity           = Configuration.clarity
 
 
         //
         //  Implementation: Simple version
         //
-        if (simple) {
+        if ( ! clarity) {
             return function Gem__Core__constant(instanc, who, $what, constant) {
                 //  Store a global Gem constant.
                 //
@@ -435,11 +452,13 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var identifier_test          = Gem.Core.identifier_test
-        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
-        var throw_must_be_string     = Gem.Core.throw_must_be_string
-        var throw_type_error         = Gem.Core.throw_type_error
-        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
+        var Throw = Gem.Throw
+
+        var identifier_test          = Core.identifier_test
+        var throw_must_be_identifier = Throw.throw_must_be_identifier
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_type_error         = Throw.throw_type_error
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
 
 
         //
@@ -456,14 +475,14 @@ Gem.Core.codify_method(
                 }
 
                 if (typeof instance !== 'object') {
-                    throw_must_be_object('instance', instance)
+                    throw_must_be_an_object('instance', instance)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
 
                 /*constant*/ {
                     var typeof_constant = typeof constant
@@ -510,15 +529,20 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var constant_property = Gem.Core.constant_property
-        var define_property    = Object.defineProperty
-        var simple             = ( ! Gem.Configuration.clarity)
+        var Gem = window.Gem
+
+        var Core          = Gem.Core
+        var Configuration = Gem.Configuration
+
+        var clarity           = Configuration.clarity
+        var constant_property = Core.constant_property
+        var define_property   = Object.defineProperty
 
 
         //
         //  Implementation: Simple version
         //
-        if (simple) {
+        if ( ! clarity) {
             var method = function Gem__Core__method(instance, who, $what, method) {
                 //  Store a Gem Method.
                 //
@@ -534,11 +558,14 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var identifier_test          = Gem.Core.identifier_test
-        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
-        var throw_must_be_string     = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
-        var throw_type_error         = Gem.Core.throw_type_error
+        var Throw = Gem.Throw
+
+        var identifier_test          = Core.identifier_test
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_must_be_an_object  = Throw.throw_must_be_an_object
+        var throw_must_be_identifier = Core.throw_must_be_identifier
+        var throw_type_error         = Throw.throw_type_error
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
 
 
         return function Gem__Core__method(instance, who, $what, method) {
@@ -552,14 +579,14 @@ Gem.Core.codify_method(
                 }
 
                 if (typeof instance !== 'object')) {
-                    throw_must_be_object('instance', instance)
+                    throw_must_be_an_object('instance', instance)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
 
                 /*method*/ {
                     var method_name = instance.$who.replace('.', '__') + '__' + who
@@ -611,16 +638,22 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var constant_property        = Gem.Core.constant_property
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+        var Core          = Gem.Core
+        var Throw         = Gem.Throw
+
+        var constant_property         = Core.constant_property
         var define_property           = Object.defineProperty
-        var simple                    = ( ! Gem.Configuration.clarity)
-        var visible_mutable_attribute = Gem.Core.visible_mutable_attribute
+        var clarity                   = Configuration.clarity
+        var visible_mutable_attribute = Core.visible_mutable_attribute
 
 
         //
         //  Implementation: Simple version
         //
-        if (simple) {
+        if ( ! clarity) {
             return function Gem__Core__mutable(who, $what, value) {
                 //  Initialize a global Gem mutable value.
                 //
@@ -636,11 +669,11 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var identifier_test          = Gem.Core.identifier_test
-        var throw_must_be_identifier = Gem.Core.throw_must_be_identifier
-        var throw_must_be_string     = Gem.Core.throw_must_be_string
-        var throw_wrong_arguments    = Gem.Core.throw_wrong_arguments
-        var throw_type_error         = Gem.Core.throw_type_error
+        var identifier_test          = Core.identifier_test
+        var throw_must_be_identifier = Throw.throw_must_be_identifier
+        var throw_must_be_a_string   = Throw.throw_must_be_a_string
+        var throw_wrong_arguments    = Throw.throw_wrong_arguments
+        var throw_type_error         = Throw.throw_type_error
 
 
         return function Gem__Core__mutable(who, $what, value) {
@@ -657,7 +690,7 @@ Gem.Core.codify_method(
                     throw_must_be_identifier('$who', who)
                 }
 
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
 
                 /*value*/ {
                     var typeof_value = typeof value
@@ -707,15 +740,21 @@ Gem.Core.codify_method(
         //
         //  Imports
         //
-        var constant_property = Gem.Core.constant_property
-        var define_property    = Object.defineProperty
-        var simple             = ( ! Gem.Configuration.clarity)
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+        var Core          = Gem.Core
+        var Throw         = Gem.Throw
+
+        var clarity           = Configuration.clarity
+        var constant_property = Core.constant_property
+        var define_property   = Object.defineProperty
 
 
         //
         //  Implementation: Simple version
         //
-        if (simple) {
+        if ( ! clarity) {
             return function Gem__Core__qualify_constant(who, $what, qualifier) {
                 //  Qualify a global Gem constant.
                 //
@@ -733,9 +772,9 @@ Gem.Core.codify_method(
         //
         //  Implementation: Clarity version
         //
-        var throw_must_be_string  = Gem.Core.throw_must_be_string
-        var throw_type_error      = Gem.Core.throw_type_error
-        var throw_wrong_arguments = Gem.Core.throw_wrong_arguments
+        var throw_must_be_a_string = Throw.throw_must_be_a_string
+        var throw_type_error       = Throw.throw_type_error
+        var throw_wrong_arguments  = Throw.throw_wrong_arguments
 
 
         return function Gem__Core__qualify_constant(who, $what, qualifier) {
@@ -750,8 +789,8 @@ Gem.Core.codify_method(
                     throw_wrong_arguments('Gem.Core.qualify_constant', 3, arguments.length)
                 }
 
-                if (typeof name  !== 'string') { throw_must_be_string('name',  name) }
-                if (typeof $what !== 'string') { throw_must_be_string('$what', $what) }
+                if (typeof name  !== 'string') { throw_must_be_a_string('name',  name) }
+                if (typeof $what !== 'string') { throw_must_be_a_string('$what', $what) }
 
                 /*qualifier*/ {
                     var middle         = this.$who.replace('.', '__')

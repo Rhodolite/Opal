@@ -45,7 +45,7 @@ window.Gem = {
         'Gem.Core.codify_interim_method',                       0,
         'Gem.Core.codify_method',                               0,
         'Gem.Core.constant',                                    0,
-        'Gem.Core.execute',                                     0,
+        'Gem.Core.execute',                                     1,
         'Gem.Core.method',                                      0,
         'Gem.Core.qualify_constant',                            0,
         'Gem.NodeWebKit.show_developer_tools',                  0,
@@ -143,13 +143,18 @@ Gem.Core.execute(
         //
         //  Imports
         //
+        var Gem     = window.Gem
+        var Pattern = window.RegExp
+
+        var Core          = Gem.Core
         var Configuration = Gem.Configuration
         var Trace         = Gem.Trace
 
-        var clarity            = Gem.Configuration.clarity
+        var clarity            = Configuration.clarity
+        var execute            = Core.execute
         var get_property_names = Object.getOwnPropertyNames
-        var Pattern            = window.RegExp
-        var trace              = Gem.Configuration.trace
+        var trace              = Configuration.trace
+
 
 
         //
@@ -181,7 +186,7 @@ Gem.Core.execute(
         //  Clarity
         //
         if (clarity || trace) {
-            Gem.Core.execute.$who = 'Gem.Core.execute'
+            execute.$who = 'Gem.Core.execute'
         }
 
 
@@ -189,14 +194,14 @@ Gem.Core.execute(
         //  Define trace functions & trace myself
         //
         if (trace) {
+            var console = window.console
+
             var _Trace = Gem._.Trace
 
-            var console = window.console
-            var pending = _Trace.pending
-
             var create_Object               = Object.create
-//          var unbound__group_start_closed = console.groupCollapsed
             var define_property             = Object.defineProperty
+            var pending                     = _Trace.pending
+//          var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_start_open   = console.group
             var unbound__group_stop         = console.groupEnd
             var unbound__line               = console.log
@@ -213,6 +218,9 @@ Gem.Core.execute(
             }
 
 
+            //
+            //  Closures
+            //
             if ('bind' in unbound__push) {
                 var push_color_bold_cyanish = unbound__push.bind(pending, 'font-weight: bold; color: #00AAFF')
                 var push_color_blue         = unbound__push.bind(pending, 'color:blue')
@@ -557,9 +565,11 @@ Gem.Core.execute(
             }
 
 
-
-
             var function_call = function Gem__Trace__function_call(f, /*optional*/ argument_list, function_name) {
+                if (f === undefined) {
+                    debugger
+                }
+
                 //  Begin a function call to queue a pending new closed trace group.
                 //
                 //  NOTE #1:
@@ -671,8 +681,8 @@ Gem.Core.execute(
                 }
 
 
-                if (tracing_execute) { function_call(Gem.Core.execute, [myself]) }
-                if (tracing_myself)  { function_call(myself)                     }
+                if (tracing_execute) { function_call(execute, [myself]) }
+                if (tracing_myself)  { function_call(myself)            }
             }
 
 
@@ -747,13 +757,6 @@ Gem.Core.execute(
 
 
             /*wrap_function*/ {
-                var constant_property = create_Object(
-                        null,
-                        {
-                            enumerable : { value : true  },       //  Visible (i.e.: enumerable)
-                        }//,
-                    )
-
                 if ( ! ('Gem.Trace.wrap_function' in Tracing)) {
                     Tracing['Gem.Trace.wrap_function'] = 0
                 }
@@ -880,6 +883,7 @@ Gem.Core.execute(
             //
             //  Private
             //
+            _Trace.constant_property     = constant_property
             _Trace.function_call         = function_call
             _Trace.function_result       = function_result
             _Trace.group_stop            = group_stop
@@ -901,6 +905,45 @@ Gem.Core.execute(
 
             var wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                 return f
+            }
+        }
+
+
+        //
+        //  constant_attribute
+        //
+        var constant_property = create_Object(
+                null,
+                {
+                    enumerable : { value : true  },       //  Visible (i.e.: enumerable)
+                }//,
+            )
+
+        var constant_attribute = wrap_function(
+                function constant_attribute(instance, name, value) {
+                    //  Create a (non reconfigurable) constant attribute.
+
+                    /*=*/ {
+                        //  constant instance.*name = value
+                        constant_property.value = value
+                        define_property(instance, name, constant_property)
+                        delete constant_property.value
+
+                        /*trace*/ {
+                            var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                            if (trace === 7 || (trace && Tracing['constant_attribute'])) {
+                                trace_attribute('constant', instance, name, value)
+                            }
+                        }
+                    }
+                }//,
+            )
+
+
+        if (clarity || trace) {
+            /*=*/ {
+                constant_attribute(execute, '$who',
             }
         }
 
@@ -936,9 +979,10 @@ if (Gem.Configuration.trace) {
             var Trace         = Gem.Trace
             var Configuration = Gem.Trace
 
-            var function_call   = _Trace.function_call
-            var procedure_done  = _Trace.procedure_done
-            var tracing         = Trace.tracing
+            var constant_property = _Trace.constant_property
+            var function_call     = _Trace.function_call
+            var procedure_done    = _Trace.procedure_done
+            var tracing           = Trace.tracing
 
 
             //
@@ -960,8 +1004,6 @@ if (Gem.Configuration.trace) {
             }
 
 
-            var execute = Gem.Core.execute                  //  Original version we are tracing
-
             var tracing_execute = tracing('Gem.Core.execute')
             var tracing_myself  = tracing(myself.name)
 
@@ -969,16 +1011,36 @@ if (Gem.Configuration.trace) {
             if (tracing_myself)  { function_call(myself) }
 
 
-            Gem.Core.execute = function trace$Gem__Core__execute(code) {
-                var trace_code = tracing(code.name)
+            /*execute*/ {
+                var execute = function Gem__Core__execute(code) {
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                if (tracing_execute) { function_call(execute, arguments) }
-                if (trace_code)      { function_call(code)               }
+                    var trace_code = (trace === 7 || (trace && Tracing[code.name]))
 
-                execute(code)
+                    if (tracing_execute) { function_call(execute, arguments) }
+                    if (trace_code)      { function_call(code)               }
 
-                if (trace_code)    { procedure_done() }
-                if (tracing_execute) { procedure_done() }
+                    code()
+
+                    if (trace_code)    { procedure_done() }
+                    if (tracing_execute) { procedure_done() }
+                }
+
+
+                //
+                //  Set `execute.$trace` to itself
+                //
+                /*=*/ {
+                    constant_property.value = execute
+                    define_property(execute, '$trace', execute)
+                    constant_property.value = undefined
+                }
+
+                if (tracing_execute) {
+                    trace_attribute('constant', execute, '$trace', execute)
+                }
+
+                Gem.Core.execute = execute
             }
 
 
@@ -2418,6 +2480,22 @@ Gem.Core.codify_interim_method(
 Gem.Core.execute(
     function execute$finish() {
         //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var _Trace        = Gem._.Trace
+        var Configuration = Gem.Configuration
+        var Source        = Gem.Source
+        var Script        = Gem.Script
+
+        var clarity = Configuration.clarity
+        var debug   = Configuration.debug
+        var load    = Script.load
+        var trace   = Configuration.trace
+
+
+        //
         //  Execute a codify of:
         //      Gem.Script.load
         //
@@ -2432,12 +2510,6 @@ Gem.Core.execute(
             //
             //  Imports
             //
-            var Gem = window.Gem
-
-            var Configuration = Gem.Configuration
-            var Script        = Gem.Script
-
-            var clarity       = Configuration.clarity
             var handle_errors = Script.handle_errors
             var codify_load   = Script.codify_load
 
@@ -2470,8 +2542,12 @@ Gem.Core.execute(
         //  Cleanup unused attributes
         //
         /*section*/ {
-            delete Gem.Configuration.show_alert
-            delete Gem.Script       .event_list
+            delete Configuration.show_alert
+            delete Script       .event_list
+
+            if (trace) {
+                delete _Trace.constant_property
+            }
         }
 
 
@@ -2484,15 +2560,15 @@ Gem.Core.execute(
         //      In debug mode, `Gem.sources` is used to make sure that there is least once such function from each
         //      JavaScript file that has been loaded in.
         //
-        if (Gem.Configuration.debug) {
-            Gem.Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
+        if (debug) {
+            Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
         }
 
 
         //
         //  Load next script
         //
-        Gem.Script.load('Gem/Beryl/Boot2_Manifest.js')
+        load('Gem/Beryl/Boot2_Manifest.js')
     }//,
 )
 
