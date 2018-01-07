@@ -17,7 +17,7 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 0,                                  //      Trace function, method & bound method calls.
+        trace         : 7,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
@@ -156,6 +156,7 @@ Gem.Core.execute(
 
         var clarity            = Configuration.clarity
         var create_Object      = Object.create
+        var define_properties  = Object.defineProperties
         var define_property    = Object.defineProperty
         var trace              = Configuration.trace
 
@@ -163,37 +164,19 @@ Gem.Core.execute(
         //
         //  constant_property
         //
-        var constant_property = create_Object(
+        var BoxOfProperties__enumerable = { enumerable : { value : true } }
+
+        var constant_property = create_Object(null, BoxOfProperties__enumerable)
+        var property_$who     = create_Object(null, BoxOfProperties__enumerable)
+        var property_$trace   = create_Object(null, BoxOfProperties__enumerable)
+
+        var self_trace_properties = create_Object(
                 null,
                 {
-                    enumerable : { value : true  },       //  Visible (i.e.: enumerable)
+                    '$trace' : { enumerable: true, value : property_$trace },
+                    '$who'   : { enumerable: true, value : property_$who   }//,
                 }//,
             )
-
-
-        //
-        //  Adjust keys, changing the array to an object.
-        //
-        //  NOTE2:
-        //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
-        //
-        //          Tracing : {
-        //              ['Gem.Core.execute'] : 7,
-        //          }
-        //
-        var tracing_list  = Gem.Tracing
-        var tracing_total = tracing_list.length
-
-        var Tracing     =
-            Gem.Tracing = {}
-
-
-        for (var i = 0; i < tracing_total; i += 2) {
-            var k = tracing_list[i]
-            var v = tracing_list[i + 1]
-
-            Tracing[k] = v
-        }
 
 
         //
@@ -225,6 +208,8 @@ Gem.Core.execute(
             //
             //  Closures
             //
+            var carriage_return__pattern = new Pattern('\n', 'g')
+
             if ('bind' in unbound__push) {
                 var push_color_bold_cyanish = unbound__push.bind(pending, 'font-weight: bold; color: #00AAFF')
                 var push_color_blue         = unbound__push.bind(pending, 'color:blue')
@@ -274,7 +259,32 @@ Gem.Core.execute(
             //
             //  Implementaion
             //
-            var carriage_return__pattern = new Pattern('\n', 'g')
+
+
+            //
+            //
+            //  Adjust keys, changing the array to an object.
+            //
+            //  NOTE2:
+            //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
+            //
+            //          Tracing : {
+            //              ['Gem.Core.execute'] : 7,
+            //          }
+            //
+            var tracing_list  = Gem.Tracing
+            var tracing_total = tracing_list.length
+
+            var Tracing     =
+                Gem.Tracing = {}
+
+
+            for (var i = 0; i < tracing_total; i += 2) {
+                var k = tracing_list[i]
+                var v = tracing_list[i + 1]
+
+                Tracing[k] = v
+            }
 
 
             //
@@ -758,6 +768,64 @@ Gem.Core.execute(
             }
 
 
+            //
+            //  cocoon
+            //      Wrap a function around itself for tracing (i.e.: create a self cocoon).
+            //
+            //      Creates attributes `.$trace` and `.$who` for self traced functions.
+            //
+            /*cocoon*/ {
+                if ( ! ('cocoon' in Tracing)) {
+                    Tracing.cocoon = 0
+                }
+
+
+                var cocoon = function cocoon(f, $who) {
+                    //  Wrap a function around itself for tracing (i.e.: create a self cocoon).
+                    //
+                    //  Creates attributes `.$trace` and `.$who` for self traced functions.
+
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                    var tracing_self = (trace === 7 || (trace && Tracing.cocoon))
+
+                    if (tracing_self) {
+                        function_call(cocoon, arguments)
+                    }
+
+                    /*=*/ {
+                        //  constant f.$trace = f
+                        //  constant f.$who   = $who
+
+                        property_$trace.value = f
+                        property_$who  .value = $who
+
+                        define_properties(f, self_trace_properties)
+
+                        property_$trace  .value = 
+                            property_$who.value = undefined
+
+                        /*trace*/ {
+                            if (tracing_self) {
+                                trace_attribute('constant', f, '$trace', f)
+                                trace_attribute('constant', f, '$who',   $who)
+                            }
+                        }
+                    }
+
+                    if (tracing_self) {
+                        function_result(f)
+                    }
+
+                    return f
+                }
+
+
+                //  Cocoon myself
+                cocoon(cocoon, 'cocoon')
+            }
+
+
             /*constant_attribute*/ {
                 var constant_attribute__$who = 'Gem._.Core.constant_attribute'
 
@@ -766,49 +834,37 @@ Gem.Core.execute(
                 }
 
 
-                var constant_attribute = function Gem__private__Core__constant_attribute(instance, name, value) {
-                    //  Create a (non reconfigurable) constant attribute.
+                var constant_attribute = cocoon(
+                    function Gem__private__Core__constant_attribute(instance, name, value) {
+                        //  Create a (non reconfigurable) constant attribute.
 
-                    var trace = Configuration.trace             //  Get newest value of 'trace'
+                        var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
+                        var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
 
-                    if (tracing_self) {
-                        procedure_start(constant_attribute, arguments)
-                    }
+                        if (tracing_self) {
+                            function_call(constant_attribute, arguments)
+                        }
 
-                    /*=*/ {
-                        //  constant instance.*name = value
-                        constant_property.value = value
-                        define_property(instance, name, constant_property)
-                        constant_property.value = undefined
+                        /*=*/ {
+                            //  constant instance.*name = value
+                            constant_property.value = value
+                            define_property(instance, name, constant_property)
+                            constant_property.value = undefined
 
-                        /*trace*/ {
-                            if (tracing_self) {
-                                trace_attribute('constant', instance, name, value)
+                            /*trace*/ {
+                                if (tracing_self) {
+                                    trace_attribute('constant', instance, name, value)
+                                }
                             }
                         }
-                    }
 
-                    if (tracing_self) {
-                        procedure_done()
-                    }
-                }
-
-
-                //
-                //  Set `constant_attribute`:
-                //
-                //      1.  `.$who` to "Gem._.Core.constant_attribute"
-                //      2.  `.$trace` to itself.
-                //
-                /*=*/ {
-                    //  constant constant_attribute.$who = 'TRACED: ' + constant_attribute__$who
-                    constant_attribute(constant_attribute, '$who', 'TRACED: ' + constant_attribute__$who)
-
-                    //  constant constant_attribute.$trace = trace_$who
-                    constant_attribute(constant_attribute, '$trace', constant_attribute)
-                }
+                        if (tracing_self) {
+                            procedure_done()
+                        }
+                    },
+                    constant_attribute__$who//,
+                )
             }
 
 
@@ -827,93 +883,94 @@ Gem.Core.execute(
                 //      For clarity, this function self-traces itself (it could instead be made to wrap itself,
                 //      but that gets too confusing, especially when using F10/F11 in developer tools).
                 //
-                var wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
-                    var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                    var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
-
-                    if (trace_self) {
-                        function_call(wrap_function, arguments)
-                    }
-
-                    if (arguments.length === 1) {
-                        if ('$who' in f) {
-                            var name = f.$who
-                        } else {
-                            var name = f.name
-                        }
-                    } else {
-                        var name = function_name
-
-                        /*=*/ {
-                            //  constant f.$who = name
-                            constant_attribute(f, '$who', name)
-                        }
-                    }
-
-                    if ( ! (name in Tracing)) {
-                        Tracing[name] = 0
-                    }
-
-
-                    if ('$trace' in f) {
-                        throw new Error("TraceError: function `" + name + "` already being traced")
-                    }
-
-
-                    var interim$wrap = function interim$wrap(/*...*/) {
+                var wrap_function = cocoon(
+                    function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                        if (trace === 7 || (trace && Tracing[name])) {
-                            function_call(f, arguments, name)
+                        var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
 
-                            var r = f.apply(this, arguments)
-
-                            if (r !== undefined) {
-                                function_result(r)
-                                return r
-                            }
-
-                            procedure_done()
-                            return
+                        if (trace_self) {
+                            function_call(wrap_function, arguments)
                         }
 
-                        return f.apply(this, arguments)
-                    }
+                        if (arguments.length === 1) {
+                            if ('$who' in f) {
+                                var name = f.$who
+                            } else {
+                                var name = f.name
+                            }
+                        } else {
+                            var name = function_name
+
+                            /*=*/ {
+                                //  constant f.$who = name
+                                property_$who.value = name
+                                define_property(f, '$who', property_$who)
+                                property_$who.value = undefined
+
+                                if (trace_self) {
+                                    trace_attribute('constant', f, '$who', name)
+                                }
+                            }
+                        }
+
+                        if ( ! (name in Tracing)) {
+                            Tracing[name] = 0
+                        }
 
 
-                    /*=*/ {
-                        //  constant interim$wrap.$trace = f
-                        constant_attribute(interim$wrap, '$trace', f)
-                    }
-
-                    if (trace_self) {
-                        function_result(interim$wrap)
-                    }
-
-                    return interim$wrap
-                }
+                        if ('$trace' in f) {
+                            throw new Error("TraceError: function `" + name + "` already being traced")
+                        }
 
 
-                //
-                //  Set `wrap_function`:
-                //
-                //      1.  `.$who` to "Gem.Trace.wrap_function"
-                //      2.  `.$trace` to itself.
-                //
-                /*=*/ {
-                    //  constant wrap_function.$who = trace_$who
-                    constant_attribute(wrap_function, '$who', wrap_function__$who)
+                        var interim$wrap = function interim$wrap(/*...*/) {
+                            var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    //  constant wrap_function.$trace = trace_$who
-                    constant_attribute(wrap_function, '$trace', wrap_function)
-                }
+                            if (trace === 7 || (trace && Tracing[name])) {
+                                function_call(f, arguments, name)
+
+                                var r = f.apply(this, arguments)
+
+                                if (r !== undefined) {
+                                    function_result(r)
+                                    return r
+                                }
+
+                                procedure_done()
+                                return
+                            }
+
+                            return f.apply(this, arguments)
+                        }
+
+
+                        /*=*/ {
+                            //  constant interim$wrap.$trace = f
+                            property_$trace.value = f
+                            define_property(interim$wrap, '$trace', property_$trace)
+                            property_$trace.value = undefined
+
+                            if (trace_self) {
+                                trace_attribute('constant', interim$wrap, '$who', f)
+                            }
+                        }
+
+                        if (trace_self) {
+                            function_result(interim$wrap)
+                        }
+
+                        return interim$wrap
+                    },
+                    wrap_function__$who//,
+                )
             }
 
 
             //
             //  Private
             //
+            _Trace.cocoon                = cocoon
             _Trace.function_call         = function_call
             _Trace.function_result       = function_result
             _Trace.group_stop            = group_stop
@@ -996,7 +1053,7 @@ if (Gem.Configuration.trace) {
             var Trace         = Gem.Trace
             var Configuration = Gem.Trace
 
-            var constant_attribute = _Core.constant_attribute
+            var cocoon             = _Trace.cocoon
             var execute            = Core.execute
             var function_call      = _Trace.function_call
             var procedure_done     = _Trace.procedure_done
@@ -1034,37 +1091,27 @@ if (Gem.Configuration.trace) {
                 var trace$execute__$who = 'Gem.Core.execute'
 
 
-                var trace$execute = function trace$Gem__Core__execute(code) {
-                    //  Execute code defined in a function.  This allows the use of local variables.
+                debugger
 
-                    var trace = Configuration.trace             //  Get newest value of 'trace'
+                var trace$execute = cocoon(
+                    function trace$Gem__Core__execute(code) {
+                        //  Execute code defined in a function.  This allows the use of local variables.
 
-                    var tracing_execute = (trace === 7 || (trace && Tracing[trace$execute__$who]))
-                    var tracing_code    = (trace === 7 || (trace && Tracing[code.name]))
+                        var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    if (tracing_execute) { function_call(trace$execute, arguments) }
-                    if (tracing_code)    { function_call(code)                     }
+                        var tracing_execute = (trace === 7 || (trace && Tracing[trace$execute__$who]))
+                        var tracing_code    = (trace === 7 || (trace && Tracing[code.name]))
 
-                    code()
+                        if (tracing_execute) { function_call(trace$execute, arguments) }
+                        if (tracing_code)    { function_call(code)                     }
 
-                    if (tracing_code)    { procedure_done() }
-                    if (tracing_execute) { procedure_done() }
-                }
+                        code()
 
-
-                //
-                //  Set `execute$trace`:
-                //
-                //      1.  `.$who` to "Gem.Core.execute"
-                //      2.  `.$trace` to itself.
-                //
-                /*=*/ {
-                    //  constant wrap_function.$who = 'TRACED: ' + trace_$who
-                    constant_attribute(trace$execute, '$who', trace$execute__$who)
-
-                    //  constant wrap_function.$trace = trace_$who
-                    constant_attribute(trace$execute, '$trace', trace$execute)
-                }
+                        if (tracing_code)    { procedure_done() }
+                        if (tracing_execute) { procedure_done() }
+                    },
+                    trace$execute__$who//,
+                )
 
                 Gem.Core.execute = trace$execute    //  TEMPORARY as "iterim mutable": Changed below to "constant"
             }
