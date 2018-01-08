@@ -17,7 +17,7 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 7,                                  //      Trace function, method & bound method calls.
+        trace         : 0,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
@@ -166,9 +166,8 @@ Gem.Core.execute(
         //
         var BoxOfProperties__enumerable = { enumerable : { value : true } }
 
-        var constant_property = create_Object(null, BoxOfProperties__enumerable)
-        var property_$who     = create_Object(null, BoxOfProperties__enumerable)
-        var property_$trace   = create_Object(null, BoxOfProperties__enumerable)
+        var property_$who   = create_Object(null, BoxOfProperties__enumerable)
+        var property_$trace = create_Object(null, BoxOfProperties__enumerable)
 
         var self_trace_properties = create_Object(
                 null,
@@ -300,6 +299,8 @@ Gem.Core.execute(
             //      Otherwise, return 0 (tracing off).
             //
             var tracing = function Gem__Trace__tracing(name) {
+                debugger
+
                 var trace = Configuration.trace             //  Get newest value of 'trace'
 
                 if (trace === 0 || trace === 7) {
@@ -826,48 +827,6 @@ Gem.Core.execute(
             }
 
 
-            /*constant_attribute*/ {
-                var constant_attribute__$who = 'Gem._.Core.constant_attribute'
-
-                if ( ! (constant_attribute__$who in Tracing)) {
-                    Tracing[constant_attribute__$who] = 0
-                }
-
-
-                var constant_attribute = cocoon(
-                    function Gem__private__Core__constant_attribute(instance, name, value) {
-                        //  Create a (non reconfigurable) constant attribute.
-
-                        var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                        var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
-
-                        if (tracing_self) {
-                            function_call(constant_attribute, arguments)
-                        }
-
-                        /*=*/ {
-                            //  constant instance.*name = value
-                            constant_property.value = value
-                            define_property(instance, name, constant_property)
-                            constant_property.value = undefined
-
-                            /*trace*/ {
-                                if (tracing_self) {
-                                    trace_attribute('constant', instance, name, value)
-                                }
-                            }
-                        }
-
-                        if (tracing_self) {
-                            procedure_done()
-                        }
-                    },
-                    constant_attribute__$who//,
-                )
-            }
-
-
             /*wrap_function*/ {
                 var wrap_function__$who = 'Gem.Trace.wrap_function'
 
@@ -982,17 +941,9 @@ Gem.Core.execute(
             _Trace.trace_value           = trace_value
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
         } else {
-            var constant_attribute = function Gem__private__Core__constant_attribute(instance, name, value) {
-                //  Create a (non reconfigurable) constant attribute.
-
-                /*=*/ {
-                    //  constant instance.*name = value
-                    constant_property.value = value
-                    define_property(instance, name, constant_property)
-                    constant_property.value = undefined
-                }
+            var cocoon = function interim$Gem__Trace__cocoon(f) {
+                return f
             }
-
 
             var trace_call = function interim$Gem__Trace__trace_call(f) {
                 return f()
@@ -1019,9 +970,7 @@ Gem.Core.execute(
         //
         //  Export
         //
-        _Core.constant_property  = constant_property    //  TEMPORARY, deleted later
-        _Core.constant_attribute = constant_attribute   //  TEMPORARY as "iterim mutable": Changed below to "constant"
-
+        Trace.cocoon        = cocoon
         Trace.trace_call    = trace_call
         Trace.tracing       = tracing
         Trace.wrap_function = wrap_function
@@ -1053,7 +1002,7 @@ if (Gem.Configuration.trace) {
             var Trace         = Gem.Trace
             var Configuration = Gem.Trace
 
-            var cocoon             = _Trace.cocoon
+            var cocoon             = Trace.cocoon
             var execute            = Core.execute
             var function_call      = _Trace.function_call
             var procedure_done     = _Trace.procedure_done
@@ -1090,8 +1039,6 @@ if (Gem.Configuration.trace) {
             /*execute*/ {
                 var trace$execute__$who = 'Gem.Core.execute'
 
-
-                debugger
 
                 var trace$execute = cocoon(
                     function trace$Gem__Core__execute(code) {
@@ -1143,10 +1090,10 @@ Gem.Core.execute(
         var Core          = Gem.Core
         var Script        = Gem.Script
         var Trace         = Gem.Trace
+        var Tracing       = Gem.Tracing
 
         var clarity            = Configuration.clarity
-        var constant_attribute = _Core.constant_attribute
-        var constant_property  = _Core.constant_property
+        var cocoon             = Trace.cocoon
         var create_Object      = Object.create
         var define_properties  = Object.defineProperties
         var define_property    = Object.defineProperty
@@ -1174,6 +1121,7 @@ Gem.Core.execute(
         //      Enumerable properties are shown better in Developer Tools (at the top of the list,
         //      and not grayed out).
         //
+        //
         if (clarity) {
             if (trace) {
                 var constant_$tracing_property = create_Object(null, { enumerable : { value : true } })
@@ -1184,78 +1132,125 @@ Gem.Core.execute(
             var constant___prefix_property = create_Object(null)                                    //  3 underscores
 
             var module_properties = create_Object(
-                    null,
-                    {
-                        '$who'    : { enumerable : true, value : constant_$who_property     },
-                        '$what'   : { enumerable : true, value : constant_$what_property    },
-                        '_prefix' : { enumerable : true, value : constant___prefix_property },
-                    }//,
-                )
-
-            var $who_$what_properties = create_Object(
-                    null,
-                    {
-                        '$who'  : { enumerable : true, value : constant_$who_property  },
-                        '$what' : { enumerable : true, value : constant_$what_property },
-                    }//,
-                )
-
-
-            var constant_$who_$what_attributes = wrap_function(
-                    function constant_$who_$what_attributes(instance, $who, $what) {
-                        /*=*/ {
-                            //  constant module.$who  = $who
-                            //  constant module.$what = $what
-                            constant_$who_property .value = $who
-                            constant_$what_property.value = $what
-
-                            define_properties(instance, $who_$what_properties)
-
-                            constant_$who_property     .value =
-                                constant_$what_property.value = undefined
-
-                            /*trace*/ {
-                                var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                                if (trace === 7 || (trace && Tracing['constant_$who_$what_attributes'])) {
-                                    trace_attribute('constant', instance, '$who',  $who)
-                                    trace_attribute('constant', instance, '$what', $what)
-                                }
-                            }
-                        }
-                    }//,
-                )
-        }
-
-        var interim_constant_property = create_Object(
                 null,
                 {
-                    configurable : { value : true  },       //  Can be reconfigured (the constant can be changed!).
-                    enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+                    '$who'    : { enumerable : true, value : constant_$who_property     },
+                    '$what'   : { enumerable : true, value : constant_$what_property    },
+                    '_prefix' : { enumerable : true, value : constant___prefix_property },
+                }//,
+            )
+
+            var $who_$what_properties = create_Object(
+                null,
+                {
+                    '$who'  : { enumerable : true, value : constant_$who_property  },
+                    '$what' : { enumerable : true, value : constant_$what_property },
                 }//,
             )
 
 
-        var interim_constant_attribute = wrap_function(
-                function interim_constant_attribute(instance, name, value) {
-                    //  Create an interim (reconfigurable) constant attribute.
-
+            var constant_$who_$what_attributes = wrap_function(
+                function constant_$who_$what_attributes(instance, $who, $what) {
                     /*=*/ {
-                        //  interim constant instance.*name = value
-                        interim_constant_property.value = value
-                        define_property(instance, name, interim_constant_property)
-                        interim_constant_property.value = undefined
+                        //  constant module.$who  = $who
+                        //  constant module.$what = $what
+                        constant_$who_property .value = $who
+                        constant_$what_property.value = $what
+
+                        define_properties(instance, $who_$what_properties)
+
+                        constant_$who_property     .value =
+                            constant_$what_property.value = undefined
 
                         /*trace*/ {
                             var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                            if (trace === 7 || (trace && Tracing['interim_constant_attribute'])) {
-                                trace_attribute('interim constant', instance, name, value)
+                            if (trace === 7 || (trace && Tracing['constant_$who_$what_attributes'])) {
+                                trace_attribute('constant', instance, '$who',  $who)
+                                trace_attribute('constant', instance, '$what', $what)
                             }
                         }
                     }
                 }//,
             )
+        }
+
+        var constant_property = create_Object(null, { enumerable : { value : true } })
+
+        var interim_constant_property = create_Object(
+            null,
+            {
+                configurable : { value : true  },       //  Can be reconfigured (the constant can be changed!).
+                enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
+            }//,
+        )
+
+
+        //
+        //  Implementation
+        //
+        /*constant_attribute*/ {
+            var constant_attribute__$who = 'Gem._.Core.constant_attribute'
+
+            if ( ! (constant_attribute__$who in Tracing)) {
+                Tracing[constant_attribute__$who] = 0
+            }
+
+
+            var constant_attribute = cocoon(
+                function Gem__private__Core__constant_attribute(instance, name, value) {
+                    //  Create a (non reconfigurable) constant attribute.
+
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                    var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
+
+                    if (tracing_self) {
+                        function_call(constant_attribute, arguments)
+                    }
+
+                    /*=*/ {
+                        //  constant instance.*name = value
+                        constant_property.value = value
+                        define_property(instance, name, constant_property)
+                        constant_property.value = undefined
+
+                        /*trace*/ {
+                            if (tracing_self) {
+                                trace_attribute('constant', instance, name, value)
+                            }
+                        }
+                    }
+
+                    if (tracing_self) {
+                        procedure_done()
+                    }
+                },
+                constant_attribute__$who//,
+            )
+        }
+
+
+        var interim_constant_attribute = wrap_function(
+            function interim_constant_attribute(instance, name, value) {
+                //  Create an interim (reconfigurable) constant attribute.
+
+                /*=*/ {
+                    //  interim constant instance.*name = value
+                    interim_constant_property.value = value
+                    define_property(instance, name, interim_constant_property)
+                    interim_constant_property.value = undefined
+
+                    /*trace*/ {
+                        var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                        if (trace === 7 || (trace && Tracing['interim_constant_attribute'])) {
+                            trace_attribute('interim constant', instance, name, value)
+                        }
+                    }
+                }
+            }//,
+        )
 
 
         if (clarity || trace) {
@@ -1694,21 +1689,18 @@ Gem.Core.execute(
         ) 
 
 
-        if (0) {
-            //RESTORE THIS LATER? -- When moving constant_attribute?
-            //
-            //  Gem._.Core.constant_attribute
-            //
-            //  NOTE:
-            //      This was set above as a "visible_mutable", change it now to a "constant".
-            //
-            traced_method(
-                _Core,
-                'constant_attribute',
-                'Create a [non reconfigurable] visible constant attribute.',
-                constant_attribute//,
-            )
-        }
+        //
+        //  Gem._.Core.constant_attribute
+        //
+        //  NOTE:
+        //      This was set above as a "visible_mutable", change it now to a "constant".
+        //
+        traced_method(
+            _Core,
+            'constant_attribute',
+            'Create a [non reconfigurable] visible constant attribute.',
+            constant_attribute//,
+        )
 
 
         //
@@ -1795,19 +1787,6 @@ Gem.Core.execute(
             )
         }
     }
-)
-
-
-//
-//  Gem.Core.constant_attribute
-//      Create a (non reconfigurable) constant attribute.
-//      
-//
-Gem.Trace.traced_method(
-    Gem._.Core,
-    'constant_attribute',
-    'Create a (non reconfigurable) constant attribute.',
-    Gem._.Core.constant_attribute//,
 )
 
 
