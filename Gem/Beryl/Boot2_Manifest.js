@@ -15,11 +15,12 @@ Gem.Core.execute(
         //
         var Gem = window.Gem
 
+        var Boot_Script   = Gem.Boot.Script
         var Configuration = Gem.Configuration
 
         var box_name = Configuration.Box.box_name
         var clarity  = Configuration.clarity
-        var load     = Gem.Script.load
+        var load     = Boot_Script.load
         var trace    = Configuration.trace
 
 

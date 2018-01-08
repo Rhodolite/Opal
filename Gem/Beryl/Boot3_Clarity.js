@@ -40,8 +40,17 @@ Gem.Core.execute(
         //
         //  Implementation
         //
-        who_what(Gem.Configuration,     'Gem.Configuration',     'Gem Configuration values.',                   false)
-        who_what(Gem.Script.script_map, 'Gem.Script.script_map', 'Map of all the scripts loaded (or loading).', false)
+        who_what(Gem.Boot,        'Gem.Boot',        'Temporary support code during boot process.', false)
+//      who_what(Gem.Boot.Script, 'Gem.Boot.Script', "`<script>` handling during boot process.",    false)
+
+        who_what(
+            Gem.Boot.Script.script_map,
+            'Gem.Boot.Script.script_map',
+            'Map of all the scripts loaded (or loading).',
+            false//,
+        )
+
+        who_what(Gem.Configuration, 'Gem.Configuration', 'Gem Configuration values.', false)
 
         who_what(
             Gem.Source,

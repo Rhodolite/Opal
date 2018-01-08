@@ -49,12 +49,12 @@ window.Gem = {
         'Gem.Core.method',                                      0,
         'Gem.Core.qualify_constant',                            0,
         'Gem.NodeWebKit.show_developer_tools',                  0,
-        'Gem.Script.codify_load',                               0,
-        'Gem.Script.error',                                     0,
-        'Gem.Script.handle_event',                              0,
-        'Gem.Script.handle_global_error',                       0,
-        'Gem.Script.load',                                      0,
-        'Gem.Script.source_attribute',                          0,
+        'Gem.Boot.Script.codify_load',                          0,
+        'Gem.Boot.Script.error',                                0,
+        'Gem.Boot.Script.handle_event',                         0,
+        'Gem.Boot.Script.handle_global_error',                  0,
+        'Gem.Boot.Script.load',                                 0,
+        'Gem.Boot.Script.source_attribute',                     0,
         'Gem.Trace.wrap_constructor',                           0,
         'Gem.Trace.wrap_function',                              0,
         'interim$Gem__Core__method',                            0,
@@ -64,6 +64,28 @@ window.Gem = {
         'qualifier$Gem__Script__gem_scripts',                   0,
         'traced_method__common',                                0//,
     ],
+
+    Boot : {                                                //  Temporary support code during boot process.
+        Script : {                                          //      `<script>` handling during boot process.
+            dynamic    : false,                             //      Whether the current script can be reloaded.
+            event_list : ['abort', 'error', 'load'],        //          List of `<script>` events to listen for.
+
+            //  handle_errors : false,                      //          `true` if handling `<script>` errors.
+            //  load          : Function                    //          Load a script using `<script>` tag.
+
+            script_map : {                                  //          Map of all the scripts loaded (or loading).
+                //  'Gem/Beryl/Boot2_Manfest.js' : `<script>` tag
+            }//,
+
+            //
+            //  NOTE:
+            //      The rest of attributes are only used if `Gem.Boot.Script.handle_errors` is `true`.
+            //
+            //  handle_global_error : Function              //          Handle errors when executing a `<script>` tag>.
+            //  handle_event        : Function              //          Handle events of `<script>` tags>.
+            //  source_attribute    : Function              //          Get unmodified `.src` attribute.
+        }//,
+    },
 
     Core : {                                                //  Basic support code for the Core Gem module.
         execute : function Gem__Core__execute(code) {       //      Stub#1 for Gem.Core.execute
@@ -85,26 +107,6 @@ window.Gem = {
         //  is_version_012_or_lower   : false               //      True if using nw.js & it's version 0.12 or lower.
         //  is_version_013_or_greater : false               //      True if using nw.js & it's version 0.13 or greater.
         //  show_developer_tools      : Function            //      Show developer tools window.
-    },
-
-    Script : {                                              //  `<script>` handling.
-        dynamic    : false,                                 //      Whether the current script can be reloaded.
-        event_list : ['abort', 'error', 'load'],            //      [Temporary] List of `<script>` events to listen for.
-
-        //  handle_errors : false,                          //      `true` if handling `<script>` errors.
-        //  load          : Function                        //      Load a script using `<script>` tag.
-
-        script_map : {                                      //      Map of all the scripts loaded (or loading)>.
-            //  'Gem/Beryl/Boot2_Manfest.js' : `<script>` tag   //  `<script>` tag to load "Gem/Beryl/Boot.js".
-        }//,
-
-        //
-        //  NOTE:
-        //      The rest of attributes are only used if `Gem.Script.handle_errors` is `true`.
-        //
-        //  handle_global_error : Function                  //      Handle errors when executing a `<script>` tag>.
-        //  handle_event        : Function                  //      Handle events of `<script>` tags>.
-        //  source_attribute    : Function                  //      Get unmodified `.src` attribute.
     },
 
     Source : {                                              //  Functions to "hold onto" for Developer Tools.
@@ -140,52 +142,27 @@ window.Gem = {
 }
 
 
-Gem.Core.execute(
-    function execute$setup_Tracing() {
-        //
-        //  Imports
-        //
-        var Gem     = window.Gem
-        var Pattern = window.RegExp
-
-        var _             = Gem._
-        var _Core         = _.Core
-        var Core          = Gem.Core
-        var Configuration = Gem.Configuration
-        var Trace         = Gem.Trace
-
-        var clarity            = Configuration.clarity
-        var create_Object      = Object.create
-        var define_properties  = Object.defineProperties
-        var define_property    = Object.defineProperty
-        var trace              = Configuration.trace
-
-
-        //
-        //  constant_property
-        //
-        var BoxOfProperties__enumerable = { enumerable : { value : true } }
-
-        var property_$who   = create_Object(null, BoxOfProperties__enumerable)
-        var property_$trace = create_Object(null, BoxOfProperties__enumerable)
-
-        var self_trace_properties = create_Object(
-                null,
-                {
-                    '$trace' : { enumerable: true, value : property_$trace },
-                    '$who'   : { enumerable: true, value : property_$who   }//,
-                }//,
-            )
-
-
-        //
-        //  Define trace functions & trace myself
-        //
-        if (trace) {
+if (Gem.Configuration.trace) {
+    Gem.Core.execute(
+        function execute$setup_Tracing() {
+            //
+            //  Imports
+            //
             var console = window.console
+            var Gem     = window.Gem
+            var Pattern = window.RegExp
 
-            var _Trace = _.Trace
+            var _             = Gem._
+            var _Core         = _.Core
+            var _Trace        = _.Trace
+            var Configuration = Gem.Configuration
+            var Core          = Gem.Core
+            var Trace         = Gem.Trace
 
+            var clarity                     = Configuration.clarity
+            var create_Object               = Object.create
+            var define_properties           = Object.defineProperties
+            var define_property             = Object.defineProperty
             var pending                     = _Trace.pending
 //          var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_start_open   = console.group
@@ -195,6 +172,11 @@ Gem.Core.execute(
             var unbound__SPLICE             = Array.prototype.splice            //  NOTE: splice *WITH* a 'p'
 
 
+            //
+            //  Closures
+            //
+            var carriage_return__pattern    = new Pattern('\n', 'g')
+
             if ('bind' in unbound__group_stop) {
                 var group_stop = unbound__group_stop.bind(console)
             } else {
@@ -203,11 +185,20 @@ Gem.Core.execute(
                 }
             }
 
+            /*property_${who,trace} & self_trace_properties*/ {
+                var box_of_properties__enumerable = { enumerable : { value : true } }
 
-            //
-            //  Closures
-            //
-            var carriage_return__pattern = new Pattern('\n', 'g')
+                var property_$who   = create_Object(null, box_of_properties__enumerable)
+                var property_$trace = create_Object(null, box_of_properties__enumerable)
+
+                var self_trace_properties = create_Object(
+                        null,
+                        {
+                            '$trace' : { enumerable: true, value : property_$trace },
+                            '$who'   : { enumerable: true, value : property_$who   }//,
+                        }//,
+                    )
+            }
 
             if ('bind' in unbound__push) {
                 var push_color_bold_cyanish = unbound__push.bind(pending, 'font-weight: bold; color: #00AAFF')
@@ -299,8 +290,6 @@ Gem.Core.execute(
             //      Otherwise, return 0 (tracing off).
             //
             var tracing = function Gem__Trace__tracing(name) {
-                debugger
-
                 var trace = Configuration.trace             //  Get newest value of 'trace'
 
                 if (trace === 0 || trace === 7) {
@@ -929,7 +918,6 @@ Gem.Core.execute(
             //
             //  Private
             //
-            _Trace.cocoon                = cocoon
             _Trace.function_call         = function_call
             _Trace.function_result       = function_result
             _Trace.group_stop            = group_stop
@@ -940,42 +928,51 @@ Gem.Core.execute(
             _Trace.trace_attribute       = trace_attribute
             _Trace.trace_value           = trace_value
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
-        } else {
-            var cocoon = function interim$Gem__Trace__cocoon(f) {
+
+
+            //
+            //  Export
+            //
+            Trace.cocoon        = cocoon
+            Trace.trace_call    = trace_call
+            Trace.tracing       = tracing
+            Trace.wrap_function = wrap_function
+        }//,
+    )
+} else {
+    Gem.Core.execute(
+        function execute$setup_Tracing() {
+            //
+            //  Imports
+            //
+            var Gem = window.Gem
+
+            var Trace = Gem.Trace
+
+
+            //
+            //  Implementation
+            //
+            Trace.cocoon = function interim$Gem__Trace__cocoon(f) {
                 return f
             }
 
-            var trace_call = function interim$Gem__Trace__trace_call(f) {
+            Trace.trace_call = function interim$Gem__Trace__trace_call(f) {
                 return f()
             }
 
 
-            var tracing = function interim$Gem__Trace__tracing(name) {
+            Trace.tracing = function interim$Gem__Trace__tracing(name) {
                 return 0
             }
 
 
-            var wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
+            Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                 return f
             }
-        }
-
-
-        if (trace) {
-            if (tracing_myself)  { procedure_done() }
-            if (tracing_execute) { procedure_done() }
-        }
-
-
-        //
-        //  Export
-        //
-        Trace.cocoon        = cocoon
-        Trace.trace_call    = trace_call
-        Trace.tracing       = tracing
-        Trace.wrap_function = wrap_function
-    }
-)
+        }//,
+    )
+}
 
 
 //
@@ -1086,9 +1083,9 @@ Gem.Core.execute(
         var _             = Gem._
         var _Core         = _.Core
         var _Trace        = _.Trace
+        var Boot_Script   = Gem.Boot.Script
         var Configuration = Gem.Configuration
         var Core          = Gem.Core
-        var Script        = Gem.Script
         var Trace         = Gem.Trace
         var Tracing       = Gem.Tracing
 
@@ -1349,8 +1346,8 @@ Gem.Core.execute(
 
 
             who_what(Gem,            'Gem',            'The only global variable used by Gem.',             false)
+            who_what(Gem.Boot.Script,'Gem.Boot.Sccript','Temporary',                                        true)
             who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.',       true)
-            who_what(Gem.Script,     'Gem.Script',     "`<script>` handling.",                              true)
             who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods.',                    true)
             who_what(Gem.Trace,      'Gem.Trace',      'Exports the Trace module.',                         true)
             who_what(Gem._.Core,     'Gem._.Core',     'Private members & methods of the Core Gem module.', true)
@@ -1392,15 +1389,15 @@ Gem.Core.execute(
         //      Common code to define a method with no tracing.
         //
         //  NOTE:
-        //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten (in clarity
-        //      mode), after which this method is invalid.
+        //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
+        //      (in clarity mode), after which this method is invalid.
         //
         var method__no_trace = wrap_function(
                 function interim$Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
                     //  Common code to define a method with no tracing.
                     //
                     //  NOTE:
-                    //      Due to the call of `Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                    //      Due to the call of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
                     //      rewritten, after which this method is invalid.
 
                     if ('$trace' in method) {
@@ -1409,6 +1406,7 @@ Gem.Core.execute(
 
                     if (clarity) {
                         if ( ! ('$who' in instance)) {
+                            debugger
                             throw new Error('method_no_trace: missing $who in object')
                         }
 
@@ -1421,7 +1419,7 @@ Gem.Core.execute(
                         }
                     }
 
-                    if (interim || Script.dynamic) {                            //  See NOTE above
+                    if (interim || Boot_Script.dynamic) {                       //  See NOTE above
                         //  interim constant instance.*who = method
                         interim_constant_attribute(instance, who, method)
                     } else {
@@ -1439,8 +1437,8 @@ Gem.Core.execute(
             //      Common code to define a traced method
             //
             //  NOTE:
-            //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten (in clarity
-            //      mode), after which this method is invalid.
+            //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
+            //      (in clarity mode), after which this method is invalid.
             //
             var traced_method__common = wrap_function(
                     function interim$Gem__private__Trace__traced_method__common(
@@ -1449,7 +1447,7 @@ Gem.Core.execute(
                         //  Common code to define a traced method
                         //
                         //  NOTE:
-                        //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                        //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
                         //      rewritten (in clarity mode), after which this method is invalid.
 
                         if (clarity) {
@@ -1483,7 +1481,7 @@ Gem.Core.execute(
                             }
                         }
 
-                        if (interim || Script.dynamic) {                            //  See NOTE above
+                        if (interim || Boot_Script.dynamic) {                            //  See NOTE above
                             //  interim constant instance.*who = wrapped_method
                             interim_constant_attribute(instance, who, wrapped_method)
                         } else {
@@ -1566,7 +1564,7 @@ Gem.Core.execute(
             'clarity_note',
             'Interim method for Gem.Core.clarity_note',
             function interim$Gem__Core__clarity_note(instance, who, $what) {
-                //TODO: FIX TO USE SCRIPT.DYNAMIC
+                //TODO: FIX TO USE Boot_SCRIPT.DYNAMIC
                 if (clarity) {
                     /*=*/ {
                         //  instance[who + '$NOTE'] = $what
@@ -1610,7 +1608,7 @@ Gem.Core.execute(
             'Interim method for Gem.Core.constant',
             (
                 clarity
-                    //TODO: FIX TO USE SCRIPT.DYNAMIC
+                    //TODO: FIX TO USE Boot_SCRIPT.DYNAMIC
                     ? function interim$Gem__Core__constant(instance, who, $what, value) {
                           /*=*/ {
                               //  constant instance.*who = value
@@ -1753,7 +1751,7 @@ Gem.Core.execute(
                       'Common code to define a traced method.\n'
                     + '\n'
                     + 'NOTE:\n'
-                    + "    to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten"
+                    + "    to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten"
                     + ' (in clarity mode), after which this method is invalid.'
                 ),
                 traced_method__common//,
@@ -2011,7 +2009,7 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 
 
 //
-//  Gem.Script.handle_errors
+//  Gem.Boot.Script.handle_errors
 //
 //  NOTE:
 //      We only handle script events (and thus bring up an alert) if five conditions are met:
@@ -2023,9 +2021,9 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
 //          5.  The browser has a `.setAttribute`     method (all modern browsers do).
 //
 Gem.Core.constant(
-    Gem.Script,
+    Gem.Boot.Script,
     'handle_errors',
-    "`Gem.Script.handle_errors` is `true` if handling `<script>` errors.",
+    "`Gem.Boot.Script.handle_errors` is `true` if handling `<script>` errors.",
     (
            Gem.Configuration.capture_error                  //  1.  Configured to capture errors;
         && Gem.NodeWebKit.is_NodeWebKit                     //  2.  This is running under nw.js;
@@ -2039,9 +2037,9 @@ Gem.Core.constant(
 )
 
 
-if (Gem.Script.handle_errors) {
+if (Gem.Boot.Script.handle_errors) {
     //
-    //  Gem.Script.source_attribute
+    //  Gem.Boot.Script.source_attribute
     //      Get an unmodified `.src` attribute from a DOM (domain object model) element.
     //
     //  NOTE:
@@ -2057,7 +2055,7 @@ if (Gem.Script.handle_errors) {
     //      way.
     //
     Gem.Core.codify_method(
-        Gem.Script,
+        Gem.Boot.Script,
         'source_attribute',
         "Get an unmodified `.src` attribute from a DOM (domain object model) element.",
         function codifier$Gem__Script__source_attribute() {
@@ -2095,11 +2093,11 @@ if (Gem.Script.handle_errors) {
 
 
     //
-    //  Gem.Script.error
+    //  Gem.Boot.Script.error
     //      Show an error (either with `alert` or `console.error`).
     //
     Gem.Core.codify_method(
-        Gem.Script,
+        Gem.Boot.Script,
         'error',
         'Show an error (either with alert or console.error).',
         function codifier$Gem__Script__error() {
@@ -2133,11 +2131,11 @@ if (Gem.Script.handle_errors) {
 
 
     //
-    //  Gem.Script.handle_global_error
+    //  Gem.Boot.Script.handle_global_error
     //      Handle errors when executing a `<script>` tag.
     //
     Gem.Core.codify_method(
-        Gem.Script,
+        Gem.Boot.Script,
         'handle_global_error',
         "Handle errors when executing a `<script>` tag.",
         function codifier$Gem__Script__handle_global_error() {
@@ -2145,13 +2143,12 @@ if (Gem.Script.handle_errors) {
             //  Imports
             //
             var document = window.document
+            var Gem      = window.Gem
 
-            var Gem = window.Gem
+            var Boot_Script = Gem.Boot.Script
 
-            var Script = Gem.Script
-
-            var error            = Script.error
-            var source_attribute = Script.source_attribute
+            var error            = Boot_Script.error
+            var source_attribute = Boot_Script.source_attribute
 
 
             //
@@ -2183,8 +2180,8 @@ if (Gem.Script.handle_errors) {
 
 
     //
-    //  Gem.Script.codify_handle_event
-    //      Codify method `Gem.Script.handle_event`.
+    //  Gem.Boot.Script.codify_handle_event
+    //      Codify method `Gem.Boot.Script.handle_event`.
     //
     //      This routine can be called multiple times:
     //
@@ -2192,10 +2189,10 @@ if (Gem.Script.handle_errors) {
     //          2.  Again, in clarity mode, after `Gem` is replaced.
     //
     Gem.Core.codify_interim_method(
-        Gem.Script,
+        Gem.Boot.Script,
         'codify_handle_event',
         (
-              "Codify method `Gem.Script.handle_event`.\n"
+              "Codify method `Gem.Boot.Script.handle_event`.\n"
             + '\n'
             + 'This routine can be called multiple times:\n'
             + '\n'
@@ -2208,10 +2205,10 @@ if (Gem.Script.handle_errors) {
             //
             var Gem = window.Gem
 
-            var Script = Gem.Script
+            var Boot_Script = Gem.Boot.Script
 
-            var script_event_list = Script.event_list
-            var source_attribute  = Script.source_attribute
+            var script_event_list = Boot_Script.event_list
+            var source_attribute  = Boot_Script.source_attribute
 
 
             //
@@ -2223,7 +2220,7 @@ if (Gem.Script.handle_errors) {
                 //
                 var Gem = window.Gem                                    //  Reload latest `Gem`
 
-                var Script = Gem.Script                                 //  Reload lastest `Gem.Script`
+                var Boot_Script = Gem.Boot.Script                       //  Reload lastest `Gem.Boot.Script`
 
 
                 //
@@ -2251,12 +2248,12 @@ if (Gem.Script.handle_errors) {
                 //      file does not exist, or there is an error while transferring it HTTP).
                 //
                 //      Any syntax error (on successful load) can be caught & is caught by
-                //      `Gem.Script.handle_global_error` above.
+                //      `Gem.Boot.Script.handle_global_error` above.
                 //
                 var script_handle_event = function Gem__Script__handle_event(e) {
                     //  Handle events of `<script>` tags
 
-                    Script.dynamic = false                                      //  Script done, reset `.dynamic`
+                    Boot_Script.dynamic = false                                 //  Script done, reset `.dynamic`
 
                     var tag = e.target
 
@@ -2273,13 +2270,13 @@ if (Gem.Script.handle_errors) {
 
 
                 //
-                //  Gem.Script.handle_event
+                //  Gem.Boot.Script.handle_event
                 //      Handle events of `<script>` tags.
                 //
                 var method = (interim ?  Gem.Core.interim_method : Gem.Core.method)
 
                 method(
-                    Gem.Script,
+                    Gem.Boot.Script,
                     'handle_event',
                     "Handle events of `<script>` tags.",
                     script_handle_event//,
@@ -2291,10 +2288,10 @@ if (Gem.Script.handle_errors) {
 
 
 //
-//  Gem.Script.gem_scripts
+//  Gem.Boot.Script.gem_scripts
 //
 Gem.Core.qualify_constant.call(
-    Gem.Script,
+    Gem.Boot.Script,
     'gem_scripts',
     "`div#gem_scripts` is the parent of all Gem `<script>` tags and is inserted into `document.head`.",
     function qualifier$Gem__Script__gem_scripts() {
@@ -2319,8 +2316,8 @@ Gem.Core.qualify_constant.call(
 
 
 //
-//  Gem.Script.codify_load
-//      Codify method `Gem.Script.load`.
+//  Gem.Boot.Script.codify_load
+//      Codify method `Gem.Boot.Script.load`.
 //
 //      This routine can be called multiple times:
 //
@@ -2328,10 +2325,10 @@ Gem.Core.qualify_constant.call(
 //          2.  Again, in clarity mode, after `Gem` is replaced.
 //
 Gem.Core.codify_interim_method(
-    Gem.Script,
+    Gem.Boot.Script,
     'codify_load',
     (
-          "Codify method `Gem.Script.load`.\n"
+          "Codify method `Gem.Boot.Script.load`.\n"
         + '\n'
         + 'This routine can be called multiple times:\n'
         + '\n'
@@ -2344,12 +2341,12 @@ Gem.Core.codify_interim_method(
         //
         var Gem = window.Gem
 
-        var Script = Gem.Script
+        var Boot_Script = Gem.Boot.Script
 
-        var gem_scripts       = Script.gem_scripts
-        var handle_errors     = Script.handle_errors
-        var script_event_list = Script.event_list
-//      var script_map        = Script.script_map           //  Not valid here -- *MUST* be done below
+        var gem_scripts       = Boot_Script.gem_scripts
+        var handle_errors     = Boot_Script.handle_errors
+        var script_event_list = Boot_Script.event_list
+//      var script_map        = Boot_Script.script_map           //  Not valid here -- *MUST* be done below
 
 
         //
@@ -2380,8 +2377,8 @@ Gem.Core.codify_interim_method(
 
 
         //
-        //  Gem.Script.codify_load
-        //      Codify method `Gem.Script.load`.
+        //  Gem.Boot.Script.codify_load
+        //      Codify method `Gem.Boot.Script.load`.
         //
         //      This routine can be called multiple times:
         //
@@ -2396,11 +2393,11 @@ Gem.Core.codify_interim_method(
                 //
                 var Gem = window.Gem                                    //  Reload latest `Gem`
 
-                var Core   = Gem.Core
-                var Script = Gem.Script                                 //  Reload latest `Gem.Script`
+                var Core        = Gem.Core
+                var Boot_Script = Gem.Boot.Script                       //  Reload latest `Gem.Script`
 
-                var script_map          = Gem.Script.script_map         //  Reload latest `Gem.Script.script_map`
-                var script_handle_event = Gem.Script.handle_event       //  Reload latest `Gem.script.handle_event`
+                var script_map          = Gem.Boot.Script.script_map    //  Reload latest `Gem.Boot.Script.script_map`
+                var script_handle_event = Gem.Boot.Script.handle_event  //  Reload latest `Gem.Boot.Script.handle_event`
 
 
                 //
@@ -2410,7 +2407,7 @@ Gem.Core.codify_interim_method(
 
 
                 //
-                //  Gem.Script.load
+                //  Gem.Boot.Script.load
                 //      Load JavaScript code using a `<script>` tag.
                 //      (Version for a modern browser).
                 //
@@ -2431,7 +2428,7 @@ Gem.Core.codify_interim_method(
                 //          `<script>` tag.
                 //
                 method(
-                    Gem.Script,
+                    Gem.Boot.Script,
                     'load',
                     (
                           "Load JavaScript code using a `<script>` tag.\n"
@@ -2468,10 +2465,10 @@ Gem.Core.codify_interim_method(
             //
             var Gem = window.Gem                                    //  Reload latest `Gem`
 
-            var Core   = Gem.Core
-            var Script = Gem.Script                                 //  Reload latest `Gem.Script`
+            var Core        = Gem.Core
+            var Boot_Script = Gem.Boot.Script                       //  Reload latest `Gem.Script`
 
-            var script_map = Gem.Script.script_map                  //  Reload latest `Gem.Script.script_map`
+            var script_map = Gem.Boot.Script.script_map             //  Reload latest `Gem.Boot.Script.script_map`
 
 
             //
@@ -2481,7 +2478,7 @@ Gem.Core.codify_interim_method(
 
 
             //
-            //  Gem.Script.load:
+            //  Gem.Boot.Script.load:
             //      Load JavaScript code using a `<script>` tag
             //      (NO ERROR HANDLING VERSION -- for an ancient browser).
             //
@@ -2502,7 +2499,7 @@ Gem.Core.codify_interim_method(
             //      for it.
             //
             method(
-                Gem.Script,
+                Gem.Boot.Script,
                 'load',
                 (
                       "Load JavaScript code using a `<script>` tag.\n"
@@ -2530,8 +2527,8 @@ Gem.Core.codify_interim_method(
 
 //
 //  Finish:
-//      1.  Codify Gem.Script.handle_event (if handling `<script>` errors);
-//      2.  Codify Gem.Script.load;
+//      1.  Codify Gem.Boot.Script.handle_event (if handling `<script>` errors);
+//      2.  Codify Gem.Boot.Script.load;
 //      3.  Cleanup unused attributes;
 //      4.  Protect this file from garbage collection (debug mode only);
 //      5.  Load next script file: "Gem/Beryl/Boot2_Manifest.js"
@@ -2544,22 +2541,22 @@ Gem.Core.execute(
         var Gem = window.Gem
 
         var _Core         = Gem._.Core
+        var Boot_Script   = Gem.Boot.Script
         var Configuration = Gem.Configuration
         var Source        = Gem.Source
-        var Script        = Gem.Script
 
         var clarity = Configuration.clarity
         var debug   = Configuration.debug
-//      var load    = Script.load                           //  Must be done below after `codify_load`
+//      var load    = Boot_Script.load              //  Must be done below after `codify_load`
         var trace   = Configuration.trace
 
 
         //
         //  Execute a codify of:
-        //      Gem.Script.load
+        //      Gem.Boot.Script.load
         //
         //  NOTE #1:
-        //      Also does cleanup of `Gem.Script.codify_load` if not in clarity mode.
+        //      Also does cleanup of `Gem.Boot.Script.codify_load` if not in clarity mode.
         //          Load JavaScript code using a `<script>` tag.
         //
         //  NOTE #2:
@@ -2569,11 +2566,11 @@ Gem.Core.execute(
             //
             //  Imports
             //
-            var handle_errors = Script.handle_errors
-            var codify_load   = Script.codify_load
+            var handle_errors = Boot_Script.handle_errors
+            var codify_load   = Boot_Script.codify_load
 
             if (handle_errors) {
-                var codify_handle_event = Script.codify_handle_event
+                var codify_handle_event = Boot_Script.codify_handle_event
             }
 
             //
@@ -2589,10 +2586,10 @@ Gem.Core.execute(
                 //  Clarity mode will call `codify_handle_error` and `codify_load` again later.
             } else {
                 if (handle_errors) {
-                    delete Gem.Script.codify_handle_error   //  Not clarity mode -- don't need to keep this around
+                    delete Gem.Boot.Script.codify_handle_error   //  Not clarity mode -- don't need to keep this around
                 }
 
-                delete Gem.Script.codify_load               //  Not clarity mode -- don't need to keep this around
+                delete Gem.Boot.Script.codify_load               //  Not clarity mode -- don't need to keep this around
             }
         }
 
@@ -2603,7 +2600,7 @@ Gem.Core.execute(
         /*section*/ {
             delete _Core        .constant_property
             delete Configuration.show_alert
-            delete Script       .event_list
+            delete Boot_Script  .event_list
         }
 
 
@@ -2624,7 +2621,7 @@ Gem.Core.execute(
         //
         //  Load next script
         //
-        var load = Script.load                              //  Must be done after `codify_load` above
+        var load = Boot_Script.load                         //  Must be done after `codify_load` above
 
         load('Gem/Beryl/Boot2_Manifest.js')
     }//,
