@@ -14,7 +14,7 @@
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         capture_error : true,                               //      Try to capture errors
-        clarity       : 1,                                  //      Set Gem clarity mode to true.
+        clarity       : 0,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
         trace         : 0,                                  //      Trace function, method & bound method calls.
@@ -57,6 +57,7 @@ window.Gem = {
         'Gem.Boot.Script.source_attribute',                     0,
         'Gem.Trace.wrap_constructor',                           0,
         'Gem.Trace.wrap_function',                              0,
+        'cocoon',                                               1,
         'interim$Gem__Core__method',                            0,
         'interim_constant_attribute',                           0,
         'ModuleExports$Box',                                    0,
@@ -66,6 +67,17 @@ window.Gem = {
     ],
 
     Boot : {                                                //  Temporary support code during boot process.
+        Source : {                                          //      Functions to "hold onto" for Developer Tools.
+            //  js_plugins_Beryl : Function                 //          Avoid garbage collection of '.../Beryl.js'.
+        },
+
+        NodeWebKit: {                                       //      Node WebKit members & methods.
+            //  is_NodeWebKit             : false           //          True if using nw.js
+            //  is_version_012_or_lower   : false           //          True if using nw.js version 0.12 or lower.
+            //  is_version_013_or_greater : false           //          True if using nw.js version 0.13 or greater.
+            //  show_developer_tools      : Function        //          Show developer tools window.
+        },
+
         Script : {                                          //      `<script>` handling during boot process.
             dynamic    : false,                             //      Whether the current script can be reloaded.
             event_list : ['abort', 'error', 'load'],        //          List of `<script>` events to listen for.
@@ -100,17 +112,6 @@ window.Gem = {
         //  constant              : Function                //      Store a global Gem constant.
         //  method                : Function                //      Define a Gem method.
         //  qualify_constant      : Function                //      Qualify a global Gem constant.
-    },
-
-    NodeWebKit: {                                           //  Node WebKit members & methods.
-        //  is_NodeWebKit             : false               //      True if using nw.js
-        //  is_version_012_or_lower   : false               //      True if using nw.js & it's version 0.12 or lower.
-        //  is_version_013_or_greater : false               //      True if using nw.js & it's version 0.13 or greater.
-        //  show_developer_tools      : Function            //      Show developer tools window.
-    },
-
-    Source : {                                              //  Functions to "hold onto" for Developer Tools.
-        //  js_plugins_Beryl : Function                     //      Avoid garbage collection of 'js/plugins/Beryl.js'>.
     },
 
     Trace : {                                               //  Map of functions, methods & bound_methods being traced.
@@ -302,10 +303,6 @@ if (Gem.Configuration.trace) {
 
                 return 0
             }
-
-
-            var tracing_execute = tracing('Gem.Core.execute')
-            var tracing_myself  = tracing('execute$setup_Tracing')
 
 
             //
@@ -670,21 +667,31 @@ if (Gem.Configuration.trace) {
             }
 
 
-            if (tracing_execute || tracing_myself) {
-                var execute = Core.execute
+            /*self-trace*/ {
+                var trace$execute__$who = 'Gem.Core.execute'
 
-                //
-                //  NOTE:
-                //      We use a fake `execute$setup_Tracing` here, as we don't have the real one (ourselves).
-                //
-                //      This is safer than use `arguments.callee` which is very STRONGLY deprecated.
-                //
-                var myself = function execute$setup_Tracing() {
+                var tracing_execute = tracing(trace$execute__$who)
+                var tracing_myself  = tracing('execute$setup_Tracing')
+
+
+                if (tracing_execute || tracing_myself) {
+                    var execute = Core.execute
+
+                    execute.$who = trace$execute__$who
+
+                    //
+                    //  NOTE:
+                    //      We use a fake `execute$setup_Tracing` here, as we don't have the real one (ourselves).
+                    //
+                    //      This is safer than use `arguments.callee` which is very STRONGLY deprecated.
+                    //
+                    var myself = function execute$setup_Tracing() {
+                    }
+
+
+                    if (tracing_execute) { function_call(execute, [myself]) }
+                    if (tracing_myself)  { function_call(myself)            }
                 }
-
-
-                if (tracing_execute) { function_call(execute, [myself]) }
-                if (tracing_myself)  { function_call(myself)            }
             }
 
 
@@ -937,6 +944,14 @@ if (Gem.Configuration.trace) {
             Trace.trace_call    = trace_call
             Trace.tracing       = tracing
             Trace.wrap_function = wrap_function
+
+            //
+            //  Finish tracing execute & myself
+            //
+            /*self-trace*/ {
+                if (tracing_execute) { procedure_done() }
+                if (tracing_myself)  { procedure_done() }
+            }
         }//,
     )
 } else {
@@ -995,9 +1010,10 @@ if (Gem.Configuration.trace) {
             var _             = Gem._
             var _Core         = _.Core
             var _Trace        = _.Trace
+            var Configuration = Gem.Configuration
             var Core          = Gem.Core
             var Trace         = Gem.Trace
-            var Configuration = Gem.Trace
+            var Tracing       = Gem.Tracing
 
             var cocoon             = Trace.cocoon
             var execute            = Core.execute
@@ -1021,11 +1037,11 @@ if (Gem.Configuration.trace) {
             //
             //      This is safer than using `arguments.callee` which is very STRONGLY deprecated.
             //
-            var myself = function execute$codify$trace$Gem__Core__execute() {
-            }
+            var myself              = function execute$codify$trace$Gem__Core__execute() {}
+            var trace$execute__$who = 'Gem.Core.execute'
 
 
-            var tracing_execute = tracing('Gem.Core.execute')
+            var tracing_execute = tracing(trace$execute__$who)
             var tracing_myself  = tracing(myself.name)
 
 
@@ -1034,9 +1050,6 @@ if (Gem.Configuration.trace) {
 
 
             /*execute*/ {
-                var trace$execute__$who = 'Gem.Core.execute'
-
-
                 var trace$execute = cocoon(
                     function trace$Gem__Core__execute(code) {
                         //  Execute code defined in a function.  This allows the use of local variables.
@@ -1345,12 +1358,13 @@ Gem.Core.execute(
             }
 
 
-            who_what(Gem,            'Gem',            'The only global variable used by Gem.',             false)
-            who_what(Gem.Boot.Script,'Gem.Boot.Sccript','Temporary',                                        true)
-            who_what(Gem.Core,       'Gem.Core',       'Basic support code for the Core Gem module.',       true)
-            who_what(Gem.NodeWebKit, 'Gem.NodeWebKit', 'Node WebKit members & methods.',                    true)
-            who_what(Gem.Trace,      'Gem.Trace',      'Exports the Trace module.',                         true)
-            who_what(Gem._.Core,     'Gem._.Core',     'Private members & methods of the Core Gem module.', true)
+            who_what(Gem,        'Gem',        'The only global variable used by Gem.',             false)
+            who_what(Gem._.Core, 'Gem._.Core', 'Private members & methods of the Core Gem module.', true)
+
+            who_what(Gem.Boot.NodeWebKit, 'Gem.Boot.NodeWebKit', 'Node WebKit members & methods.',              true)
+            who_what(Gem.Boot.Script,     'Gem.Boot.Script',     "`<script>` handling during boot process.",    false)
+            who_what(Gem.Core,            'Gem.Core',            'Basic support code for the Core Gem module.', true)
+            who_what(Gem.Trace,           'Gem.Trace',           'Exports the Trace module.',                   true)
         }
 
 
@@ -1890,14 +1904,14 @@ if (Gem.Configuration.clarity) {
 
 
 //
-//  Gem.NodeWebKit.is_version_012_or_lower                  - `true` if using nw.js & it's version 0.12 or lower.
-//  Gem.NodeWebKit.is_version_013_or_greater                - `true` if using nw.js & it's version 0.13 or greater.
+//  Gem.Boot.NodeWebKit.is_version_012_or_lower         - `true` if using nw.js & it's version 0.12 or lower.
+//  Gem.Boot.NodeWebKit.is_version_013_or_greater       - `true` if using nw.js & it's version 0.13 or greater.
 //
 //  NOTE:
-//      If not using nw.js, then both `Gem.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
+//      If not using nw.js, then both `Gem.Boot.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
 //
 Gem.Core.execute(
-    function execute$qualify__Gem__NodeWebKit__version() {
+    function execute$qualify__Gem__Boot__NodeWebKit__version() {
         //
         //  Imports
         //
@@ -1923,32 +1937,32 @@ Gem.Core.execute(
         //  Exports
         //
         Gem.Core.constant(
-            Gem.NodeWebKit,
+            Gem.Boot.NodeWebKit,
             'is_NodeWebKit',
-            "`Gem.NodeWebKit.is_nodeWebKit` is `true` if using nw.js",
+            "`Gem.Boot.NodeWebKit.is_nodeWebKit` is `true` if using nw.js",
             major >= 0//,
         )
 
 
         Gem.Core.constant(
-            Gem.NodeWebKit,
+            Gem.Boot.NodeWebKit,
             'is_version_012_or_lower',
             "`Gem.NodeWebKit.is_version_012_or_lower` is `true` if using nw.js & it's version 0.12 or lower.",
             (major === 0 && minor <= 12)//,
         )
 
         Gem.Core.constant(
-            Gem.NodeWebKit,
+            Gem.Boot.NodeWebKit,
             'is_version_013_or_higher',
-            "`Gem.NodeWebKit.is_version_013_or_higher` is `true` if using nw.js & it's version 0.13 or greater.",
+            "`Gem.Boot.NodeWebKit.is_version_013_or_higher` is `true` if using nw.js & it's version 0.13 or greater.",
             (major >  0 || minor >= 13)//,
         )
 
         Gem.Core.clarity_note(
-            Gem.NodeWebKit,
+            Gem.Boot.NodeWebKit,
             'is_version_{012_or_lower,013_or_higher}',
             (
-                  "If not using nw.js, then both `Gem.NodeWebkit.is_version_{012_or_lower,013_or_higher}`"
+                  "If not using nw.js, then both `Gem.Boot.NodeWebkit.is_version_{012_or_lower,013_or_higher}`"
                 + " will be `false`."
             )//,
         )
@@ -1957,33 +1971,33 @@ Gem.Core.execute(
 
 
 //
-//  Gem.NodeWebKit.show_developer_tools
+//  Gem.Boot.NodeWebKit.show_developer_tools
 //      Show developer tools.
 //
-if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer tools (nw.js 0.12 or lower)
+if (Gem.Boot.NodeWebKit.is_version_012_or_lower) {              //  Show developer tools (nw.js 0.12 or lower)
     Gem.Core.codify_method(
-        Gem.NodeWebKit,
+        Gem.Boot.NodeWebKit,
         'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower).',
-        function codifier$Gem__NodeWebKit__show_developer_tools() {
+        function codifier$Gem__Boot__NodeWebKit__show_developer_tools() {
             var game_window = require('nw.gui').Window.get()
 
-            return function Gem__NodeWebKit__show_developer_tools() {
+            return function Gem__Boot__NodeWebKit__show_developer_tools() {
                 //  Show developer tools (nw.js 0.12 or lower).
 
                 game_window.showDevTools()
             }
         }
     )
-} else if (Gem.NodeWebKit.is_version_013_or_higher) {       //  Show developer tools (nw.js 0.13 or higher)
+} else if (Gem.Boot.NodeWebKit.is_version_013_or_higher) {      //  Show developer tools (nw.js 0.13 or higher)
     Gem.Core.codify_method(
-        Gem.NodeWebKit,
+        Gem.Boot.NodeWebKit,
         'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher).',
-        function codifier$Gem__NodeWebKit__show_developer_tools() {
+        function codifier$Gem__Boot__NodeWebKit__show_developer_tools() {
             var game_window = nw.Window.get()
 
-            return function Gem__NodeWebKit__show_developer_tools() {
+            return function Gem__Boot__NodeWebKit__show_developer_tools() {
                 //  Show developer tools (nw.js 0.13 or higher).
 
                 //
@@ -1998,10 +2012,10 @@ if (Gem.NodeWebKit.is_version_012_or_lower) {               //  Show developer t
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
     Gem.Core.method(
-        Gem.NodeWebKit,
+        Gem.Boot.NodeWebKit,
         'show_developer_tools',
         "Empty function -- Not using nw.js: Don't show developer tools.",
-        function Gem__NodeWebKit__show_developer_tools() {
+        function Gem__Boot__NodeWebKit__show_developer_tools() {
             //  Empty function -- Not using nw.js: Don't show developer tools.
         }
     )
@@ -2026,7 +2040,7 @@ Gem.Core.constant(
     "`Gem.Boot.Script.handle_errors` is `true` if handling `<script>` errors.",
     (
            Gem.Configuration.capture_error                  //  1.  Configured to capture errors;
-        && Gem.NodeWebKit.is_NodeWebKit                     //  2.  This is running under nw.js;
+        && Gem.Boot.NodeWebKit.is_NodeWebKit                //  2.  This is running under nw.js;
         && (                                                
                   ('Utils' in window)                       //  3.  This is running in RPG Maker MV ...
                && Utils.isOptionValid('test')               //      ... "test" mode;
@@ -2101,12 +2115,31 @@ if (Gem.Boot.Script.handle_errors) {
         'error',
         'Show an error (either with alert or console.error).',
         function codifier$Gem__Script__error() {
-            var show_developer_tools = Gem.NodeWebKit.show_developer_tools
+            //
+            //  Imports
+            //
+            var Gem = window.Gem
+
+            var Boot_NodeWebKit = Gem.Boot.NodeWebKit
+            var Configuration   = Gem.Configuration
+
+            var show_alert           = Configuration.show_alert
+            var show_developer_tools = Boot_NodeWebKit.show_developer_tools
+            var trace                = Configuration.trace
 
 
-            if (Gem.Configuration.show_alert) {
+            //
+            //  Implementation
+            //
+            if (show_alert) {
+                //
+                //  Imports: alert version
+                //
                 var alert = window.alert
 
+                //
+                //  Implementation: alert version
+                //
                 return function Gem__Script__error(message) {
                     alert(message + '\n' + 'Please see Developer Tools for full error')
                     show_developer_tools()
@@ -2114,6 +2147,14 @@ if (Gem.Boot.Script.handle_errors) {
             }
 
 
+            //
+            //  Import: console version
+            //
+            var console = window.console
+
+            //
+            //  Implementation: console version
+            //
             if ('bind' in console.error) {
                 var console_error = console.error.bind(console)
             } else {
@@ -2321,7 +2362,7 @@ Gem.Core.qualify_constant.call(
 //
 //      This routine can be called multiple times:
 //
-//          1.  Here;
+//          1.  Initially;
 //          2.  Again, in clarity mode, after `Gem` is replaced.
 //
 Gem.Core.codify_interim_method(
@@ -2332,10 +2373,10 @@ Gem.Core.codify_interim_method(
         + '\n'
         + 'This routine can be called multiple times:\n'
         + '\n'
-        + '    1.  Here;\n'
+        + '    1.  Initially;\n'
         + "    2.  Again, in Clarity mode, after global variable `Gem` is replaced."
     ),
-    function codifier$Gem__Script__codify_load() {
+    function codifier$Gem__Boot__Script__codify_load() {
         //
         //  Imports
         //
@@ -2376,35 +2417,17 @@ Gem.Core.codify_interim_method(
         }
 
 
-        //
-        //  Gem.Boot.Script.codify_load
-        //      Codify method `Gem.Boot.Script.load`.
-        //
-        //      This routine can be called multiple times:
-        //
-        //          1.  Here;
-        //          2.  Again, in clarity mode, after `Gem` is replaced.
-        //
         if (handle_errors) {
-            return function interim$Gem__Script__codify_load(interim) {
+            return function interim$Gem__Script__codify_load(Script) {
+                //  Codify method `Gem.Boot.Script.load`.
                 //
-                //  Imports
-                //       If Gem has changed in clarity mode, we need to reload a few variables ...
+                //  This routine can be called multiple times:
                 //
-                var Gem = window.Gem                                    //  Reload latest `Gem`
+                //      1.  Initially;
+                //      2.  Again, in clarity mode, after `Gem` is replaced.
 
-                var Core        = Gem.Core
-                var Boot_Script = Gem.Boot.Script                       //  Reload latest `Gem.Script`
-
-                var script_map          = Gem.Boot.Script.script_map    //  Reload latest `Gem.Boot.Script.script_map`
-                var script_handle_event = Gem.Boot.Script.handle_event  //  Reload latest `Gem.Boot.Script.handle_event`
-
-
-                //
-                //  Implementation
-                //
-                var method = (interim ? Core.interim_method : Core.method)
-
+                var script_map          = Script.script_map    //  Reload latest `Gem.Boot.Script.script_map`
+                var script_handle_event = Script.handle_event  //  Reload latest `Gem.Boot.Script.handle_event`
 
                 //
                 //  Gem.Boot.Script.load
@@ -2427,8 +2450,8 @@ Gem.Core.codify_interim_method(
                 //          Hence we have to set the 'abort', 'error', & 'load' events on each individual
                 //          `<script>` tag.
                 //
-                method(
-                    Gem.Boot.Script,
+                Gem.Core.method(
+                    Script,
                     'load',
                     (
                           "Load JavaScript code using a `<script>` tag.\n"
@@ -2458,23 +2481,15 @@ Gem.Core.codify_interim_method(
         }
 
 
-        return function Gem__Script__codify_load(interim) {
+        return function Gem__Script__codify_load(Script) {
+            //  Codify method `Gem.Boot.Script.load`.
             //
-            //  Imports
-            //       If Gem has changed in clarity mode, we need to reload a few variables ...
+            //  This routine can be called multiple times:
             //
-            var Gem = window.Gem                                    //  Reload latest `Gem`
+            //      1.  Initially;
+            //      2.  Again, in clarity mode, after `Gem` is replaced.
 
-            var Core        = Gem.Core
-            var Boot_Script = Gem.Boot.Script                       //  Reload latest `Gem.Script`
-
-            var script_map = Gem.Boot.Script.script_map             //  Reload latest `Gem.Boot.Script.script_map`
-
-
-            //
-            //  Implementation
-            //
-            var method = (interim ? Core.interim_method : Core.method)
+            var script_map = Script.script_map             //  Reload latest `Gem.Boot.Script.script_map`
 
 
             //
@@ -2498,8 +2513,8 @@ Gem.Core.codify_interim_method(
             //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test
             //      for it.
             //
-            method(
-                Gem.Boot.Script,
+            Gem.Core.method(
+                Script,
                 'load',
                 (
                       "Load JavaScript code using a `<script>` tag.\n"
@@ -2540,10 +2555,12 @@ Gem.Core.execute(
         //
         var Gem = window.Gem
 
-        var _Core         = Gem._.Core
-        var Boot_Script   = Gem.Boot.Script
-        var Configuration = Gem.Configuration
-        var Source        = Gem.Source
+        var _Core           = Gem._.Core
+        var Boot            = Gem.Boot
+        var Boot_NodeWebKit = Boot.NodeWebKit
+        var Boot_Script     = Boot.Script
+        var Boot_Source     = Boot.Source
+        var Configuration   = Gem.Configuration
 
         var clarity = Configuration.clarity
         var debug   = Configuration.debug
@@ -2569,27 +2586,25 @@ Gem.Core.execute(
             var handle_errors = Boot_Script.handle_errors
             var codify_load   = Boot_Script.codify_load
 
-            if (handle_errors) {
-                var codify_handle_event = Boot_Script.codify_handle_event
-            }
-
             //
             //  Implementation
             //
             if (handle_errors) {
-                codify_handle_event(clarity)            //  Call first time here ...
+                var codify_handle_event = Boot_Script.codify_handle_event
+
+                codify_handle_event(Gem.Configuration.clarity)      //  Call first time here ...
             }
 
-            codify_load(clarity)                        //  Call first time here ...
+            codify_load(Boot_Script)
 
             if (clarity) {
                 //  Clarity mode will call `codify_handle_error` and `codify_load` again later.
             } else {
-                if (handle_errors) {
-                    delete Gem.Boot.Script.codify_handle_error   //  Not clarity mode -- don't need to keep this around
-                }
+                delete Boot_Script.codify_load                  //  Not clarity mode -- don't need to keep this around
 
-                delete Gem.Boot.Script.codify_load               //  Not clarity mode -- don't need to keep this around
+                if (handle_errors) {
+                    delete Boot_Script.codify_handle_error      //  Not clarity mode -- don't need to keep this around
+                }
             }
         }
 
@@ -2614,7 +2629,7 @@ Gem.Core.execute(
         //      JavaScript file that has been loaded in.
         //
         if (debug) {
-            Source.js_plugins_Beryl = Gem.NodeWebKit.show_developer_tools
+            Boot_Source.js_plugins_Beryl = Boot_NodeWebKit.show_developer_tools
         }
 
 

@@ -50,11 +50,9 @@ Gem.Core.execute(
             false//,
         )
 
-        who_what(Gem.Configuration, 'Gem.Configuration', 'Gem Configuration values.', false)
-
         who_what(
-            Gem.Source,
-            'Gem.Source',
+            Gem.Boot.Source,
+            'Gem.Boot.Source',
             (
                   'A map, for each `<script>` tag, a function from the source file to "hold onto"'
                 + ' to avoid garbage collection of all functions from that source file'
@@ -62,6 +60,8 @@ Gem.Core.execute(
             ),
             false//,
         )
+
+        who_what(Gem.Configuration, 'Gem.Configuration', 'Gem Configuration values.', false)
 
         who_what(Gem.Tracing, 'Gem.Tracing', 'Map of functions, methods & bound_methods being traced.', false)
         who_what(Gem._,       'Gem._',       'Private members & methods of all Gem modules.',           false)
