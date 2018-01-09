@@ -99,30 +99,36 @@ window.Gem = {
             //  zap_pending__1_to_end : Function            //          Internal routine to clean up 'Trace.pending'.
             }//,
         }//,
-
-    },
-
-
-    _ : {                                                   //  Private members & methods of all Gem modules.
     }//,
 }
 
 
-if (Gem.Configuration.trace) {
-    Gem.Boot.Core.execute(
-        function execute$setup_Tracing() {
+Gem.Boot.Core.execute(
+    function execute$setup_Tracing() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Boot          = Gem.Boot
+        var Boot_Trace    = Boot.Trace
+        var Configuration = Gem.Configuration
+
+        var trace = Configuration.trace
+
+
+        //
+        //  Implementation
+        //
+        if (trace) {
             //
-            //  Imports
+            //  Imports: Trace version
             //
             var console = window.console
-            var Gem     = window.Gem
             var Pattern = window.RegExp
 
-            var Boot          = Gem.Boot
-            var _Boot_Trace   = Boot._Trace
-            var Boot_Core     = Boot.Core
-            var Boot_Trace    = Boot.Trace
-            var Configuration = Gem.Configuration
+            var _Boot_Trace = Boot._Trace
+            var Boot_Core  = Boot.Core
 
             var clarity                     = Configuration.clarity
             var create_Object               = Object.create
@@ -916,21 +922,9 @@ if (Gem.Configuration.trace) {
                 if (tracing_execute) { procedure_done() }
                 if (tracing_myself)  { procedure_done() }
             }
-        }//,
-    )
-} else {
-    Gem.Boot.Core.execute(
-        function execute$setup_Tracing() {
+        } else {
             //
-            //  Imports
-            //
-            var Gem = window.Gem
-
-            var Boot_Trace = Gem.Boot.Trace
-
-
-            //
-            //  Implementation
+            //  Implementation: non trace version
             //
             Boot_Trace.cocoon = function interim$Gem__Trace__cocoon(f) {
                 return f
@@ -949,9 +943,9 @@ if (Gem.Configuration.trace) {
             Boot_Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                 return f
             }
-        }//,
-    )
-}
+        }
+    }//,
+)
 
 
 //
@@ -1016,7 +1010,8 @@ if (Gem.Configuration.trace) {
             /*execute*/ {
                 var trace$execute = cocoon(
                     function trace$Gem__Boot__Core__execute(code) {
-                        //  Execute code defined in a function.  This allows the use of local variables.
+                        //  Self-tracing version of:
+                        //      Execute code defined in a function.  This allows the use of local variables.
 
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
@@ -1026,7 +1021,7 @@ if (Gem.Configuration.trace) {
                             Boot_Tracing[name] = 0
                         }
 
-                        var tracing_code    = (trace === 7 || (trace && Boot_Tracing[code.name]))
+                        var tracing_code = (trace === 7 || (trace && Boot_Tracing[code.name]))
 
                         if (tracing_execute) { function_call(trace$execute, arguments) }
                         if (tracing_code)    { function_call(code)                     }
@@ -1045,7 +1040,7 @@ if (Gem.Configuration.trace) {
 
             if (tracing_myself)  { procedure_done() }
             if (tracing_execute) { procedure_done() }
-        }
+        }//,
     )
 }
 
@@ -1056,7 +1051,6 @@ if (Gem.Configuration.trace) {
 //
 Gem.Boot.Core.execute(
     function execute$setup_Gem() {
-        //
         //
         //  Imports
         //
@@ -1260,8 +1254,8 @@ Gem.Boot.Core.execute(
 
                 var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
                     if (create_prefix) {
-                        if ($who.startsWith('Gem._.')) {
-                            var _prefix = $who.replace('Gem._.', 'Gem__private__')
+                        if ($who.startsWith('Gem.Boot._.')) {
+                            var _prefix = $who.replace('Gem.Boot._.', 'Gem__Boot__private__')
                         } else {
                             var _prefix = $who.replace('.', '__')
                         }
@@ -1415,7 +1409,6 @@ Gem.Boot.Core.execute(
 
                     if (clarity) {
                         if ( ! ('$who' in instance)) {
-                            debugger
                             throw new Error('method_no_trace: missing $who in object')
                         }
 
@@ -1498,7 +1491,7 @@ Gem.Boot.Core.execute(
                             constant_attribute(instance, who, wrapped_method)
                         }
                     },
-                    'Gem._.Trace.traced_method__common'//,
+                    'Gem.Boot._.Trace.traced_method__common'//,
                 )
 
 
@@ -1856,7 +1849,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem._.Trace.traced_method__common
+        //  Gem.Boot._.Trace.traced_method__common
         //
         if (trace) {
             traced_method(
@@ -2593,7 +2586,7 @@ Gem.Boot.Core.codify_interim_method(
                           "Load JavaScript code using a `<script>` tag.\n"
                         + '(Version for a modern browser).'
                     ),
-                    function Gem__Script__load(path) {
+                    function Gem__Boot__Script__load(path) {
                         //  Load JavaScript code using a `<script>` tag.
                         //  (Version for a modern browser).
 
@@ -2656,7 +2649,7 @@ Gem.Boot.Core.codify_interim_method(
                       "Load JavaScript code using a `<script>` tag.\n"
                     + '(NO ERROR HANDLING VERSION -- for an ancient browser).'
                 ),
-                function Gem__Script__load(path) {
+                function Gem__Boot__Script__load(path) {
                     //  Load JavaScript code using a `<script>` tag
                     //  (NO ERROR HANDLING VERSION -- for an ancient browser).
 
