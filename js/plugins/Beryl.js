@@ -24,9 +24,6 @@ window.Gem = {
         }//,
     },
 
-    Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-    ],
-
     Boot : {                                                //  Temporary support code during boot process.
         Core : {                                            //      Basic support code for the Core Gem module.
             execute : function Gem__Core__execute(code) {
@@ -72,34 +69,41 @@ window.Gem = {
             //  handle_global_error : Function              //          Handle errors when executing a `<script>` tag>.
             //  handle_event        : Function              //          Handle events of `<script>` tags>.
             //  source_attribute    : Function              //          Get unmodified `.src` attribute.
-        }//,
-    },
+        },
 
-    Trace : {                                               //  Map of functions, methods & bound_methods being traced.
-//      //  method_call     : Function          [TODO]      //      Start a trace group for a method call.
-//      //  trace_line      : Function          [MOVE]      //      Start a trace group.
-        traced_method : Function,                           //      Store a traced Gem method.
-        tracing       : Function,                           //      Returns the trace configuration for a routine.
-        trace_call    : Function,                           //      Trace a function call.
-        wrap_function : Function//,                         //      Wrap a function with tracing.
+        Trace : {                                           //      Map of functions, methods ... being traced.
+    //      //  method_call     : Function          [TODO]  //          Start a trace group for a method call.
+    //      //  trace_line      : Function          [MOVE]  //          Start a trace group.
+            traced_method : Function,                       //          Store a traced Gem method.
+            tracing       : Function,                       //          Returns the trace configuration for a routine.
+            trace_call    : Function,                       //          Trace a function call.
+            wrap_function : Function//,                     //          Wrap a function with tracing.
+        },
+
+        Tracing : [                                         //      Functions, methods, & bound_methods being traced.
+        ],
+
+        _ : {                                               //      Private members & methods of all Gem modules.
+            Core : {                                        //          Private members & ... Boot.Core Gem module.
+                //  clarity_mode$global_variable_Gem_changed : []   //  Callbacks to call when `Gem` is changed.
+            },
+
+            Trace : {                                       //      Private members & methods of the Trace module.
+                depth   : 0,                                //          Current tracing depth.
+                pending : []//,                             //          Pending format to start a tracing group.
+            //  function_call         : Function            //          Start a trace group for a function call.
+            //  function_result       : Function            //          Finish a function with a result
+            //  group_stop            : Bound Function      //          Stop a group on the console.
+            //  procedure_done        : Function            //          Finish a procedure (no result shown).
+            //  trace_value           : Function            //          Show a value for tracing.
+            //  zap_pending__1_to_end : Function            //          Internal routine to clean up 'Trace.pending'.
+            }//,
+        }//,
+
     },
 
 
     _ : {                                                   //  Private members & methods of all Gem modules.
-        Core : {                                            //      Private members & methods of the Core Gem module.
-        //  clarity_mode$global_variable_Gem_changed : []   //      Callbacks to call when `Gem` is changed.
-        },
-
-        Trace : {                                           //      Private members & methods of the Trace module.
-            depth   : 0,                                    //          Current tracing depth.
-            pending : []//,                                 //          Pending format to start a tracing group.
-        //  function_call         : Function                //          Start a trace group for a function call.
-        //  function_result       : Function                //          Finish a function with a result
-        //  group_stop            : Bound Function          //          Stop a group on the console.
-        //  procedure_done        : Function                //          Finish a procedure (no result shown).
-        //  trace_value           : Function                //          Show a value for tracing.
-        //  zap_pending__1_to_end : Function                //          Internal routine to clean up 'Trace.pending'.
-        }//,
     }//,
 }
 
@@ -114,18 +118,17 @@ if (Gem.Configuration.trace) {
             var Gem     = window.Gem
             var Pattern = window.RegExp
 
-            var _             = Gem._
-            var _Core         = _.Core
-            var _Trace        = _.Trace
+            var Boot          = Gem.Boot
+            var _Boot_Trace   = Boot._Trace
+            var Boot_Core     = Boot.Core
+            var Boot_Trace    = Boot.Trace
             var Configuration = Gem.Configuration
-            var Core          = Gem.Boot.Core
-            var Trace         = Gem.Trace
 
             var clarity                     = Configuration.clarity
             var create_Object               = Object.create
             var define_properties           = Object.defineProperties
             var define_property             = Object.defineProperty
-            var pending                     = _Trace.pending
+            var pending                     = _Boot_Trace.pending
 //          var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_start_open   = console.group
             var unbound__group_stop         = console.groupEnd
@@ -224,42 +227,42 @@ if (Gem.Configuration.trace) {
             //              ['Gem.Boot.Core.execute'] : 7,
             //          }
             //
-            var tracing_list  = Gem.Tracing
+            var tracing_list  = Boot.Tracing
             var tracing_total = tracing_list.length
 
-            var Tracing     =
-                Gem.Tracing = {}
+            var Boot_Tracing     =
+                Gem.Boot.Tracing = {}
 
 
             for (var i = 0; i < tracing_total; i += 2) {
                 var k = tracing_list[i]
                 var v = tracing_list[i + 1]
 
-                Tracing[k] = v
+                Boot_Tracing[k] = v
             }
 
 
             //
-            //  Gem.Tracing.trace
+            //  Gem.Boot.Trace.tracing
             //      Return the trace value for function `name`.
             //
             //  Algorithm:
             //      If `Gem.Configuration.trace` is either 0 (off) or 7 (on always):
             //              Then return `Gem.Configuration.trace`;
             //
-            //      Otherwise, return the value of Tracing[name] (if it exists);
+            //      Otherwise, return the value of `Gem.Boot.Tracing[name]` (if it exists);
             //
             //      Otherwise, return 0 (tracing off).
             //
-            var tracing = function Gem__Trace__tracing(name) {
+            var tracing = function Gem__Boot__Trace__tracing(name) {
                 var trace = Configuration.trace             //  Get newest value of 'trace'
 
                 if (trace === 0 || trace === 7) {
                     return trace
                 }
 
-                if (name in Tracing) {
-                    return Tracing[name]
+                if (name in Boot_Tracing) {
+                    return Boot_Tracing[name]
                 }
 
                 return 0
@@ -544,7 +547,7 @@ if (Gem.Configuration.trace) {
                     zap_pending__1_to_end()
                 }
 
-                _Trace.depth += 1
+                _Boot_Trace.depth += 1
 
                 if (arguments.length === 3) {
                     var colored_function_name = '%c' + function_name + '%c'
@@ -636,7 +639,7 @@ if (Gem.Configuration.trace) {
 
 
                 if (tracing_execute || tracing_myself) {
-                    var execute = Core.execute
+                    var execute = Boot_Core.execute
 
                     execute.$who = trace$execute__$who
 
@@ -672,7 +675,7 @@ if (Gem.Configuration.trace) {
                     group_stop()
                 }
 
-                _Trace.depth -= 1
+                _Boot_Trace.depth -= 1
             }
 
 
@@ -700,7 +703,7 @@ if (Gem.Configuration.trace) {
                 }
 
 
-                _Trace.depth -= 1
+                _Boot_Trace.depth -= 1
             }
 
 
@@ -708,11 +711,11 @@ if (Gem.Configuration.trace) {
                 var trace = Configuration.trace             //  Get newest value of 'trace'
                 var name  = f.name
 
-                if ( ! (name in Tracing)) {
-                    Tracing[name] = 0
+                if ( ! (name in Boot_Tracing)) {
+                    Boot_Tracing[name] = 0
                 }
 
-                if (trace === 7 || (trace && Tracing[name])) {
+                if (trace === 7 || (trace && Boot_Tracing[name])) {
                     function_call(f)
 
                     var result = f()
@@ -733,8 +736,8 @@ if (Gem.Configuration.trace) {
             //      Creates attributes `.$trace` and `.$who` for self traced functions.
             //
             /*cocoon*/ {
-                if ( ! ('cocoon' in Tracing)) {
-                    Tracing.cocoon = 0
+                if ( ! ('cocoon' in Boot_Tracing)) {
+                    Boot_Tracing.cocoon = 0
                 }
 
 
@@ -745,7 +748,7 @@ if (Gem.Configuration.trace) {
 
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var tracing_self = (trace === 7 || (trace && Tracing.cocoon))
+                    var tracing_self = (trace === 7 || (trace && Boot_Tracing.cocoon))
 
                     if (tracing_self) {
                         function_call(cocoon, arguments)
@@ -785,10 +788,10 @@ if (Gem.Configuration.trace) {
 
 
             /*wrap_function*/ {
-                var wrap_function__$who = 'Gem.Trace.wrap_function'
+                var wrap_function__$who = 'Gem.Boot.Trace.wrap_function'
 
-                if ( ! (wrap_function__$who in Tracing)) {
-                    Tracing[wrap_function__$who] = 0
+                if ( ! (wrap_function__$who in Boot_Tracing)) {
+                    Boot_Tracing[wrap_function__$who] = 0
                 }
 
 
@@ -800,10 +803,10 @@ if (Gem.Configuration.trace) {
                 //      but that gets too confusing, especially when using F10/F11 in developer tools).
                 //
                 var wrap_function = cocoon(
-                    function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
+                    function interim$Gem__Boot__Trace__wrap_function(f, /*optional*/ function_name) {
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                        var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
+                        var trace_self = (trace === 7 || (trace && Boot_Tracing[wrap_function__$who]))
 
                         if (trace_self) {
                             function_call(wrap_function, arguments)
@@ -830,8 +833,8 @@ if (Gem.Configuration.trace) {
                             }
                         }
 
-                        if ( ! (name in Tracing)) {
-                            Tracing[name] = 0
+                        if ( ! (name in Boot_Tracing)) {
+                            Boot_Tracing[name] = 0
                         }
 
 
@@ -843,7 +846,7 @@ if (Gem.Configuration.trace) {
                         var interim$wrap = function interim$wrap(/*...*/) {
                             var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                            if (trace === 7 || (trace && Tracing[name])) {
+                            if (trace === 7 || (trace && Boot_Tracing[name])) {
                                 function_call(f, arguments, name)
 
                                 var r = f.apply(this, arguments)
@@ -886,25 +889,25 @@ if (Gem.Configuration.trace) {
             //
             //  Private
             //
-            _Trace.function_call         = function_call
-            _Trace.function_result       = function_result
-            _Trace.group_stop            = group_stop
-            _Trace.procedure_done        = procedure_done
-            _Trace.push_color_green      = push_color_green
-            _Trace.push_color_blue       = push_color_blue
-            _Trace.push_color_none       = push_color_none
-            _Trace.trace_attribute       = trace_attribute
-            _Trace.trace_value           = trace_value
-            _Trace.zap_pending__1_to_end = zap_pending__1_to_end
+            _Boot_Trace.function_call         = function_call
+            _Boot_Trace.function_result       = function_result
+            _Boot_Trace.group_stop            = group_stop
+            _Boot_Trace.procedure_done        = procedure_done
+            _Boot_Trace.push_color_green      = push_color_green
+            _Boot_Trace.push_color_blue       = push_color_blue
+            _Boot_Trace.push_color_none       = push_color_none
+            _Boot_Trace.trace_attribute       = trace_attribute
+            _Boot_Trace.trace_value           = trace_value
+            _Boot_Trace.zap_pending__1_to_end = zap_pending__1_to_end
 
 
             //
             //  Export
             //
-            Trace.cocoon        = cocoon
-            Trace.trace_call    = trace_call
-            Trace.tracing       = tracing
-            Trace.wrap_function = wrap_function
+            Boot_Trace.cocoon        = cocoon
+            Boot_Trace.trace_call    = trace_call
+            Boot_Trace.tracing       = tracing
+            Boot_Trace.wrap_function = wrap_function
 
             //
             //  Finish tracing execute & myself
@@ -923,27 +926,27 @@ if (Gem.Configuration.trace) {
             //
             var Gem = window.Gem
 
-            var Trace = Gem.Trace
+            var Boot_Trace = Gem.Boot.Trace
 
 
             //
             //  Implementation
             //
-            Trace.cocoon = function interim$Gem__Trace__cocoon(f) {
+            Boot_Trace.cocoon = function interim$Gem__Trace__cocoon(f) {
                 return f
             }
 
-            Trace.trace_call = function interim$Gem__Trace__trace_call(f) {
+            Boot_Trace.trace_call = function interim$Gem__Trace__trace_call(f) {
                 return f()
             }
 
 
-            Trace.tracing = function interim$Gem__Trace__tracing(name) {
+            Boot_Trace.tracing = function interim$Gem__Trace__tracing(name) {
                 return 0
             }
 
 
-            Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
+            Boot_Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
                 return f
             }
         }//,
@@ -969,19 +972,18 @@ if (Gem.Configuration.trace) {
             //
             var Gem = window.Gem
 
-            var _             = Gem._
-            var _Core         = _.Core
-            var _Trace        = _.Trace
+            var Boot          = Gem.Boot
+            var _Boot_Trace   = Boot._Trace
+            var Boot_Core     = Boot.Core
+            var Boot_Trace    = Boot.Trace
+            var Boot_Tracing  = Boot.Tracing
             var Configuration = Gem.Configuration
-            var Core          = Gem.Boot.Core
-            var Trace         = Gem.Trace
-            var Tracing       = Gem.Tracing
 
-            var cocoon             = Trace.cocoon
-            var execute            = Core.execute
-            var function_call      = _Trace.function_call
-            var procedure_done     = _Trace.procedure_done
-            var tracing            = Trace.tracing
+            var cocoon             = Boot_Trace.cocoon
+            var execute            = Boot_Core.execute
+            var function_call      = _Boot_Trace.function_call
+            var procedure_done     = _Boot_Trace.procedure_done
+            var tracing            = Boot_Trace.tracing
 
 
             //
@@ -1018,8 +1020,13 @@ if (Gem.Configuration.trace) {
 
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                        var tracing_execute = (trace === 7 || (trace && Tracing[trace$execute__$who]))
-                        var tracing_code    = (trace === 7 || (trace && Tracing[code.name]))
+                        var tracing_execute = (trace === 7 || (trace && Boot_Tracing[trace$execute__$who]))
+
+                        if ( ! (code.name in Boot_Tracing)) {
+                            Boot_Tracing[name] = 0
+                        }
+
+                        var tracing_code    = (trace === 7 || (trace && Boot_Tracing[code.name]))
 
                         if (tracing_execute) { function_call(trace$execute, arguments) }
                         if (tracing_code)    { function_call(code)                     }
@@ -1032,7 +1039,7 @@ if (Gem.Configuration.trace) {
                     trace$execute__$who//,
                 )
 
-                Gem.Boot.Core.execute = trace$execute    //  TEMPORARY as "iterim mutable": Changed below to "constant"
+                Boot_Core.execute = trace$execute       //  TEMPORARY as "iterim mutable": Changed below to "constant"
             }
 
 
@@ -1055,35 +1062,31 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var _             = Gem._
-        var _Core         = _.Core
-        var _Trace        = _.Trace
         var Boot          = Gem.Boot
+        var _Boot_Core    = Boot._.Core
         var Boot_Core     = Boot.Core
         var Boot_Script   = Boot.Script
+        var Boot_Trace    = Boot.Trace
         var Configuration = Gem.Configuration
-        var Core          = Gem.Boot.Core
-        var Trace         = Gem.Trace
-        var Tracing       = Gem.Tracing
 
         var clarity            = Configuration.clarity
-        var cocoon             = Trace.cocoon
+        var cocoon             = Boot_Trace.cocoon
         var create_Object      = Object.create
         var define_properties  = Object.defineProperties
         var define_property    = Object.defineProperty
         var trace              = Configuration.trace
-        var trace_call         = Trace.trace_call
-        var wrap_function      = Trace.wrap_function
+        var trace_call         = Boot_Trace.trace_call
+        var wrap_function      = Boot_Trace.wrap_function
 
         if (trace) {
-            var _Trace  = Gem._.Trace
-            var Tracing = Gem.Tracing
+            var _Boot_Trace  = Boot._.Trace
+            var Boot_Tracing = Boot.Tracing
 
-            var function_call   = _Trace.function_call
-            var procedure_done  = _Trace.procedure_done
-            var trace_attribute = _Trace.trace_attribute
-            var trace_value     = _Trace.trace_value
-            var tracing         = Trace.tracing
+            var function_call   = _Boot_Trace.function_call
+            var procedure_done  = _Boot_Trace.procedure_done
+            var trace_attribute = _Boot_Trace.trace_attribute
+            var trace_value     = _Boot_Trace.trace_value
+            var tracing         = Boot_Trace.tracing
         }
 
 
@@ -1139,7 +1142,11 @@ Gem.Boot.Core.execute(
                         /*trace*/ {
                             var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                            if (trace === 7 || (trace && Tracing['constant_$who_$what_attributes'])) {
+                            if (trace && ! ('constant_$who_$what_attributes' in Boot_Tracing)) {
+                                Boot_Tracing.constant_$who_$what_attributes = 0
+                            }
+
+                            if (trace === 7 || (trace && Boot_Tracing.constant_$who_$what_attributes)) {
                                 trace_attribute('constant', instance, '$who',  $who)
                                 trace_attribute('constant', instance, '$what', $what)
                             }
@@ -1164,10 +1171,10 @@ Gem.Boot.Core.execute(
         //  Implementation
         //
         /*constant_attribute*/ {
-            var constant_attribute__$who = 'Gem._.Core.constant_attribute'
+            var constant_attribute__$who = 'Gem.Boot._.Core.constant_attribute'
 
-            if ( ! (constant_attribute__$who in Tracing)) {
-                Tracing[constant_attribute__$who] = 0
+            if (trace && ! (constant_attribute__$who in Boot_Tracing)) {
+                Boot_Tracing[constant_attribute__$who] = 0
             }
 
 
@@ -1177,10 +1184,14 @@ Gem.Boot.Core.execute(
 
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
+                    var tracing_self = (trace === 7 || (trace && Boot_Tracing[constant_attribute__$who]))
 
                     if (tracing_self) {
                         function_call(constant_attribute, arguments)
+                    }
+
+                    if (typeof instance !== 'object' && typeof instance !== 'function') {
+                        debugger
                     }
 
                     /*=*/ {
@@ -1205,30 +1216,37 @@ Gem.Boot.Core.execute(
         }
 
 
-        var interim_constant_attribute = wrap_function(
-            function interim_constant_attribute(instance, name, value) {
-                //  Create an interim (reconfigurable) constant attribute.
+        /*interim_constant_attribute*/ {
+            if (trace && ! ('interim_constant_attribute' in Boot_Tracing)) {
+                Boot_Tracing.interim_constant_attribute = 0
+            }
 
-                /*=*/ {
-                    //  interim constant instance.*name = value
-                    interim_constant_property.value = value
-                    define_property(instance, name, interim_constant_property)
-                    interim_constant_property.value = undefined
 
-                    /*trace*/ {
-                        var trace = Configuration.trace             //  Get newest value of 'trace'
+            var interim_constant_attribute = wrap_function(
+                function interim_constant_attribute(instance, name, value) {
+                    //  Create an interim (reconfigurable) constant attribute.
 
-                        if (trace === 7 || (trace && Tracing['interim_constant_attribute'])) {
-                            trace_attribute('interim constant', instance, name, value)
+                    /*=*/ {
+                        //  interim constant instance.*name = value
+                        interim_constant_property.value = value
+                        define_property(instance, name, interim_constant_property)
+                        interim_constant_property.value = undefined
+
+                        /*trace*/ {
+                            var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                            if (trace === 7 || (trace && Boot_Tracing.interim_constant_attribute)) {
+                                trace_attribute('interim constant', instance, name, value)
+                            }
                         }
                     }
-                }
-            }//,
-        )
+                }//,
+            )
+        }
 
 
         if (clarity || trace) {
-            var who_what__who = 'Gem._.Core.who_what'
+            var who_what__who = 'Gem.Boot._.Core.who_what'
 
             //
             //  NOTE:
@@ -1236,6 +1254,10 @@ Gem.Boot.Core.execute(
             //      regular expressions with the "g" flag.
             //
             if (clarity) {
+                if (trace && ! (who_what__who in Boot_Tracing)) {
+                    Boot_Tracing[who_what__who] = 0
+                }
+
                 var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
                     if (create_prefix) {
                         if ($who.startsWith('Gem._.')) {
@@ -1252,7 +1274,9 @@ Gem.Boot.Core.execute(
                             constant_$what_property   .value = $what
                             constant___prefix_property.value = _prefix
 
+                            try{
                             define_properties(module, module_properties)
+                            } catch(e){debugger}
 
                             constant_$who_property        .value =
                                 constant_$what_property   .value =
@@ -1261,7 +1285,7 @@ Gem.Boot.Core.execute(
                             /*trace*/ {
                                 var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                                if (trace === 7 || (trace && Tracing[who_what__who])) {
+                                if (trace === 7 || (trace && Boot_Tracing[who_what__who])) {
                                     trace_attribute('constant',           module, '$who',    $who)
                                     trace_attribute('constant',           module, '$what',   $what)
                                     trace_attribute('invisible constant', module, '_prefix', _prefix)
@@ -1322,16 +1346,20 @@ Gem.Boot.Core.execute(
             }
 
 
-            who_what(Gem,        'Gem',        'The only global variable used by Gem.',             false)
-            who_what(Gem._.Core, 'Gem._.Core', 'Private members & methods of the Core Gem module.', true)
-            who_what(Gem.Boot,   'Gem.Boot',   'Temporary support code during boot process.',       true)
+            who_what(Gem,      'Gem',      'The only global variable used by Gem.',       false)
+            who_what(Gem.Boot, 'Gem.Boot', 'Temporary support code during boot process.', true)
 
+            who_what(Gem.Boot.Core,       'Gem.Boot.Core',       'Basic support code for the Core Gem module.', true)
             who_what(Gem.Boot.NodeWebKit, 'Gem.Boot.NodeWebKit', 'Node WebKit members & methods.',              true)
             who_what(Gem.Boot.Script,     'Gem.Boot.Script',     "`<script>` handling during boot process.",    false)
-            who_what(Gem.Trace,           'Gem.Trace',           'Exports the Trace module.',                   true)
+            who_what(Gem.Boot.Trace,      'Gem.Boot.Trace',      'Exports the Trace module.',                   true)
 
-            //  Get rid of this
-            who_what(Gem.Boot.Core, 'Gem.Boot.Core',            'Basic support code for the Core Gem module.', true)
+            who_what(
+                Gem.Boot._.Core,
+                'Gem.Boot._.Core',
+                'Private members & methods of the Boot.Core Gem module.',
+                true//,
+            )
         }
 
 
@@ -1408,7 +1436,7 @@ Gem.Boot.Core.execute(
                         constant_attribute(instance, who, method)
                     }
                 },
-                'Gem._.Core.method__no_trace'//,
+                'Gem.Boot._.Core.method__no_trace'//,
             )
 
 
@@ -1533,7 +1561,7 @@ Gem.Boot.Core.execute(
 
                         traced_method__common(instance, false, who, $what, wrapped_method)
                     },
-                    'Gem.Trace.traced_method'//,
+                    'Gem.Boot.Trace.traced_method'//,
                 )
         } else {
             var interim_method = function interim$Gem__Core__interim_method(instance, who, $what, method) {
@@ -1764,24 +1792,24 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Trace.traced_method
+        //  Gem.Boot.Trace.traced_method
         //
         traced_method(
-            Trace,
+            Boot_Trace,
             'traced_method',
-            'Interim method for Gem.Trace.traced_method',
+            'Interim method for Gem.Boot.Trace.traced_method',
             traced_method//,
         )
 
 
         //
-        //  Gem._.Core.constant_attribute
+        //  Gem.Boot._.Core.constant_attribute
         //
         //  NOTE:
         //      This was set above as a "visible_mutable", change it now to a "constant".
         //
         traced_method(
-            _Core,
+            _Boot_Core,
             'constant_attribute',
             'Create a [non reconfigurable] visible constant attribute.',
             constant_attribute//,
@@ -1789,10 +1817,10 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem._.Core.interim_constant_attribute
+        //  Gem.Boot._.Core.interim_constant_attribute
         //
         traced_method(
-            _Core,
+            _Boot_Core,
             'interim_constant_attribute',
             'Create an iterim (i.e.: reconfigurable) visible constant attribute.',
             interim_constant_attribute//,
@@ -1800,10 +1828,10 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem._.Core.method__no_trace
+        //  Gem.Boot._.Core.method__no_trace
         //
         traced_method(
-            _Core,
+            _Boot_Core,
             'method__no_trace',
             'Interim common helper code to create a method with no tracing.',
             method__no_trace//,
@@ -1811,11 +1839,11 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem._.Core.who_what
+        //  Gem.Boot._.Core.who_what
         //
         if (trace || clarity) {
             traced_method(
-                _Core,
+                _Boot_Core,
                 'who_what',
                 (
                     clarity
@@ -1832,7 +1860,7 @@ Gem.Boot.Core.execute(
         //
         if (trace) {
             traced_method(
-                _Trace,
+                _Boot_Trace,
                 'traced_method__common',
                 (
                       'Common code to define a traced method.\n'
@@ -1853,7 +1881,7 @@ Gem.Boot.Core.execute(
             //      A property used to create a visible (i.e.: enumerable) constant `.$what` attribute.
             //
             Gem.Boot.Core.constant(
-                _Core,
+                _Boot_Core,
                 'constant_$what_property',
                 "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
                 constant_$what_property//,
@@ -1865,7 +1893,7 @@ Gem.Boot.Core.execute(
             //      A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.
             //
             Gem.Boot.Core.constant(
-                _Core,
+                _Boot_Core,
                 'constant_$who_property',
                 "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
                 constant_$who_property//,
@@ -1882,7 +1910,7 @@ Gem.Boot.Core.execute(
 //  NOTE:
 //      This was set above as a "visible_mutable", change it now to a "constant".
 //
-Gem.Trace.traced_method(
+Gem.Boot.Trace.traced_method(
     Gem.Boot.Core,
     'execute',
     'Execute code defined in a function.  This allows the use of local variables.',
@@ -1932,9 +1960,9 @@ Gem.Boot.Core.codify_method(
             //
             //  Imports: No tracing version
             //
-            var _Core = Gem._.Core
+            var _Boot_Core = Gem.Boot._.Core
 
-            var method__no_trace = _Core.method__no_trace
+            var method__no_trace = _Boot_Core.method__no_trace
 
             //
             //  Implementation: No tracing version
@@ -1961,12 +1989,13 @@ Gem.Boot.Core.codify_method(
         //
         var Error = window.Error
 
-        var _Trace = Gem._.Trace
-        var Trace  = Gem.Trace
+        var Boot        = Gem.Boot
+        var _Boot_Trace = Boot._.Trace
+        var Boot_Trace  = Boot.Trace
 
-        var trace_call            = Trace.trace_call
-        var traced_method__common = _Trace.traced_method__common
-        var wrap_function         = Trace.wrap_function
+        var trace_call            = Boot_Trace.trace_call
+        var traced_method__common = _Boot_Trace.traced_method__common
+        var wrap_function         = Boot_Trace.wrap_function
 
 
         //
@@ -1997,12 +2026,12 @@ Gem.Boot.Core.codify_method(
 
 
 //
-//  Gem._.Core.gem_changed
+//  Gem.Boot._.Core.gem_changed
 //      Array of callback's when `Gem` is changed (clarity mode only).
 //
 if (Gem.Configuration.clarity) {
     Gem.Boot.Core.constant(
-        Gem._.Core,
+        Gem.Boot._.Core,
         'clarity_mode$global_variable_Gem_changed',
         "Array of callback's when `Gem` is changed (clarity mode only).",
         []//,
@@ -2662,8 +2691,8 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var _Core           = Gem._.Core
         var Boot            = Gem.Boot
+        var _Boot_Core      = Boot._.Core
         var Boot_NodeWebKit = Boot.NodeWebKit
         var Boot_Script     = Boot.Script
         var Boot_Source     = Boot.Source
@@ -2720,7 +2749,7 @@ Gem.Boot.Core.execute(
         //  Cleanup unused attributes
         //
         /*section*/ {
-            delete _Core        .constant_property
+            delete _Boot_Core   .constant_property
             delete Configuration.show_alert
             delete Boot_Script  .event_list
         }

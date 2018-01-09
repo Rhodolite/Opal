@@ -32,9 +32,9 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var _Core = Gem._.Core
+        var _Boot_Core = Gem.Boot._.Core
 
-        var who_what = _Core.who_what
+        var who_what = _Boot_Core.who_what
 
 
         //
@@ -61,11 +61,17 @@ Gem.Boot.Core.execute(
             false//,
         )
 
+        who_what(
+            Gem.Boot.Tracing,
+            'Gem.Boot.Tracing',
+            'Map of functions, methods & bound_methods being traced.',
+            false//,
+        )
+
         who_what(Gem.Configuration, 'Gem.Configuration', 'Gem Configuration values.', false)
 
-        who_what(Gem.Tracing, 'Gem.Tracing', 'Map of functions, methods & bound_methods being traced.', false)
-        who_what(Gem._,       'Gem._',       'Private members & methods of all Gem modules.',           false)
-        who_what(Gem._.Trace, 'Gem._.Trace', 'Private members & methods of the Trace module.',          true)
+        who_what(Gem.Boot._,       'Gem.Boot._',       'Private members & methods of all Boot Gem modules.',  false)
+        who_what(Gem.Boot._.Trace, 'Gem.Boot._.Trace', 'Private members & methods of the Boot.Trace module.', true)
     }
 )
 

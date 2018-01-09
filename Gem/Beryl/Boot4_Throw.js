@@ -11,9 +11,9 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var _Core = Gem._.Core
+        var _Boot_Core = Gem.Boot._.Core
 
-        var who_what = _Core.who_what
+        var who_what = _Boot_Core.who_what
 
 
         //
