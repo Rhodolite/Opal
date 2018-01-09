@@ -8,7 +8,7 @@
 //
 //  Load next scripts
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$load_next_scripts() {
         //
         //  Imports

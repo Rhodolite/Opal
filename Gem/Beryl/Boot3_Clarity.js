@@ -25,7 +25,7 @@
 //      When an object uses `.$who` or `.$what` members for it's own purposes, then the extra members created
 //      are named `.$$who` and `.$$what` to avoid conflicts.
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$add_clarity() {
         //
         //  Imports

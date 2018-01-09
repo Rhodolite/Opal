@@ -14,7 +14,7 @@
 //  Gem._.Trace.wrap_function
 //      Trace a function, method, or bound method.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem._.Trace,
     'wrap_function',
     'Trace a function, method, or bound method.',
@@ -74,7 +74,7 @@ Gem.Core.codify_method(
 //      If this is the first line inside the group, then the [previously pending] closed group is flushed
 //      (i.e.: actually output as a closed group).
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem._.Trace,
     'trace_line',
     (
@@ -129,7 +129,7 @@ Gem.Core.codify_method(
 //      If there is no lines inside the group, then the [previously pending] closed group is
 //      converted to a normal line.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem._.Trace,
     'function_result',
     (

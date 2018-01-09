@@ -14,7 +14,7 @@
 window.Gem = {
     Configuration : {                                       //  Gem configuration values.
         capture_error : true,                               //      Try to capture errors
-        clarity       : 0,                                  //      Set Gem clarity mode to true.
+        clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
         trace         : 0,                                  //      Trace function, method & bound method calls.
@@ -25,48 +25,24 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'codifier$Gem__Core__codify_interim_method',            0,
-        'codifier$Gem__NodeWebKit__show_developer_tools',       0,
-        'codifier$Gem__Script__error',                          0,
-        'codifier$Gem__Script__handle_event',                   0,
-        'codifier$Gem__Script__handle_global_error',            0,
-        'codifier$Gem__Script__load',                           0,
-        'codifier$Gem__Script__source_attribute',               0,
-        'constant_$trace_attribute',                            0,
-        'constant_$who_attribute',                              0,
-        'execute$codify$trace$Gem__Core__execute',              0,
-        'execute$setup_Gem',                                    0,
-        'execute$setup_Tracing',                                0,
-        'Gem._.Core.constant_attribute',                        0,
-        'Gem._.Core.who_what',                                  0,
-        'Gem._.Trace.store_codifier_wrap_constructor',          0,
-        'Gem.Box.create_AnonymousBox',                          0,
-        'Gem.Box.create_ModuleExports$Box',                     0,
-        'Gem.Core.codify_interim_method',                       0,
-        'Gem.Core.codify_method',                               0,
-        'Gem.Core.constant',                                    0,
-        'Gem.Core.execute',                                     1,
-        'Gem.Core.method',                                      0,
-        'Gem.Core.qualify_constant',                            0,
-        'Gem.NodeWebKit.show_developer_tools',                  0,
-        'Gem.Boot.Script.codify_load',                          0,
-        'Gem.Boot.Script.error',                                0,
-        'Gem.Boot.Script.handle_event',                         0,
-        'Gem.Boot.Script.handle_global_error',                  0,
-        'Gem.Boot.Script.load',                                 0,
-        'Gem.Boot.Script.source_attribute',                     0,
-        'Gem.Trace.wrap_constructor',                           0,
-        'Gem.Trace.wrap_function',                              0,
-        'cocoon',                                               1,
-        'interim$Gem__Core__method',                            0,
-        'interim_constant_attribute',                           0,
-        'ModuleExports$Box',                                    0,
-        'qualifier$Gem__Core__invisible_constructor_property',  0,
-        'qualifier$Gem__Script__gem_scripts',                   0,
-        'traced_method__common',                                0//,
     ],
 
     Boot : {                                                //  Temporary support code during boot process.
+        Core : {                                            //      Basic support code for the Core Gem module.
+            execute : function Gem__Core__execute(code) {
+                //  Execute code defined in a function.  This allows the use of local variables.
+
+                code()
+            }//,
+
+            //  clarity_note          : Function            //          Add a note to a variable or set of variables.
+            //  codify_interim_method : Function            //          Create the code for a method as a closure.
+            //  codify_method         : Function            //          Create the code for a method as a closure.
+            //  constant              : Function            //          Store a global Gem constant.
+            //  method                : Function            //          Define a Gem method.
+            //  qualify_constant      : Function            //          Qualify a global Gem constant.
+        },
+
         Source : {                                          //      Functions to "hold onto" for Developer Tools.
             //  js_plugins_Beryl : Function                 //          Avoid garbage collection of '.../Beryl.js'.
         },
@@ -99,21 +75,6 @@ window.Gem = {
         }//,
     },
 
-    Core : {                                                //  Basic support code for the Core Gem module.
-        execute : function Gem__Core__execute(code) {       //      Stub#1 for Gem.Core.execute
-            //  Execute code defined in a function.  This allows the use of local variables.
-
-            code()
-        }
-
-        //  codify_method         : Function                //      Create the code for a method as a closure.
-        //  codify_interim_method : Function                //      Create the code for a method as a closure.
-        //  clarity_note          : Function                //      Add a note to a variable or set of variables.
-        //  constant              : Function                //      Store a global Gem constant.
-        //  method                : Function                //      Define a Gem method.
-        //  qualify_constant      : Function                //      Qualify a global Gem constant.
-    },
-
     Trace : {                                               //  Map of functions, methods & bound_methods being traced.
 //      //  method_call     : Function          [TODO]      //      Start a trace group for a method call.
 //      //  trace_line      : Function          [MOVE]      //      Start a trace group.
@@ -144,7 +105,7 @@ window.Gem = {
 
 
 if (Gem.Configuration.trace) {
-    Gem.Core.execute(
+    Gem.Boot.Core.execute(
         function execute$setup_Tracing() {
             //
             //  Imports
@@ -157,7 +118,7 @@ if (Gem.Configuration.trace) {
             var _Core         = _.Core
             var _Trace        = _.Trace
             var Configuration = Gem.Configuration
-            var Core          = Gem.Core
+            var Core          = Gem.Boot.Core
             var Trace         = Gem.Trace
 
             var clarity                     = Configuration.clarity
@@ -216,7 +177,7 @@ if (Gem.Configuration.trace) {
             } else {
                 var push_color_bold_cyanish = function OLD_WAY$push_color_bold_cyanish() {
                     pending.push('font-weight: bold; color: #00AAFF')
-                } 
+                }
 
                 var push_color_blue  = function OLD_WAY$push_color_blue()  { pending.push('color:blue')  }
                 var push_color_green = function OLD_WAY$push_color_green() { pending.push('color:green') }
@@ -260,7 +221,7 @@ if (Gem.Configuration.trace) {
             //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
             //
             //          Tracing : {
-            //              ['Gem.Core.execute'] : 7,
+            //              ['Gem.Boot.Core.execute'] : 7,
             //          }
             //
             var tracing_list  = Gem.Tracing
@@ -539,7 +500,7 @@ if (Gem.Configuration.trace) {
                         push_color_none()
                     }
                 }
-                
+
                 /*.name*/ {
                     format += '%c.%c%c' + name + '%c'
 
@@ -555,7 +516,7 @@ if (Gem.Configuration.trace) {
                     push_color_none()
                 }
 
-                /*value*/ { 
+                /*value*/ {
                     format += trace_value(value)
                 }
 
@@ -668,7 +629,7 @@ if (Gem.Configuration.trace) {
 
 
             /*self-trace*/ {
-                var trace$execute__$who = 'Gem.Core.execute'
+                var trace$execute__$who = 'Gem.Boot.Core.execute'
 
                 var tracing_execute = tracing(trace$execute__$who)
                 var tracing_myself  = tracing('execute$setup_Tracing')
@@ -799,7 +760,7 @@ if (Gem.Configuration.trace) {
 
                         define_properties(f, self_trace_properties)
 
-                        property_$trace  .value = 
+                        property_$trace  .value =
                             property_$who.value = undefined
 
                         /*trace*/ {
@@ -955,7 +916,7 @@ if (Gem.Configuration.trace) {
         }//,
     )
 } else {
-    Gem.Core.execute(
+    Gem.Boot.Core.execute(
         function execute$setup_Tracing() {
             //
             //  Imports
@@ -991,16 +952,17 @@ if (Gem.Configuration.trace) {
 
 
 //
-//  Gem.Core.execute:
+//  Gem.Boot.Core.execute:
 //      Execute code inside a function (to allow local variables)
 //
 //  NOTE:
-//      The reason the function is named `Gem__Core__execute` (meaning `Gem.Core.execute`) is so that it
-//      shows up in stack traces as the full name `Gem__Core__execute` instead of shorter name `execute`
-//      (this is really really helpful when reading stack traces).
+//      The reason the function is named `trace$Gem__Boot__Core__execute` (meaning "tracing" version of
+//      `Gem.Boot.Core.execute`) is so that it shows up in stack traces as the full name
+//      `trace$Gem__Boot__Core__execute` instead of shorter name `execute` (this is really really helpful when
+//      reading stack traces).
 //
 if (Gem.Configuration.trace) {
-    Gem.Core.execute(
+    Gem.Boot.Core.execute(
         function execute$codify$trace$Gem__Core__execute() {
             //
             //  Imports
@@ -1011,7 +973,7 @@ if (Gem.Configuration.trace) {
             var _Core         = _.Core
             var _Trace        = _.Trace
             var Configuration = Gem.Configuration
-            var Core          = Gem.Core
+            var Core          = Gem.Boot.Core
             var Trace         = Gem.Trace
             var Tracing       = Gem.Tracing
 
@@ -1026,8 +988,8 @@ if (Gem.Configuration.trace) {
             //  Tracing `execute` and myself
             //
             //  NOTE:
-            //      Here we both trace *THIS* call to `Gem.Core.execute` ...
-            //          ... and then in *FUTURE* calls we also trace calls to `Gem.Core.execute`
+            //      Here we both trace *THIS* call to `Gem.Boot.Core.execute` ...
+            //          ... and then in *FUTURE* calls we also trace calls to `Gem.Boot.Core.execute`
             //              (i.e.: `trace$Gem__Core__execute`).
             //
 
@@ -1038,7 +1000,7 @@ if (Gem.Configuration.trace) {
             //      This is safer than using `arguments.callee` which is very STRONGLY deprecated.
             //
             var myself              = function execute$codify$trace$Gem__Core__execute() {}
-            var trace$execute__$who = 'Gem.Core.execute'
+            var trace$execute__$who = 'Gem.Boot.Core.execute'
 
 
             var tracing_execute = tracing(trace$execute__$who)
@@ -1051,7 +1013,7 @@ if (Gem.Configuration.trace) {
 
             /*execute*/ {
                 var trace$execute = cocoon(
-                    function trace$Gem__Core__execute(code) {
+                    function trace$Gem__Boot__Core__execute(code) {
                         //  Execute code defined in a function.  This allows the use of local variables.
 
                         var trace = Configuration.trace             //  Get newest value of 'trace'
@@ -1070,7 +1032,7 @@ if (Gem.Configuration.trace) {
                     trace$execute__$who//,
                 )
 
-                Gem.Core.execute = trace$execute    //  TEMPORARY as "iterim mutable": Changed below to "constant"
+                Gem.Boot.Core.execute = trace$execute    //  TEMPORARY as "iterim mutable": Changed below to "constant"
             }
 
 
@@ -1083,9 +1045,9 @@ if (Gem.Configuration.trace) {
 
 //
 //  Stubs for:
-//      Gem.Core.{clarity_note,codify_method,constant,method,qualify_constant}
+//      Gem.Boot.Core.{clarity_note,codify_method,constant,method,qualify_constant}
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$setup_Gem() {
         //
         //
@@ -1096,9 +1058,11 @@ Gem.Core.execute(
         var _             = Gem._
         var _Core         = _.Core
         var _Trace        = _.Trace
-        var Boot_Script   = Gem.Boot.Script
+        var Boot          = Gem.Boot
+        var Boot_Core     = Boot.Core
+        var Boot_Script   = Boot.Script
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
         var Trace         = Gem.Trace
         var Tracing       = Gem.Tracing
 
@@ -1316,7 +1280,7 @@ Gem.Core.execute(
                 var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
                     //
                     //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                    // 
+                    //
                     /*=*/ {
                         //  constant module.$who = $who
                         constant_attribute(module, '$who', $who)
@@ -1360,11 +1324,14 @@ Gem.Core.execute(
 
             who_what(Gem,        'Gem',        'The only global variable used by Gem.',             false)
             who_what(Gem._.Core, 'Gem._.Core', 'Private members & methods of the Core Gem module.', true)
+            who_what(Gem.Boot,   'Gem.Boot',   'Temporary support code during boot process.',       true)
 
             who_what(Gem.Boot.NodeWebKit, 'Gem.Boot.NodeWebKit', 'Node WebKit members & methods.',              true)
             who_what(Gem.Boot.Script,     'Gem.Boot.Script',     "`<script>` handling during boot process.",    false)
-            who_what(Gem.Core,            'Gem.Core',            'Basic support code for the Core Gem module.', true)
             who_what(Gem.Trace,           'Gem.Trace',           'Exports the Trace module.',                   true)
+
+            //  Get rid of this
+            who_what(Gem.Boot.Core, 'Gem.Boot.Core',            'Basic support code for the Core Gem module.', true)
         }
 
 
@@ -1509,8 +1476,15 @@ Gem.Core.execute(
 
             var interim_method = wrap_function(
                     function interim$Gem__Core__interim_method(instance, who, $what, method) {
+                        //  Store a method.
+                        //
+                        //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                        //
+                        //  NOTE:
+                        //      This is the interim boot version of `method`.
+
                         if ( ! ('$who' in instance)) {
-                            throw new Error('Gem.Core.interim_method: missing $who in object')
+                            throw new Error('Gem.Boot.Core.interim_method: missing $who in object')
                         }
 
                         var function_name  = instance.$who + '.' + who
@@ -1518,13 +1492,20 @@ Gem.Core.execute(
 
                         traced_method__common(instance, true, who, $what, wrapped_method)
                     },
-                    'Gem.Core.interim_method'//,
+                    'Gem.Boot.Core.interim_method'//,
                 )
 
             var method = wrap_function(
-                    function interim$Gem__Core__method(instance, who, $what, method) {
+                    function interim$Gem__Boot__Core__method(instance, who, $what, method) {
+                        //  Store an iterim method.
+                        //
+                        //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                        //
+                        //  NOTE:
+                        //      This is the interim boot version of `interim_method`.
+
                         if ( ! ('$who' in instance)) {
-                            throw new Error('Gem.Core.method: missing $who in object')
+                            throw new Error('Gem.Boot.Core.method: missing $who in object')
                         }
 
                         var function_name  = instance.$who + '.' + who
@@ -1532,11 +1513,18 @@ Gem.Core.execute(
 
                         traced_method__common(instance, false, who, $what, wrapped_method)
                     },
-                    'Gem.Core.method'//,
+                    'Gem.Boot.Core.method'//,
                 )
 
             var traced_method = wrap_function(
                     function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
+                        //  Store a traced method.
+                        //
+                        //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                        //
+                        //  NOTE:
+                        //      This is the interim boot version of `traced_method`.
+
                         if ( ! ('$trace' in wrapped_method)) {
                             throw new Error(
                                     'traced_method: missing `.$trace` in function "' + wrapped_method.name + '"'//,
@@ -1549,35 +1537,66 @@ Gem.Core.execute(
                 )
         } else {
             var interim_method = function interim$Gem__Core__interim_method(instance, who, $what, method) {
+                //  Store an iterim method.
+                //
+                //  Ignores parameter `$what` since not in clarity mode.
+                //
+                //  NOTE:
+                //      This is the interim boot version of `interim_method`.
+
                 method__no_trace(instance, true, who, $what, method)
             }
 
             var method = function interim$Gem__Core__method(instance, who, $what, method) {
+                //  Store a method.
+                //
+                //  Ignores parameter `$what` since not in clarity mode.
+                //
+                //  NOTE:
+                //      This is the interim boot version of `interim_method`.
+
                 method__no_trace(instance, false, who, $what, method)
             }
 
 
             //
             //  NOTE:
-            //      Without tracing this is identicial to `Gem.Core.Method`
+            //      Without tracing this is identicial to `Gem.Boot.Core.Method`
             //
             //      (However, different functions are used, so then can each acquire their unique `.$who` and
             //      `.$what` attributes in clarity mode).
             //
             var traced_method = function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
+                //  Store a traced method.
+                //
+                //  Ignores parameter `$what` since not in clarity mode.
+                //
+                //  NOTE:
+                //      This is the interim boot version of `traced_method`.
+
                 method__no_trace(instance, false, who, $what, wrapped_method)
             }
         }
 
 
         //
-        //  Gem.Core.clarity_note
+        //  Gem.Boot.Core.clarity_note
         //
         method(
-            Core,
+            Boot_Core,
             'clarity_note',
-            'Interim method for Gem.Core.clarity_note',
-            function interim$Gem__Core__clarity_note(instance, who, $what) {
+            (
+                  'Add a note to a variable or set of variables (clarity mode only).',
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `clarity_note`."
+            ),
+            function interim$Gem__Boot__Core__clarity_note(instance, who, $what) {
+                //  Add a note to a variable or set of variables (clarity mode only).
+                //
+                //  NOTE:
+                //      This is the interim boot version of `clarity_note`.
+
                 //TODO: FIX TO USE Boot_SCRIPT.DYNAMIC
                 if (clarity) {
                     /*=*/ {
@@ -1590,40 +1609,68 @@ Gem.Core.execute(
 
 
         //
-        //  Gem.Core.codify_method
+        //  Gem.Boot.Core.codify_method
         //
         method(
-            Core,
+            Boot_Core,
             'codify_method',
-            'Interim method for Gem.Core.codify_method',
-            function interim$Gem__Core__codify_method(instance, who, $what, codifier) {
+            (
+                  'Create the code for a method as a closure to avoid the use of any global variables.\n'
+                + '\n'
+                + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `codify_method`."
+            ),
+            function interim$Gem__Boot__Core__codify_method(instance, who, $what, codifier) {
+                //  Create the code for a method as a closure to avoid the use of any global variables.
+                //
+                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                //
+                //  NOTE:
+                //      This is the interim boot version of `codify_method`.
+
                 var codified_method = trace_call(codifier)
 
                 //
-                //  Since this is just an iterim implementation of `Gem.Core.codify_method`, we'll be super lazy
-                //  and just call `method` ...
+                //  Since this is just an iterim implementation of `codify_method`, we'll be super lazy and just
+                //  call `method` ...
                 //
                 //      (As a small downside: this makes the "tracing" a bit more nested, but it doesn't matter that
                 //      much).
                 //
-                //      (The real implementation of `Gem.core.codify_method` is not as lazy).
+                //      (The real implementation of `Gem.Core.codify_method` is not as lazy).
                 //
-                method(instance, who, $what, codified_method)       
+                method(instance, who, $what, codified_method)
             }
         )
 
 
         //
-        //  Gem.Core.constant
+        //  Gem.Boot.Core.constant
         //
         method(
-            Core,
+            Boot_Core,
             'constant',
-            'Interim method for Gem.Core.constant',
+            (
+                  'Store a global Gem constant.\n'
+                + '\n'
+                + 'Also in clarity mode adds an explanation of what the constant does.\n'
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `constant`."
+            ),
             (
                 clarity
                     //TODO: FIX TO USE Boot_SCRIPT.DYNAMIC
-                    ? function interim$Gem__Core__constant(instance, who, $what, value) {
+                    ? function interim$Gem__Boot__Core__constant(instance, who, $what, value) {
+                          //  Store a global Gem constant.
+                          //
+                          //  Also in clarity mode adds an explanation of what the constant does.
+                          //
+                          //  NOTE:
+                          //      This is the interim boot version of `constant`.
+
                           /*=*/ {
                               //  constant instance.*who = value
                               constant_attribute(instance, who, value)
@@ -1634,7 +1681,14 @@ Gem.Core.execute(
                               constant_attribute(instance, who + '$', $what)
                           }
                       }
-                    : function interim$Gem__Core__constant(instance, who, $what, value) {
+                    : function interim$Gem__Boot__Core__constant(instance, who, $what, value) {
+                          //  Store a global Gem constant.
+                          //
+                          //  Ignores parameter `$what` since not in clarity mode.
+                          //
+                          //  NOTE:
+                          //      This is the interim boot version of `constant`.
+
                           /*=*/ {
                               //  constant instance.*who = value
                               constant_attribute(instance, who, value)
@@ -1645,35 +1699,54 @@ Gem.Core.execute(
 
 
         //
-        //  Gem.Core.method
+        //  Gem.Boot.Core.interim_method
         //
         traced_method(
-            Core,
+            Boot_Core,
             'interim_method',
-            'Interim method for Gem.Core.interim_method',
+            'Interim method for Gem.Boot.Core.interim_method',
             interim_method//,
         )
 
 
         //
-        //  Gem.Core.method
+        //  Gem.Boot.Core.method
         //
         traced_method(
-            Core,
+            Boot_Core,
             'method',
-            'Interim method for Gem.Core.method',
+            (
+                  'Store a method.\n'
+                + '\n'
+                + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `method`."
+            ),
             method//,
         )
 
 
         //
-        //  Gem.Core.qualify_constant
+        //  Gem.Boot.Core.qualify_constant
         //
         method(
-            Core,
+            Boot_Core,
             'qualify_constant',
-            'Interim method for Gem.Core.qualify_constant',
-            function interim$Gem__Core__qualify_constant(who, $what, qualifier) {
+            (
+                  'Qualify a global Gem constant.\n'
+                + '\n'
+                + 'The `qualifier` argument is a function that returns the value of the constant.'
+                + '\n'
+                + 'Also in clarity mode adds an explanation of what the constant does.'
+            ),
+            function interim$Gem__Boot__Core__qualify_constant(who, $what, qualifier) {
+                //      Qualify a global Gem constant.
+                //
+                //      The `qualifier` argument is a function that returns the value of the constant.
+                //
+                //      Also in clarity mode adds an explanation of what the variable does.
+
                 var value = trace_call(qualifier)
 
                 //FIX THIS to use multiple properties
@@ -1698,7 +1771,7 @@ Gem.Core.execute(
             'traced_method',
             'Interim method for Gem.Trace.traced_method',
             traced_method//,
-        ) 
+        )
 
 
         //
@@ -1779,7 +1852,7 @@ Gem.Core.execute(
             //  constant_$what_property
             //      A property used to create a visible (i.e.: enumerable) constant `.$what` attribute.
             //
-            Gem.Core.constant(
+            Gem.Boot.Core.constant(
                 _Core,
                 'constant_$what_property',
                 "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
@@ -1791,7 +1864,7 @@ Gem.Core.execute(
             //  constant_$who_property
             //      A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.
             //
-            Gem.Core.constant(
+            Gem.Boot.Core.constant(
                 _Core,
                 'constant_$who_property',
                 "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
@@ -1803,29 +1876,45 @@ Gem.Core.execute(
 
 
 //
-//  Gem.Core.execute
+//  Gem.Boot.Core.execute
 //      Create a (non reconfigurable) constant attribute.
-//      
+//
 //  NOTE:
 //      This was set above as a "visible_mutable", change it now to a "constant".
 //
 Gem.Trace.traced_method(
-    Gem.Core,
+    Gem.Boot.Core,
     'execute',
     'Execute code defined in a function.  This allows the use of local variables.',
-    Gem.Core.execute//,
+    Gem.Boot.Core.execute//,
 )
 
 
 //
-//  Gem.Core.codify_interim_method
-//      Interim method for Gem.Core.codify_interim_method
+//  Gem.Boot.Core.codify_interim_method
+//      Create the code for an interim method as a closure to avoid the use of any global variables.
 //
-Gem.Core.codify_method(
-    Gem.Core,
+//  "An iterim method" means the method may be later replaced with another method.
+//
+//  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+//
+//  NOTE
+//      This is the interim boot version of `codify_iterim_method`."
+//
+Gem.Boot.Core.codify_method(
+    Gem.Boot.Core,
     'codify_interim_method',
-    'Interim method for Gem.Core.codify_interim_method',
-    function codifier$Gem__Core__codify_interim_method() {
+    (
+          'Create the code for an interim method as a closure to avoid the use of any global variables.\n'
+        + '\n'
+        + '"An iterim method" means the method may be later replaced with another method.\n'
+        + '\n'
+        + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+        + '\n'
+        + 'NOTE:\n'
+        + "    This is the interim boot version of `codify_iterim_method`."
+    ),
+    function codifier$Gem__Boot__Core__codify_interim_method() {
         //
         //  Imports
         //
@@ -1850,7 +1939,16 @@ Gem.Core.codify_method(
             //
             //  Implementation: No tracing version
             //
-            return function interim$Gem__Core__codify_interim_method(instance, who, $what, codifier) {
+            return function interim$Gem__Boot__Core__codify_interim_method(instance, who, $what, codifier) {
+                //  Create the code for an interim method as a closure to avoid the use of any global variables.
+                //
+                //  "An iterim method" means the method may be later replaced with another method.
+                //
+                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                //
+                //  NOTE
+                //      This is the interim boot version of `codify_iterim_method`."
+
                 var method = codifier()
 
                 method__no_trace(instance, true, who, $what, method)
@@ -1874,7 +1972,16 @@ Gem.Core.codify_method(
         //
         //  Implementation: Tracing version
         //
-        return function interim$Gem__Core__codify_interim_method(instance, who, $what, codifier) {
+        return function interim$Gem__Boot__Core__codify_interim_method(instance, who, $what, codifier) {
+            //  Create the code for an interim method as a closure to avoid the use of any global variables.
+            //
+            //  "An iterim method" means the method may be later replaced with another method.
+            //
+            //  Ignores parameter `$what` since not in clarity mode.
+            //
+            //  NOTE
+            //      This is the interim boot version of `codify_iterim_method`."
+
             if ( ! ('$who' in instance)) {
                 throw new Error('missing $who in object')
             }
@@ -1894,7 +2001,7 @@ Gem.Core.codify_method(
 //      Array of callback's when `Gem` is changed (clarity mode only).
 //
 if (Gem.Configuration.clarity) {
-    Gem.Core.constant(
+    Gem.Boot.Core.constant(
         Gem._.Core,
         'clarity_mode$global_variable_Gem_changed',
         "Array of callback's when `Gem` is changed (clarity mode only).",
@@ -1910,7 +2017,7 @@ if (Gem.Configuration.clarity) {
 //  NOTE:
 //      If not using nw.js, then both `Gem.Boot.NodeWebKit.is_version_{12_or_lower,13_or_higher}` will be `false`.
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$qualify__Gem__Boot__NodeWebKit__version() {
         //
         //  Imports
@@ -1936,7 +2043,7 @@ Gem.Core.execute(
         //
         //  Exports
         //
-        Gem.Core.constant(
+        Gem.Boot.Core.constant(
             Gem.Boot.NodeWebKit,
             'is_NodeWebKit',
             "`Gem.Boot.NodeWebKit.is_nodeWebKit` is `true` if using nw.js",
@@ -1944,21 +2051,21 @@ Gem.Core.execute(
         )
 
 
-        Gem.Core.constant(
+        Gem.Boot.Core.constant(
             Gem.Boot.NodeWebKit,
             'is_version_012_or_lower',
             "`Gem.NodeWebKit.is_version_012_or_lower` is `true` if using nw.js & it's version 0.12 or lower.",
             (major === 0 && minor <= 12)//,
         )
 
-        Gem.Core.constant(
+        Gem.Boot.Core.constant(
             Gem.Boot.NodeWebKit,
             'is_version_013_or_higher',
             "`Gem.Boot.NodeWebKit.is_version_013_or_higher` is `true` if using nw.js & it's version 0.13 or greater.",
             (major >  0 || minor >= 13)//,
         )
 
-        Gem.Core.clarity_note(
+        Gem.Boot.Core.clarity_note(
             Gem.Boot.NodeWebKit,
             'is_version_{012_or_lower,013_or_higher}',
             (
@@ -1975,7 +2082,7 @@ Gem.Core.execute(
 //      Show developer tools.
 //
 if (Gem.Boot.NodeWebKit.is_version_012_or_lower) {              //  Show developer tools (nw.js 0.12 or lower)
-    Gem.Core.codify_method(
+    Gem.Boot.Core.codify_method(
         Gem.Boot.NodeWebKit,
         'show_developer_tools',
         'Show developer tools (nw.js 0.12 or lower).',
@@ -1990,7 +2097,7 @@ if (Gem.Boot.NodeWebKit.is_version_012_or_lower) {              //  Show develop
         }
     )
 } else if (Gem.Boot.NodeWebKit.is_version_013_or_higher) {      //  Show developer tools (nw.js 0.13 or higher)
-    Gem.Core.codify_method(
+    Gem.Boot.Core.codify_method(
         Gem.Boot.NodeWebKit,
         'show_developer_tools',
         'Show developer tools (nw.js 0.13 or higher).',
@@ -2011,7 +2118,7 @@ if (Gem.Boot.NodeWebKit.is_version_012_or_lower) {              //  Show develop
         }
     )
 } else {                                                    //  Not using nw.js: Don't show developer tools
-    Gem.Core.method(
+    Gem.Boot.Core.method(
         Gem.Boot.NodeWebKit,
         'show_developer_tools',
         "Empty function -- Not using nw.js: Don't show developer tools.",
@@ -2034,14 +2141,14 @@ if (Gem.Boot.NodeWebKit.is_version_012_or_lower) {              //  Show develop
 //          4.  The browser has a `.addEventListener` method (all modern browsers do);
 //          5.  The browser has a `.setAttribute`     method (all modern browsers do).
 //
-Gem.Core.constant(
+Gem.Boot.Core.constant(
     Gem.Boot.Script,
     'handle_errors',
     "`Gem.Boot.Script.handle_errors` is `true` if handling `<script>` errors.",
     (
            Gem.Configuration.capture_error                  //  1.  Configured to capture errors;
         && Gem.Boot.NodeWebKit.is_NodeWebKit                //  2.  This is running under nw.js;
-        && (                                                
+        && (
                   ('Utils' in window)                       //  3.  This is running in RPG Maker MV ...
                && Utils.isOptionValid('test')               //      ... "test" mode;
            )
@@ -2068,7 +2175,7 @@ if (Gem.Boot.Script.handle_errors) {
     //      Anyway, if we can use `.getAttribute('src')` we do so; otherwise we do it the crazy backwards compatiable
     //      way.
     //
-    Gem.Core.codify_method(
+    Gem.Boot.Core.codify_method(
         Gem.Boot.Script,
         'source_attribute',
         "Get an unmodified `.src` attribute from a DOM (domain object model) element.",
@@ -2110,7 +2217,7 @@ if (Gem.Boot.Script.handle_errors) {
     //  Gem.Boot.Script.error
     //      Show an error (either with `alert` or `console.error`).
     //
-    Gem.Core.codify_method(
+    Gem.Boot.Core.codify_method(
         Gem.Boot.Script,
         'error',
         'Show an error (either with alert or console.error).',
@@ -2175,7 +2282,7 @@ if (Gem.Boot.Script.handle_errors) {
     //  Gem.Boot.Script.handle_global_error
     //      Handle errors when executing a `<script>` tag.
     //
-    Gem.Core.codify_method(
+    Gem.Boot.Core.codify_method(
         Gem.Boot.Script,
         'handle_global_error',
         "Handle errors when executing a `<script>` tag.",
@@ -2229,7 +2336,7 @@ if (Gem.Boot.Script.handle_errors) {
     //          1.  Here;
     //          2.  Again, in clarity mode, after `Gem` is replaced.
     //
-    Gem.Core.codify_interim_method(
+    Gem.Boot.Core.codify_interim_method(
         Gem.Boot.Script,
         'codify_handle_event',
         (
@@ -2314,7 +2421,7 @@ if (Gem.Boot.Script.handle_errors) {
                 //  Gem.Boot.Script.handle_event
                 //      Handle events of `<script>` tags.
                 //
-                var method = (interim ?  Gem.Core.interim_method : Gem.Core.method)
+                var method = (interim ?  Gem.Boot.Core.interim_method : Gem.Boot.Core.method)
 
                 method(
                     Gem.Boot.Script,
@@ -2331,7 +2438,7 @@ if (Gem.Boot.Script.handle_errors) {
 //
 //  Gem.Boot.Script.gem_scripts
 //
-Gem.Core.qualify_constant.call(
+Gem.Boot.Core.qualify_constant.call(
     Gem.Boot.Script,
     'gem_scripts',
     "`div#gem_scripts` is the parent of all Gem `<script>` tags and is inserted into `document.head`.",
@@ -2365,7 +2472,7 @@ Gem.Core.qualify_constant.call(
 //          1.  Initially;
 //          2.  Again, in clarity mode, after `Gem` is replaced.
 //
-Gem.Core.codify_interim_method(
+Gem.Boot.Core.codify_interim_method(
     Gem.Boot.Script,
     'codify_load',
     (
@@ -2450,7 +2557,7 @@ Gem.Core.codify_interim_method(
                 //          Hence we have to set the 'abort', 'error', & 'load' events on each individual
                 //          `<script>` tag.
                 //
-                Gem.Core.method(
+                Gem.Boot.Core.method(
                     Script,
                     'load',
                     (
@@ -2513,7 +2620,7 @@ Gem.Core.codify_interim_method(
             //      We don't know if this browser supports `.setAttribute` or not, so just in case ... test
             //      for it.
             //
-            Gem.Core.method(
+            Gem.Boot.Core.method(
                 Script,
                 'load',
                 (
@@ -2548,7 +2655,7 @@ Gem.Core.codify_interim_method(
 //      4.  Protect this file from garbage collection (debug mode only);
 //      5.  Load next script file: "Gem/Beryl/Boot2_Manifest.js"
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$finish() {
         //
         //  Imports

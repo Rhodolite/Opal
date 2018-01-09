@@ -6,7 +6,7 @@
 
 
 //
-//  Gem.Core.visible_mutable_attribute
+//  Gem.Boot.Core.visible_mutable_attribute
 //
 //      A visible mutable attribute (i.e.: a normal member).
 //
@@ -16,7 +16,7 @@
 //      Enumerable properties are shown better in Developer Tools (at the top of the list, and not grayed out),
 //      for this reason `$what`, `$which`, `$who`, and '*$' are all shown as visibile instead of invisible.
 //
-Gem.Core.qualify_constant(
+Gem.Boot.qualify_constant(
     'visible_mutable_attribute',
     (
           'A visible mutable attribute (i.e.: a normal member).\n'
@@ -44,10 +44,10 @@ Gem.Core.qualify_constant(
 
 
 //
-//  Gem.Core.clarity_note
+//  Gem.Boot.Core.clarity_note
 //      Add a note to a variable or set of variables (clarity mode only).
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'clarity_note',
     'Add a note to a variable or set of variables (clarity mode only).',
@@ -76,7 +76,7 @@ Gem.Core.codify_method(
         //  Imports: Clarity version
         //
         var _Core = Gem._.Core
-        var Core  = Gem.Core
+        var Core  = Gem.Boot.Core
         var Throw = Gem.Throw
 
         var constant_property        = _Core.constant_property
@@ -92,7 +92,7 @@ Gem.Core.codify_method(
         //  Implementation: Clarity version
         //
         return function Gem__Core__clarity_note(instance, who, $what) {
-            //  Add a note to a variable or set of variables (clarity mode only)
+            //  Add a note to a variable or set of variables (clarity mode only).:
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
@@ -120,7 +120,7 @@ Gem.Core.codify_method(
 
 
 //
-//  Gem.Core.codify_bound_method:
+//  Gem.Boot.Core.codify_bound_method:
 //      Codify a global Gem bound method.
 //
 //      Also in clarity mode adds a `.$who`, `.$what`, and `.$which` attributes to the bound method.
@@ -131,8 +131,8 @@ Gem.Core.codify_method(
 //
 //      The main difference is the error checking in clairty mode, to verify that it really is a "bound method".
 //
-Gem.Core.codify_method(
-    Gem.Core,
+Gem.Boot.Core.codify_method(
+    Gem.Boot,
     'codify_bound_method',
     (
           'Codify a global Gem bound method.\n'
@@ -147,7 +147,7 @@ Gem.Core.codify_method(
 
         var _Core         = Gem._.Core
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
 
         var clarity            = Configuration.clarity
         var constant_attribute = _Core.constant_attribute
@@ -198,7 +198,7 @@ Gem.Core.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 4) {
-                    throw_wrong_arguments('Gem.Core.codify_bound_method', 4, arguments.length)
+                    throw_wrong_arguments('Gem.Boot.Core.codify_bound_method', 4, arguments.length)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
@@ -246,7 +246,7 @@ Gem.Core.codify_method(
                                   //  Our brower is so old it doesn't even have bound methods ...
                                   //      ... So accept anything (presumably an emulation function) ...
                                   //
-/*FIX THIS*/                      ( ! Gem.Core.has_bind)
+/*FIX THIS*/                      ( ! Gem.Boot.Core.has_bind)
                               )
                        )
                 ) {
@@ -287,12 +287,12 @@ Gem.Core.codify_method(
 
 
 //
-//  Gem.Core.codify_method:
+//  Gem.Boot.Core.codify_method:
 //      Create the code for a method as a closure to avoid the use of any global variables.
 //
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'codify_method',
     (
@@ -307,7 +307,7 @@ Gem.Core.codify_method(
         var Gem = window.Gem
 
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
 
         var constant_property = Core.constant_property
         var define_property   = Object.defineProperty
@@ -411,7 +411,7 @@ Gem.Core.codify_method(
 //
 //      Also in clarity mode adds an explanation of what the constant does.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'constant',
     (
@@ -426,7 +426,7 @@ Gem.Core.codify_method(
         var Gem = window.Ge
 
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
 
         var constant_property = Core.constant_property
         var define_property   = Object.defineProperty
@@ -517,7 +517,7 @@ Gem.Core.codify_method(
 //
 //      Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'method',
     (
@@ -531,7 +531,7 @@ Gem.Core.codify_method(
         //
         var Gem = window.Gem
 
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
         var Configuration = Gem.Configuration
 
         var clarity           = Configuration.clarity
@@ -575,7 +575,7 @@ Gem.Core.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 4) {
-                    throw_wrong_arguments('Gem.Core.method', 4, arguments.length)
+                    throw_wrong_arguments('Gem.Boot.Core.codify_method', 4, arguments.length)
                 }
 
                 if (typeof instance !== 'object')) {
@@ -621,12 +621,12 @@ Gem.Core.codify_method(
 
 
 //
-//  Gem.Core.mutable:
+//  Gem.Boot.Core.mutable:
 //      Initialize a global Gem mutable value.
 //
 //      Also in clarity mode adds an explanation of what the mutable value does.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'mutable',
     (
@@ -641,7 +641,7 @@ Gem.Core.codify_method(
         var Gem = window.Gem
 
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
         var Throw         = Gem.Throw
 
         var constant_property         = Core.constant_property
@@ -683,7 +683,7 @@ Gem.Core.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Core.mutable', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Boot.Core.mutable', 3, arguments.length)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {
@@ -726,7 +726,7 @@ Gem.Core.codify_method(
 //
 //      Also in clarity mode adds an explanation of what the variable does.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'qualify_constant',
     (
@@ -743,7 +743,7 @@ Gem.Core.codify_method(
         var Gem = window.Gem
 
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
         var Throw         = Gem.Throw
 
         var clarity           = Configuration.clarity

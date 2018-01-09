@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$setup__Gem_Box() {
         //
         //  Imports
@@ -93,7 +93,7 @@ Gem.Core.execute(
 
         Gem.Box = wrapped$create_ModuleExports$Box('Gem.Box', 'Exports of the Box module.', true)
 
-        Gem.Core.method(
+        Gem.Boot.Core.method(
             Gem.Box,
             'create_ModuleExports$Box',
             (
@@ -114,7 +114,7 @@ Gem.Core.execute(
 
 
 if (Gem.Configuration.unit_test) {
-    Gem.Core.execute(
+    Gem.Boot.Core.execute(
         function execute$test__Gem__Box() {
             var module = 'Gem.Beryl.Boot3_StubBox'
 

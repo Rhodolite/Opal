@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Box,
     'create_AnonymousBox',
     'Stub to create an anonymous box (an object with no `.__proto__`)',
@@ -29,7 +29,7 @@ Gem.Core.codify_method(
 
 
 if (Gem.Configuration.unit_test) {
-    Gem.Core.execute(
+    Gem.Boot.Core.execute(
         function execute$test_AnonymousBox() {
             var module = 'Gem.Beryl.Boot3_StubAnonymousBox'
 

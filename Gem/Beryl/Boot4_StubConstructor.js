@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'store_function_from_evaluate',
     (
@@ -37,7 +37,7 @@ Gem.Core.codify_method(
 
 
 if (Gem.Configuration.trace) {
-    Gem.Core.codify_untraced_method(
+    Gem.Boot.Core.codify_untraced_method(
         Gem.Trace,
         'trace_constructor',
         'Private method used to trace a constructor.\n',
@@ -102,7 +102,7 @@ if (Gem.Configuration.trace) {
 }
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'create_constructor',
     'Create a constructor.',
@@ -162,7 +162,7 @@ Gem.Core.codify_method(
             //  Create a constructor.
 
             eval(
-                      'Gem.Core.store_function_from_evaluate(\n'
+                      'Gem.Boot.Core.store_function_from_evaluate(\n'
                     + '    function codifier_constructor(trace_constructor) {\n'
                     + '        //  A codifier to create a closure around constructor ' + name + '.\n'
                     + '\n'

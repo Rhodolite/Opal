@@ -4,7 +4,7 @@
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$setup__Gem__Throw() {
         //
         //  Imports
@@ -37,7 +37,7 @@ Gem.Core.execute(
 //      Gem.Throw.throw_type_error         - Throw a type error (usually ... received invalid parameters).
 //      Gem.Throw.throw_wrong_arguments    - Throw a type error when a method receives wrong number of arguments.
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$setup__Gem__throw_methods() {
         //
         //  Imports
@@ -45,7 +45,7 @@ Gem.Core.execute(
         var Error = window.Error
         var Gem   = window.Gem
 
-        var Core  = Gem.Core
+        var Core  = Gem.Boot.Core
         var Throw = Gem.Throw
 
         var interim_method = Core.interim_method
@@ -199,7 +199,7 @@ Gem.Core.execute(
 //  Gem.Throw.throw_must_be_an_object
 //      Throw a type error when a parameter is not an object.
 //
-Gem.Core.codify_interim_method(
+Gem.Boot.Core.codify_interim_method(
     Gem.Throw,
     'throw_must_be_an_object',
     'Throw a type error when a parameter is not an object.',

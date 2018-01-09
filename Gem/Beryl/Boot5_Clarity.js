@@ -6,7 +6,7 @@
 
 
 if (Gem.Configuration.clarity) {
-    Gem.Core.qualify_constant.call(
+    Gem.Boot.qualify_constant(
         Gem._.Core,
         'attribute_$which',
         'A property used to create a visible (i.e.: enumerable) constant `.$which` attribute.',
@@ -28,17 +28,17 @@ if (Gem.Configuration.clarity) {
 
 
 //
-//  Gem.Core.codify_bound_method
-//      Stub for Gem.Core.codify_bound_method
+//  Gem.Boot.Core.codify_bound_method
+//      Stub for Gem.Boot.Core.codify_bound_method
 //
 //  NOTE:
 //      See "js/plugin/Beryl.js" for an explanation of why stub's are used.
 //      See "Gem/Beryl/Boot6_Methods.js" for full implementation
 //
-Gem.Core.codify_method(
-    Gem.Core,
+Gem.Boot.Core.codify_method(
+    Gem.Boot,
     'codify_bound_method',
-    'Stub for Gem.Core.codify_bound_method',
+    'Stub for Gem.Boot.Core.codify_bound_method',
     function codifier$Gem__Core__codify_bound_method() {
         //
         //  Imports
@@ -167,10 +167,10 @@ Gem.Core.codify_method(
 
 
 //
-//  Gem.Core.identifier_test
+//  Gem.Boot.Core.identifier_test
 //      Test a string to see if it represents an identifier.
 //
-Gem.Core.codify_bound_method(
+Gem.Boot.Core.codify_bound_method(
     'identifier_test',
     'Test a string to see if it represents an identifier.',
     'Binding of an identifier pattern (Regular expression for an identifier) to `RegExp.prototype.exec`.',
@@ -201,10 +201,10 @@ Gem.Core.codify_bound_method(
 
 
 //
-//  Gem.Core.throw_must_be_identifier
+//  Gem.Boot.Core.throw_must_be_identifier
 //      Throw a type error when a parameter is not a string representing an identifier.
 //
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'throw_must_be_identifier',
     'Throw a type error when a parameter is not a string representing an identifier.',
@@ -233,7 +233,7 @@ Gem.Core.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Core.throw_must_be_identifier', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Boot.Core.throw_must_be_identifier', 2, arguments.length)
                 }
 
                 if (typeof name !== 'string') { throw_must_be_a_string('name', name) }
@@ -273,7 +273,7 @@ Gem.Core.codify_method(
 //      Gem.Script.load
 //          Load JavaScript code using a `<script>` tag.
 //
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$push_to_callback_later$recodify$Gem__Script__load() {
         if ( ! ('codify_load' in Gem.Script)) {
             //

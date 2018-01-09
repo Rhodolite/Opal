@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Trace,
     'codify_untraced_method',
     'Interim stub for `Gem.Trace.codify_untraced_method`',

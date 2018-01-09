@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.qualify_constant.call(
+Gem.Boot.qualify_constant(
     Gem.Box,
     'invisible_constructor_property',
     'Stub for a property to create an invisible `.constructor` attribute.',
@@ -124,7 +124,7 @@ Gem.Core.qualify_constant.call(
 
 
 if (Gem.Configuration.unit_test) {
-    Gem.Core.execute(
+    Gem.Boot.Core.execute(
         function execute$test_InvisibleConstructorProperty() {
             var module = 'Gem.Beryl.Boot4_StubAttribute'
 

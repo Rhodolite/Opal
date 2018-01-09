@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'produce_create_FrozenBox__keep_normal_prototype',
     (
@@ -54,7 +54,7 @@ Gem.Core.codify_method(
 )
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'produce_create_FrozenBox__nullify_012_prototype',
     (
@@ -127,7 +127,7 @@ Gem.Core.codify_method(
 
 
 Gem.Core.codify_method(
-    Gem.Core,
+    Gem.Boot,
     'create_InvisibleConstantAttributeBox',
     (
           'Create a sealed object with a class name of "InvisibleConstantAttributeBox" (used for creating invisible'
@@ -162,7 +162,7 @@ Gem.Core.codify_method(
 )
 
 
-Gem.Core.qualify_constant(
+Gem.Boot.qualify_constant(
     'attribute_constructor',
     'A property to create an invisible constant `.constructor` attribute',
     function qualifier$Gem__Core__attribute_constructor() {
@@ -180,7 +180,7 @@ Gem.Core.qualify_constant(
         //  Implementation
         //
         if (clarity) {
-            return Gem.Core.create_InvisibleConstantAttributeBox(
+            return Gem.Boot.Core.create_InvisibleConstantAttributeBox(
                 {
                     $what : { value : 'A property to create an invisible constant `.constructor` attribute' },
                     value : { value : undefined, writable: true }//,
@@ -188,7 +188,7 @@ Gem.Core.qualify_constant(
             )
         }
 
-        return Gem.Core.create_InvisibleConstantAttributeBox(
+        return Gem.Boot.Core.create_InvisibleConstantAttributeBox(
             {
                 value : { value : undefined }//,
             }//,
@@ -197,7 +197,7 @@ Gem.Core.qualify_constant(
 )
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'create_RootPrototype',
     'Create a root prototype box.',
@@ -207,7 +207,7 @@ Gem.Core.codify_method(
         //
         var Gem = window.Gem
 
-        var Core = Gem.Core
+        var Core = Gem.Boot.Core
 
         var attribute_constructor    = Core.attribute_constructor
         var produce_create_FrozenBox = Core.produce_create_FrozenBox__keep_normal_prototype
@@ -246,7 +246,7 @@ Gem.Core.codify_method(
 )
 
 
-Gem.Core.codify_method(
+Gem.Boot.Core.codify_method(
     Gem.Core,
     'test1',
     'Test 1 of produce_create_FrozenBox__nullify_012_prototype',
@@ -256,7 +256,7 @@ Gem.Core.codify_method(
         //
         var Gem = window.Gem
 
-        var Core = Gem.Core
+        var Core = Gem.Boot.Core
 
         var create__RootPrototype = Core.create_RootPrototype
 
@@ -279,7 +279,7 @@ Gem.Core.codify_method(
 )
 
 
-window.z = Gem.Core.test1
+window.z = Gem.Boot.Core.test1
 
 
 console.log('%o', z().prototype)

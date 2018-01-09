@@ -6,15 +6,15 @@
 
 
 //
-//  Gem.Core.module
+//  Gem.Boot.Core.module
 //      Define a Gem Module.
 //
 //      The module may be specified as 'dynamic' if it can be reloaded.
 //
 //      Also in clarity mode adds a `.$who`, and `.$what` to the module.
 //
-Gem.Core.codify_method(
-    Gem.Core,
+Gem.Boot.Core.codify_method(
+    Gem.Boot.Core,
     'module',
     (
           'Define a Gem Module.\n'
@@ -30,7 +30,7 @@ Gem.Core.codify_method(
         var Gem = window.Gem
 
         var Configuration = Gem.Configuration
-        var Core          = Gem.Core
+        var Core          = Gem.Boot.Core
 
         var clarity           = Configuration.clarity
         var constant_property = Core.constant_property
@@ -75,7 +75,7 @@ Gem.Core.codify_method(
 
             /*arguments*/ {
                 if (arguments.length !== 3) {
-                    throw_wrong_arguments('Gem.Core.module', 3, arguments.length)
+                    throw_wrong_arguments('Gem.Boot.Core.module', 3, arguments.length)
                 }
 
                 if ( ! (typeof who === 'string' && identifier_test(who))) {

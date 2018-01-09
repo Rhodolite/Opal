@@ -5,7 +5,7 @@
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
 
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$Gem__clear__and__log_Gem() {
         Gem.NodeWebKit.show_developer_tools()
         //console.clear()
@@ -14,7 +14,7 @@ Gem.Core.execute(
 )
 
 
-Gem.Core.execute(
+Gem.Boot.Core.execute(
     function execute$development_code() {
     }//,
 )
