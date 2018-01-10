@@ -199,7 +199,7 @@ Gem.Boot.Core.execute(
 //  Gem.Throw.throw_must_be_an_object
 //      Throw a type error when a parameter is not an object.
 //
-Gem.Boot.Core.codify_interim_method(
+Gem.Boot.Core.codify_method(
     Gem.Throw,
     'throw_must_be_an_object',
     'Throw a type error when a parameter is not an object.',

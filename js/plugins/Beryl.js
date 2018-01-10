@@ -33,7 +33,6 @@ window.Gem = {
             }//,
 
             //  clarity_note          : Function            //          Add a note to a variable or set of variables.
-            //  codify_interim_method : Function            //          Create the code for a method as a closure.
             //  codify_method         : Function            //          Create the code for a method as a closure.
             //  constant              : Function            //          Store a global Gem constant.
             //  method                : Function            //          Define a Gem method.
@@ -1252,7 +1251,7 @@ Gem.Boot.Core.execute(
                     Boot_Tracing[who_what__who] = 0
                 }
 
-                var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                var who_what = function Gem__Boot__private__Core__who_what(module, $who, $what, create_prefix) {
                     if (create_prefix) {
                         if ($who.startsWith('Gem.Boot._.')) {
                             var _prefix = $who.replace('Gem.Boot._.', 'Gem__Boot__private__')
@@ -1295,7 +1294,7 @@ Gem.Boot.Core.execute(
                     }
                 }
             } else {
-                var who_what = function interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                var who_what = function Gem__Boot__private__Core__who_what(module, $who, $what, create_prefix) {
                     //
                     //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
                     //
@@ -1312,11 +1311,11 @@ Gem.Boot.Core.execute(
 
 
                 //
-                //  trace$interim$Gem__private__Core__who_what
+                //  trace$Gem__Boot__private__Core__who_what
                 //      This special version of tracing has to set `module.$who` before calling `function_call`,
                 //      so that `function_call` can properly identify `module`.
                 //
-                var who_what = function trace$interim$Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                var who_what = function trace$Gem__Boot__private__Core__who_what(module, $who, $what, create_prefix) {
                     if ( ! tracing(who_what__who)) {
                         original_who_what(module, $who, $what, create_prefix)
                         return
@@ -1335,8 +1334,8 @@ Gem.Boot.Core.execute(
                     procedure_done()
                 }
 
-                interim_constant_attribute(original_who_what, '$who',   who_what__who)
-                interim_constant_attribute(who_what,          '$trace', original_who_what)
+                constant_attribute(original_who_what, '$who',   who_what__who)
+                constant_attribute(who_what,          '$trace', original_who_what)
             }
 
 
@@ -1396,41 +1395,41 @@ Gem.Boot.Core.execute(
         //      (in clarity mode), after which this method is invalid.
         //
         var method__no_trace = wrap_function(
-                function interim$Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
-                    //  Common code to define a method with no tracing.
-                    //
-                    //  NOTE:
-                    //      Due to the call of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
-                    //      rewritten, after which this method is invalid.
+            function Gem__Boot__private__Core__method__no_trace(instance, interim, who, $what, method) {
+                //  Common code to define a method with no tracing.
+                //
+                //  NOTE:
+                //      Due to the call of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                //      rewritten, after which this method is invalid.
 
-                    if ('$trace' in method) {
-                        throw new Error('method_no_trace: function "' + method.name + '" has a `.$trace` attribute')
+                if ('$trace' in method) {
+                    throw new Error('method_no_trace: function "' + method.name + '" has a `.$trace` attribute')
+                }
+
+                if (clarity) {
+                    if ( ! ('$who' in instance)) {
+                        throw new Error('method_no_trace: missing $who in object')
                     }
 
-                    if (clarity) {
-                        if ( ! ('$who' in instance)) {
-                            throw new Error('method_no_trace: missing $who in object')
-                        }
+                    var function_name = instance.$who + '.' + who
 
-                        var function_name = instance.$who + '.' + who
-
-                        /*=*/ {
-                            //  constant method.$who  = function_name
-                            //  constant method.$what = $what
-                            constant_$who_$what_attributes(method, function_name, $what)
-                        }
+                    /*=*/ {
+                        //  constant method.$who  = function_name
+                        //  constant method.$what = $what
+                        constant_$who_$what_attributes(method, function_name, $what)
                     }
+                }
 
-                    if (interim || Boot_Script.dynamic) {                       //  See NOTE above
-                        //  interim constant instance.*who = method
-                        interim_constant_attribute(instance, who, method)
-                    } else {
-                        //  constant instance.*who = method
-                        constant_attribute(instance, who, method)
-                    }
-                },
-                'Gem.Boot._.Core.method__no_trace'//,
-            )
+                if (interim || Boot_Script.dynamic) {                       //  See NOTE above
+                    //  interim constant instance.*who = method
+                    interim_constant_attribute(instance, who, method)
+                } else {
+                    //  constant instance.*who = method
+                    constant_attribute(instance, who, method)
+                }
+            },
+            'Gem.Boot._.Core.method__no_trace'//,
+        )
 
 
         if (trace) {
@@ -1443,121 +1442,124 @@ Gem.Boot.Core.execute(
             //      (in clarity mode), after which this method is invalid.
             //
             var traced_method__common = wrap_function(
-                    function interim$Gem__private__Trace__traced_method__common(
-                            instance, interim, who, $what, wrapped_method//,
-                    ) {
-                        //  Common code to define a traced method
-                        //
-                        //  NOTE:
-                        //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
-                        //      rewritten (in clarity mode), after which this method is invalid.
+                function Gem__Boot__private__Trace__traced_method__common(
+                        instance, interim, who, $what, wrapped_method//,
+                ) {
+                    //  Common code to define a traced method
+                    //
+                    //  NOTE:
+                    //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                    //      rewritten (in clarity mode), after which this method is invalid.
 
-                        if (clarity) {
-                            var method = wrapped_method.$trace
+                    if (clarity) {
+                        var method = wrapped_method.$trace
 
-                            /*=*/ {
-                                //  constant method.$what = $what
-                                constant_attribute(method, '$what', $what)
-                            }
-
-                            if (method === wrapped_method) {
-                                if ( ! ('$who' in method)) {
-                                    throw new Error(
-                                            (
-                                                  'method'
-                                                + ' "' + method.name + '"'
-                                                + ' (that traces itself) must have a `.$who` attribute'
-                                            )//,
-                                        )
-                                }
-                            } else {
-                                /*=*/ {
-                                    //  constant wrapped_method.$who  = 'TRACED: ' + method.$who
-                                    //  constant wrapped_method.$what = 'TRACED: ' + $what
-                                    constant_$who_$what_attributes(
-                                            wrapped_method,
-                                            'TRACED: ' + method.$who,
-                                            'TRACED: ' + $what//,
-                                        )
-                                }
-                            }
+                        /*=*/ {
+                            //  constant method.$what = $what
+                            constant_attribute(method, '$what', $what)
                         }
 
-                        if (interim || Boot_Script.dynamic) {                            //  See NOTE above
-                            //  interim constant instance.*who = wrapped_method
-                            interim_constant_attribute(instance, who, wrapped_method)
+                        if (method === wrapped_method) {
+                            if ( ! ('$who' in method)) {
+                                throw new Error(
+                                        (
+                                              'method'
+                                            + ' "' + method.name + '"'
+                                            + ' (that traces itself) must have a `.$who` attribute'
+                                        )//,
+                                    )
+                            }
                         } else {
-                            //  constant instance.*who = wrapped_method
-                            constant_attribute(instance, who, wrapped_method)
+                            /*=*/ {
+                                //  constant wrapped_method.$who  = 'TRACED: ' + method.$who
+                                //  constant wrapped_method.$what = 'TRACED: ' + $what
+                                constant_$who_$what_attributes(
+                                        wrapped_method,
+                                        'TRACED: ' + method.$who,
+                                        'TRACED: ' + $what//,
+                                    )
+                            }
                         }
-                    },
-                    'Gem.Boot._.Trace.traced_method__common'//,
-                )
+                    }
+
+                    if (interim || Boot_Script.dynamic) {                            //  See NOTE above
+                        //  interim constant instance.*who = wrapped_method
+                        interim_constant_attribute(instance, who, wrapped_method)
+                    } else {
+                        //  constant instance.*who = wrapped_method
+                        constant_attribute(instance, who, wrapped_method)
+                    }
+                },
+                'Gem.Boot._.Trace.traced_method__common'//,
+            )
 
 
             var interim_method = wrap_function(
-                    function interim$Gem__Core__interim_method(instance, who, $what, method) {
-                        //  Store a method.
-                        //
-                        //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-                        //
-                        //  NOTE:
-                        //      This is the interim boot version of `method`.
+                function Gem__Boot__Core__interim_method(instance, who, $what, method) {
+                    //  Store a method.
+                    //
+                    //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                    //
+                    //  NOTE:
+                    //      This is the interim boot version of `method`.
 
-                        if ( ! ('$who' in instance)) {
-                            throw new Error('Gem.Boot.Core.interim_method: missing $who in object')
-                        }
+                    if ( ! ('$who' in instance)) {
+                        throw new Error('Gem.Boot.Core.interim_method: missing $who in object')
+                    }
 
-                        var function_name  = instance.$who + '.' + who
-                        var wrapped_method = wrap_function(method, function_name)
+                    var function_name  = instance.$who + '.' + who
+                    var wrapped_method = wrap_function(method, function_name)
 
-                        traced_method__common(instance, true, who, $what, wrapped_method)
-                    },
-                    'Gem.Boot.Core.interim_method'//,
-                )
+                    traced_method__common(instance, true, who, $what, wrapped_method)
+                },
+                'Gem.Boot.Core.interim_method'//,
+            )
 
             var method = wrap_function(
-                    function interim$Gem__Boot__Core__method(instance, who, $what, method) {
-                        //  Store an iterim method.
-                        //
-                        //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-                        //
-                        //  NOTE:
-                        //      This is the interim boot version of `interim_method`.
+                function Gem__Boot__Core__method(instance, who, $what, method) {
+                    //  Store an iterim method.
+                    //
+                    //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                    //
+                    //  NOTE:
+                    //      This is the interim boot version of `interim_method`.
 
-                        if ( ! ('$who' in instance)) {
-                            throw new Error('Gem.Boot.Core.method: missing $who in object')
-                        }
+                    if ( ! ('$who' in instance)) {
+                        throw new Error('Gem.Boot.Core.method: missing $who in object')
+                    }
 
-                        var function_name  = instance.$who + '.' + who
-                        var wrapped_method = wrap_function(method, function_name)
+                    var function_name  = instance.$who + '.' + who
+                    var wrapped_method = wrap_function(method, function_name)
 
-                        traced_method__common(instance, false, who, $what, wrapped_method)
-                    },
-                    'Gem.Boot.Core.method'//,
-                )
+                    traced_method__common(instance, false, who, $what, wrapped_method)
+                },
+                'Gem.Boot.Core.method'//,
+            )
 
             var traced_method = wrap_function(
-                    function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
-                        //  Store a traced method.
-                        //
-                        //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-                        //
-                        //  NOTE:
-                        //      This is the interim boot version of `traced_method`.
+                function Gem__Boot__Trace__traced_method(instance, who, $what, wrapped_method) {
+                    //  Store a traced method.
+                    //
+                    //  In trace mode the method must either be self-tracing and wrapped with `cocoon`, or already
+                    //  wrapped within a tracing function.
+                    //
+                    //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                    //
+                    //  NOTE:
+                    //      This is the interim boot version of `traced_method`.
 
-                        if ( ! ('$trace' in wrapped_method)) {
-                            throw new Error(
-                                    'traced_method: missing `.$trace` in function "' + wrapped_method.name + '"'//,
-                                )
-                        }
+                    if ( ! ('$trace' in wrapped_method)) {
+                        throw new Error(
+                                'traced_method: missing `.$trace` in function "' + wrapped_method.name + '"'//,
+                            )
+                    }
 
-                        traced_method__common(instance, false, who, $what, wrapped_method)
-                    },
-                    'Gem.Boot.Trace.traced_method'//,
-                )
+                    traced_method__common(instance, false, who, $what, wrapped_method)
+                },
+                'Gem.Boot.Trace.traced_method'//,
+            )
         } else {
-            var interim_method = function interim$Gem__Core__interim_method(instance, who, $what, method) {
+            var interim_method = function Gem__Boot__Core__interim_method(instance, who, $what, method) {
                 //  Store an iterim method.
                 //
                 //  Ignores parameter `$what` since not in clarity mode.
@@ -1568,7 +1570,7 @@ Gem.Boot.Core.execute(
                 method__no_trace(instance, true, who, $what, method)
             }
 
-            var method = function interim$Gem__Core__method(instance, who, $what, method) {
+            var method = function Gem__Boot__Core__method(instance, who, $what, method) {
                 //  Store a method.
                 //
                 //  Ignores parameter `$what` since not in clarity mode.
@@ -1587,8 +1589,11 @@ Gem.Boot.Core.execute(
             //      (However, different functions are used, so then can each acquire their unique `.$who` and
             //      `.$what` attributes in clarity mode).
             //
-            var traced_method = function interim$Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
+            var traced_method = function Gem__Boot__Trace__traced_method(instance, who, $what, wrapped_method) {
                 //  Store a traced method.
+                //
+                //  In trace mode the method must either be self-tracing and wrapped with `cocoon`, or already wrapped
+                //  within a tracing function.
                 //
                 //  Ignores parameter `$what` since not in clarity mode.
                 //
@@ -1612,13 +1617,12 @@ Gem.Boot.Core.execute(
                 + 'NOTE:\n'
                 + "    This is the interim boot version of `clarity_note`."
             ),
-            function interim$Gem__Boot__Core__clarity_note(instance, who, $what) {
+            function Gem__Boot__Core__clarity_note(instance, who, $what) {
                 //  Add a note to a variable or set of variables (clarity mode only).
                 //
                 //  NOTE:
                 //      This is the interim boot version of `clarity_note`.
 
-                //TODO: FIX TO USE Boot_SCRIPT.DYNAMIC
                 if (clarity) {
                     /*=*/ {
                         //  instance[who + '$NOTE'] = $what
@@ -1643,7 +1647,7 @@ Gem.Boot.Core.execute(
                 + 'NOTE:\n'
                 + "    This is the interim boot version of `codify_method`."
             ),
-            function interim$Gem__Boot__Core__codify_method(instance, who, $what, codifier) {
+            function Gem__Boot__Core__codify_method(instance, who, $what, codifier) {
                 //  Create the code for a method as a closure to avoid the use of any global variables.
                 //
                 //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
@@ -1683,8 +1687,8 @@ Gem.Boot.Core.execute(
             ),
             (
                 clarity
-                    //TODO: FIX TO USE Boot_SCRIPT.DYNAMIC
-                    ? function interim$Gem__Boot__Core__constant(instance, who, $what, value) {
+                    // FIX TO USE PROPERTIES
+                    ? function Gem__Boot__Core__constant(instance, who, $what, value) {
                           //  Store a global Gem constant.
                           //
                           //  Also in clarity mode adds an explanation of what the constant does.
@@ -1702,7 +1706,7 @@ Gem.Boot.Core.execute(
                               constant_attribute(instance, who + '$', $what)
                           }
                       }
-                    : function interim$Gem__Boot__Core__constant(instance, who, $what, value) {
+                    : function Gem__Boot__Core__constant(instance, who, $what, value) {
                           //  Store a global Gem constant.
                           //
                           //  Ignores parameter `$what` since not in clarity mode.
@@ -1757,16 +1761,22 @@ Gem.Boot.Core.execute(
             (
                   'Qualify a global Gem constant.\n'
                 + '\n'
-                + 'The `qualifier` argument is a function that returns the value of the constant.'
+                + "The `qualifier` argument is a function that returns the value of the constant."
                 + '\n'
                 + 'Also in clarity mode adds an explanation of what the constant does.'
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `qualify_method`."
             ),
-            function interim$Gem__Boot__Core__qualify_constant(who, $what, qualifier) {
-                //      Qualify a global Gem constant.
+            function Gem__Boot__Core__qualify_constant(who, $what, qualifier) {
+                //  Qualify a global Gem constant.
                 //
-                //      The `qualifier` argument is a function that returns the value of the constant.
+                //  The `qualifier` argument is a function that returns the value of the constant.
                 //
-                //      Also in clarity mode adds an explanation of what the variable does.
+                //  Also in clarity mode adds an explanation of what the variable does.
+                //
+                //  NOTE:
+                //      This is the interim boot version of `qualify_method`.
 
                 var value = trace_call(qualifier)
 
@@ -1790,7 +1800,17 @@ Gem.Boot.Core.execute(
         traced_method(
             Boot_Trace,
             'traced_method',
-            'Interim method for Gem.Boot.Trace.traced_method',
+            (
+                  'Store a traced method.\n'
+                + '\n'
+                + "In trace mode the method must either be self-tracing and wrapped with `cocoon`, or already"
+                + ' wrapped within a tracing function.\n'
+                + '\n'
+                + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `traced_method`."
+            ),
             traced_method//,
         )
 
@@ -1826,7 +1846,7 @@ Gem.Boot.Core.execute(
         traced_method(
             _Boot_Core,
             'method__no_trace',
-            'Interim common helper code to create a method with no tracing.',
+            'Common helper code to create a method with no tracing.',
             method__no_trace//,
         )
 
@@ -1840,8 +1860,8 @@ Gem.Boot.Core.execute(
                 'who_what',
                 (
                     clarity
-                        ? "Interim method to set `.$who`, `.$what`, & `prefix` on a module."
-                        : "Interim method to set `.$who` on a module (`$what` is ignored in non clarity mode)."
+                        ? "Method to set `.$who`, `.$what`, & `prefix` on a module."
+                        : "Method to set `.$who` on a module (`$what` is ignored in non clarity mode)."
                 ),
                 who_what//,
             )
@@ -1908,113 +1928,6 @@ Gem.Boot.Trace.traced_method(
     'execute',
     'Execute code defined in a function.  This allows the use of local variables.',
     Gem.Boot.Core.execute//,
-)
-
-
-//
-//  Gem.Boot.Core.codify_interim_method
-//      Create the code for an interim method as a closure to avoid the use of any global variables.
-//
-//  "An iterim method" means the method may be later replaced with another method.
-//
-//  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-//
-//  NOTE
-//      This is the interim boot version of `codify_iterim_method`."
-//
-Gem.Boot.Core.codify_method(
-    Gem.Boot.Core,
-    'codify_interim_method',
-    (
-          'Create the code for an interim method as a closure to avoid the use of any global variables.\n'
-        + '\n'
-        + '"An iterim method" means the method may be later replaced with another method.\n'
-        + '\n'
-        + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
-        + '\n'
-        + 'NOTE:\n'
-        + "    This is the interim boot version of `codify_iterim_method`."
-    ),
-    function codifier$Gem__Boot__Core__codify_interim_method() {
-        //
-        //  Imports
-        //
-        var Gem = window.Gem
-
-        var Configuration = Gem.Configuration
-
-        var trace = Configuration.trace
-
-
-        //
-        //  Implementation
-        //
-        if ( ! trace) {
-            //
-            //  Imports: No tracing version
-            //
-            var _Boot_Core = Gem.Boot._.Core
-
-            var method__no_trace = _Boot_Core.method__no_trace
-
-            //
-            //  Implementation: No tracing version
-            //
-            return function interim$Gem__Boot__Core__codify_interim_method(instance, who, $what, codifier) {
-                //  Create the code for an interim method as a closure to avoid the use of any global variables.
-                //
-                //  "An iterim method" means the method may be later replaced with another method.
-                //
-                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
-                //
-                //  NOTE
-                //      This is the interim boot version of `codify_iterim_method`."
-
-                var method = codifier()
-
-                method__no_trace(instance, true, who, $what, method)
-            }
-        }
-
-
-        //
-        //  Imports: Tracing version
-        //
-        var Error = window.Error
-
-        var Boot        = Gem.Boot
-        var _Boot_Trace = Boot._.Trace
-        var Boot_Trace  = Boot.Trace
-
-        var trace_call            = Boot_Trace.trace_call
-        var traced_method__common = _Boot_Trace.traced_method__common
-        var wrap_function         = Boot_Trace.wrap_function
-
-
-        //
-        //  Implementation: Tracing version
-        //
-        return function interim$Gem__Boot__Core__codify_interim_method(instance, who, $what, codifier) {
-            //  Create the code for an interim method as a closure to avoid the use of any global variables.
-            //
-            //  "An iterim method" means the method may be later replaced with another method.
-            //
-            //  Ignores parameter `$what` since not in clarity mode.
-            //
-            //  NOTE
-            //      This is the interim boot version of `codify_iterim_method`."
-
-            if ( ! ('$who' in instance)) {
-                throw new Error('missing $who in object')
-            }
-
-            var method         = trace_call(codifier)
-            var function_name  = instance.$who + '.' + who
-            var wrapped_method = wrap_function(method, function_name)
-
-            traced_method__common(instance, true, who, $what, wrapped_method)
-        }
-    }
 )
 
 
@@ -2358,7 +2271,7 @@ if (Gem.Boot.Script.handle_errors) {
     //          1.  Here;
     //          2.  Again, in clarity mode, after `Gem` is replaced.
     //
-    Gem.Boot.Core.codify_interim_method(
+    Gem.Boot.Core.codify_method(
         Gem.Boot.Script,
         'codify_handle_event',
         (
@@ -2369,7 +2282,7 @@ if (Gem.Boot.Script.handle_errors) {
             + '    1.  Here;\n'
             + "    2.  Again, in Clarity mode, after global variable `Gem` is replaced."
         ),
-        function codifier$interim$Gem__Script__codify_handle_event() {
+        function codifier$Gem__Boot__Script__codify_handle_event() {
             //
             //  Imports
             //
@@ -2384,19 +2297,7 @@ if (Gem.Boot.Script.handle_errors) {
             //
             //  Implementation
             //
-            return function interim$Gem__Script__codify_handle_event(interim) {
-                //
-                //  Imports
-                //
-                var Gem = window.Gem                                    //  Reload latest `Gem`
-
-                var Boot_Script = Gem.Boot.Script                       //  Reload lastest `Gem.Boot.Script`
-
-
-                //
-                //  Implementation
-                //
-
+            return function Gem__Boot__Script__codify_handle_event(Script) {
                 //
                 //  NOTE #1:
                 //      `handle_event` has to refer to itself; hence it has to be stored in variable
@@ -2420,7 +2321,7 @@ if (Gem.Boot.Script.handle_errors) {
                 //      Any syntax error (on successful load) can be caught & is caught by
                 //      `Gem.Boot.Script.handle_global_error` above.
                 //
-                var script_handle_event = function Gem__Script__handle_event(e) {
+                var script_handle_event = function Gem__Boot__Script__handle_event(e) {
                     //  Handle events of `<script>` tags
 
                     Boot_Script.dynamic = false                                 //  Script done, reset `.dynamic`
@@ -2443,10 +2344,8 @@ if (Gem.Boot.Script.handle_errors) {
                 //  Gem.Boot.Script.handle_event
                 //      Handle events of `<script>` tags.
                 //
-                var method = (interim ?  Gem.Boot.Core.interim_method : Gem.Boot.Core.method)
-
-                method(
-                    Gem.Boot.Script,
+                Gem.Boot.Core.method(
+                    Script,
                     'handle_event',
                     "Handle events of `<script>` tags.",
                     script_handle_event//,
@@ -2494,7 +2393,7 @@ Gem.Boot.Core.qualify_constant.call(
 //          1.  Initially;
 //          2.  Again, in clarity mode, after `Gem` is replaced.
 //
-Gem.Boot.Core.codify_interim_method(
+Gem.Boot.Core.codify_method(
     Gem.Boot.Script,
     'codify_load',
     (
@@ -2547,7 +2446,7 @@ Gem.Boot.Core.codify_interim_method(
 
 
         if (handle_errors) {
-            return function interim$Gem__Script__codify_load(Script) {
+            return function Gem__Boot__Script__codify_load(Script) {
                 //  Codify method `Gem.Boot.Script.load`.
                 //
                 //  This routine can be called multiple times:
@@ -2721,7 +2620,7 @@ Gem.Boot.Core.execute(
             if (handle_errors) {
                 var codify_handle_event = Boot_Script.codify_handle_event
 
-                codify_handle_event(Gem.Configuration.clarity)      //  Call first time here ...
+                codify_handle_event(Boot_Script)                //  Call first time here ...
             }
 
             codify_load(Boot_Script)

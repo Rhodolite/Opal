@@ -504,3 +504,110 @@ Gem.Core.execute(
 Gem.Script.dynamic = true                                   //  Allow this `<script>` to be reloaded
 
 
+//
+//  Gem.Boot.Core.codify_interim_method
+//      Create the code for an interim method as a closure to avoid the use of any global variables.
+//
+//  "An iterim method" means the method may be later replaced with another method.
+//
+//  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+//
+//  NOTE
+//      This is the interim boot version of `codify_iterim_method`."
+//
+Gem.Boot.Core.codify_method(
+    Gem.Boot.Core,
+    'codify_interim_method',
+    (
+          'Create the code for an interim method as a closure to avoid the use of any global variables.\n'
+        + '\n'
+        + '"An iterim method" means the method may be later replaced with another method.\n'
+        + '\n'
+        + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+        + '\n'
+        + 'NOTE:\n'
+        + "    This is the interim boot version of `codify_iterim_method`."
+    ),
+    function codifier$Gem__Boot__Core__codify_interim_method() {
+        //
+        //  Imports
+        //
+        var Gem = window.Gem
+
+        var Configuration = Gem.Configuration
+
+        var trace = Configuration.trace
+
+
+        //
+        //  Implementation
+        //
+        if ( ! trace) {
+            //
+            //  Imports: No tracing version
+            //
+            var _Boot_Core = Gem.Boot._.Core
+
+            var method__no_trace = _Boot_Core.method__no_trace
+
+            //
+            //  Implementation: No tracing version
+            //
+            return function interim$Gem__Boot__Core__codify_interim_method(instance, who, $what, codifier) {
+                //  Create the code for an interim method as a closure to avoid the use of any global variables.
+                //
+                //  "An iterim method" means the method may be later replaced with another method.
+                //
+                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
+                //
+                //  NOTE
+                //      This is the interim boot version of `codify_iterim_method`."
+
+                var method = codifier()
+
+                method__no_trace(instance, true, who, $what, method)
+            }
+        }
+
+
+        //
+        //  Imports: Tracing version
+        //
+        var Error = window.Error
+
+        var Boot        = Gem.Boot
+        var _Boot_Trace = Boot._.Trace
+        var Boot_Trace  = Boot.Trace
+
+        var trace_call            = Boot_Trace.trace_call
+        var traced_method__common = _Boot_Trace.traced_method__common
+        var wrap_function         = Boot_Trace.wrap_function
+
+
+        //
+        //  Implementation: Tracing version
+        //
+        return function interim$Gem__Boot__Core__codify_interim_method(instance, who, $what, codifier) {
+            //  Create the code for an interim method as a closure to avoid the use of any global variables.
+            //
+            //  "An iterim method" means the method may be later replaced with another method.
+            //
+            //  Ignores parameter `$what` since not in clarity mode.
+            //
+            //  NOTE
+            //      This is the interim boot version of `codify_iterim_method`."
+
+            if ( ! ('$who' in instance)) {
+                throw new Error('missing $who in object')
+            }
+
+            var method         = trace_call(codifier)
+            var function_name  = instance.$who + '.' + who
+            var wrapped_method = wrap_function(method, function_name)
+
+            traced_method__common(instance, true, who, $what, wrapped_method)
+        }
+    }
+)
+
+
