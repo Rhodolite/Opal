@@ -8,6 +8,7 @@ BERYL_FILES = \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
 	../Gem/Beryl/Boot3_StubBox.js \
 	../Gem/Beryl/Boot3_TraceConstructor.js \
+	../Gem/Beryl/Boot4_Methods.js \
 	../Gem/Beryl/Boot4_StubAttribute.js \
 	../Gem/Beryl/Boot4_StubCodifyTracedMethod.js \
 	../Gem/Beryl/Boot4_StubConstructor.js \
@@ -60,7 +61,7 @@ clean:
 	rm -f g.js
 	rm -f i.html
 	rm -f j.js j0.js jk.js
-	rm -f m
+	rm -f m m.js
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
 	rm -f s.js sax.js sc.js scum.js sr.js sx.js
@@ -95,6 +96,7 @@ links:
 	ln -s ../Junk/Junk0.js         		                    j0.js
 	ln -s ../Junk/Junk.js         		                    jk.js
 	ln -s Makefile						                    m
+	ln -s ../Gem/Beryl/Boot4_Methods.js      	            m.js
 	ln -s ../js/rpg_core.js         	                    rc.js
 	ln -s ../js/rpg_managers.js			                    rm.js
 	ln -s ../js/plugins/Opal.js	    	                    o.js

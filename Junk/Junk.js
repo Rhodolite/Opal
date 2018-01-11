@@ -611,3 +611,15 @@ Gem.Boot.Core.codify_method(
 )
 
 
+
+
+            //
+            //  property_$who
+            //      A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.
+            //
+            Core.constant(
+                _Core,
+                'property_$who
+                "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
+                property_$who//,
+            )

@@ -17,15 +17,28 @@ window.Gem = {
         clarity       : 1,                                  //      Set Gem clarity mode to true.
         debug         : true,                               //      Set Gem debug mode to true.
         show_alert    : false,                              //      [Temporary] Use 'alert' to warn of errors.
-        trace         : 0,                                  //      Trace function, method & bound method calls.
+        trace         : 1,                                  //      Trace function, method & bound method calls.
         unit_test     : 7,                                  //      Run unit tests.
         Box : {                                             //      Box configuration values.
             box_name : 1//,                                 //          Name 'box' instances 'Box' in Developer Tools.
         }//,
     },
 
+    Tracing : [                                             //  Functions, methods, & bound_methods being traced.
+        'constant_$who_$what_attributes', 1,
+        'Gem._.Core.who_what',            1,
+        'Gem.Trace.cocoon',               1,
+    ],
+
     Boot : {                                                //  Temporary support code during boot process.
-        Core : {                                            //      Basic support code for the Core Gem module.
+        Attribute : {                                       //      Boot support code for attributes
+        //  box_of_properties__enumerable_true : Box        //          Box to create `{ enumerable : true }`
+        //  constant_property                  : Box        //          Property to create a constant attribute
+        //  property_$trace                    : Box        //          Create `.$trace` property (trace mode only)
+        //  property_$who                      : Box        //          Create `.$who` property (clarity or trace ...)
+        },
+
+        Core : {                                            //      Boot support code for the Core Gem module.
             execute : function Gem__Core__execute(code) {
                 //  Execute code defined in a function.  This allows the use of local variables.
 
@@ -79,9 +92,6 @@ window.Gem = {
             wrap_function : Function//,                     //          Wrap a function with tracing.
         },
 
-        Tracing : [                                         //      Functions, methods, & bound_methods being traced.
-        ],
-
         _ : {                                               //      Private members & methods of all Gem modules.
             Core : {                                        //          Private members & ... Boot.Core Gem module.
                 //  clarity_mode$global_variable_Gem_changed : []   //  Callbacks to call when `Gem` is changed.
@@ -103,21 +113,154 @@ window.Gem = {
 
 
 Gem.Boot.Core.execute(
-    function execute$setup_Tracing() {
+    function execute$setup_Attribute_and_Tracing() {
         //
         //  Imports
         //
         var Gem = window.Gem
 
-        var Boot          = Gem.Boot
-        var Boot_Trace    = Boot.Trace
+        var Node = Gem.Boot
+
+        var Attribute     = Node.Attribute
+        var Trace         = Node.Trace
         var Configuration = Gem.Configuration
 
-        var trace = Configuration.trace
+        var clarity       = Configuration.clarity
+        var create_Object = Object.create
+        var freeze        = Object.freeze
+        var seal          = Object.seal
+        var trace         = Configuration.trace
 
 
         //
-        //  Implementation
+        //  Implementation: Attribute
+        //
+
+        //
+        //  property__constant__value_true = Box{
+        //      constant enumerable : true,
+        //      constant value      : true,
+        //  }
+        //
+        //      This is used to create a property:
+        //
+        //          1.  "permenant" (i.e.: not reconfigurable);
+        //          2.  "visible" (i.e.: enumerable);
+        //          3.  "constant" (i.e.: not writable);
+        //          4.  with a "value" of `true`
+        //
+        var property__constant__value_true = freeze(
+            create_Object(
+                null,
+                {
+                    enumerable : { enumerable: true, value : true },
+                    value      : { enumerable: true, value : true }//,
+                }//,
+            )//,
+        )
+
+
+        //
+        //  property__mutable__value_undefined = Box{
+        //      constant enumerable : true,
+        //      constant mutable    : true,
+        //      constant value      : undefined,
+        //  }
+        //
+        //      This is used to create a property:
+        //
+        //          1.  "permenant" (i.e.: not reconfigurable);
+        //          2.  "visible" (i.e.: enumerable);
+        //          3.  "mutable" (i.e.: writable);
+        //          4.  with a "value" of `undefined`
+        //
+        //      The `undefined` value is changed later (which is why it is mutable).
+        //
+        var property__mutable__value_undefined = freeze(
+            create_Object(
+                null,
+                {
+                    enumerable : { enumerable: true, value : true      },
+                    writable   : { enumerable: true, value : true      },
+                    value      : { enumerable: true, value : undefined }//,
+                }//,
+            )//,
+        )
+            
+
+        //
+        //  box_of_properties__enumerable_true = Box{
+        //      constant enumerable : Box{
+        //          constant enumerable : true,
+        //          constant value      : true,
+        //      },
+        //  }
+        //      
+        //      This box of properties is used to create two properties:
+        //
+        //          A. property "enumerable" as follows:
+        //
+        //              1.  "permenant" (i.e.: not reconfigurable);
+        //              2.  "visible" (i.e.: enumerable);
+        //              3.  "constant" (i.e.: not writable)
+        //              4.  With a value of `true`.
+        //
+        //          B. property "value" as follows:
+        //
+        //              1.  "permenant" (i.e.: not reconfigurable);
+        //              2.  "visible" (i.e.: enumerable);
+        //              3.  "mutable" (i.e.: writable)
+        //              4.  With a value of `undefined`.
+        //
+        //              The `undefined` value is changed later (which is why it is mutable).
+        //
+        var box_of_properties__enumerable_true = freeze(
+            create_Object(
+                null,
+                {
+                    enumerable : {
+                        enumerable : true,
+                        value      : property__constant__value_true//,
+                    },
+
+                    value : {
+                        enumerable : true,
+                        writable   : true,
+                        value      : property__mutable__value_undefined//,
+                    }//,
+                }//,
+            )//,
+        )
+
+        if (clarity || trace) {
+            //
+            //  property_$who = Box{ constant enumerable : true }
+            //
+            //      This is used to create a property:
+            //
+            //          1.  "permenant" (i.e.: not reconfigurable);
+            //          2.  "visible" (i.e.: enumerable);
+            //          3.  "constant" (i.e.: not writable);
+            //          4.  with a "value" to be determined later.
+            //
+            var property_$who = seal(create_Object(null, box_of_properties__enumerable_true))
+        }
+
+
+        //
+        //  Export: Attribute
+        //
+        Attribute.box_of_properties__enumerable_true = box_of_properties__enumerable_true
+        Attribute.property__constant__value_true     = property__constant__value_true
+        Attribute.property__mutable__value_undefined = property__mutable__value_undefined
+
+        if (clarity || trace) {
+            Attribute.property_$who = property_$who
+        }
+
+
+        //
+        //  Implementation: Trace
         //
         if (trace) {
             //
@@ -126,14 +269,12 @@ Gem.Boot.Core.execute(
             var console = window.console
             var Pattern = window.RegExp
 
-            var _Boot_Trace = Boot._Trace
-            var Boot_Core  = Boot.Core
+            var _Trace = Node._.Trace
+            var Core   = Node.Core
 
-            var clarity                     = Configuration.clarity
-            var create_Object               = Object.create
             var define_properties           = Object.defineProperties
             var define_property             = Object.defineProperty
-            var pending                     = _Boot_Trace.pending
+            var pending                     = _Trace.pending
 //          var unbound__group_start_closed = console.groupCollapsed
             var unbound__group_start_open   = console.group
             var unbound__group_stop         = console.groupEnd
@@ -145,7 +286,7 @@ Gem.Boot.Core.execute(
             //
             //  Closures
             //
-            var carriage_return__pattern    = new Pattern('\n', 'g')
+            var carriage_return__pattern = new Pattern('\n', 'g')
 
             if ('bind' in unbound__group_stop) {
                 var group_stop = unbound__group_stop.bind(console)
@@ -155,11 +296,8 @@ Gem.Boot.Core.execute(
                 }
             }
 
-            /*property_${who,trace} & self_trace_properties*/ {
-                var box_of_properties__enumerable = { enumerable : { value : true } }
-
-                var property_$who   = create_Object(null, box_of_properties__enumerable)
-                var property_$trace = create_Object(null, box_of_properties__enumerable)
+            /*property_$trace & self_trace_properties*/ {
+                var property_$trace = create_Object(null, box_of_properties__enumerable_true)
 
                 var self_trace_properties = create_Object(
                         null,
@@ -220,7 +358,6 @@ Gem.Boot.Core.execute(
             //  Implementaion
             //
 
-
             //
             //
             //  Adjust keys, changing the array to an object.
@@ -232,18 +369,18 @@ Gem.Boot.Core.execute(
             //              ['Gem.Boot.Core.execute'] : 7,
             //          }
             //
-            var tracing_list  = Boot.Tracing
+            var tracing_list  = Gem.Tracing
             var tracing_total = tracing_list.length
 
-            var Boot_Tracing     =
-                Gem.Boot.Tracing = {}
+            var Tracing      =
+                Node.Tracing = {}
 
 
             for (var i = 0; i < tracing_total; i += 2) {
                 var k = tracing_list[i]
                 var v = tracing_list[i + 1]
 
-                Boot_Tracing[k] = v
+                Tracing[k] = v
             }
 
 
@@ -266,8 +403,8 @@ Gem.Boot.Core.execute(
                     return trace
                 }
 
-                if (name in Boot_Tracing) {
-                    return Boot_Tracing[name]
+                if (name in Tracing) {
+                    return Tracing[name]
                 }
 
                 return 0
@@ -453,7 +590,7 @@ Gem.Boot.Core.execute(
                     zap_pending__1_to_end()
                 }
 
-                /*interim constant*/ {
+                /*[interim] constant*/ {
                     var format = '%c' + keyword + '%c '
                     push_color_blue()
                     push_color_none()
@@ -552,7 +689,7 @@ Gem.Boot.Core.execute(
                     zap_pending__1_to_end()
                 }
 
-                _Boot_Trace.depth += 1
+                _Trace.depth += 1
 
                 if (arguments.length === 3) {
                     var colored_function_name = '%c' + function_name + '%c'
@@ -644,7 +781,7 @@ Gem.Boot.Core.execute(
 
 
                 if (tracing_execute || tracing_myself) {
-                    var execute = Boot_Core.execute
+                    var execute = Core.execute
 
                     execute.$who = trace$execute__$who
 
@@ -680,7 +817,7 @@ Gem.Boot.Core.execute(
                     group_stop()
                 }
 
-                _Boot_Trace.depth -= 1
+                _Trace.depth -= 1
             }
 
 
@@ -708,7 +845,7 @@ Gem.Boot.Core.execute(
                 }
 
 
-                _Boot_Trace.depth -= 1
+                _Trace.depth -= 1
             }
 
 
@@ -716,11 +853,11 @@ Gem.Boot.Core.execute(
                 var trace = Configuration.trace             //  Get newest value of 'trace'
                 var name  = f.name
 
-                if ( ! (name in Boot_Tracing)) {
-                    Boot_Tracing[name] = 0
+                if ( ! (name in Tracing)) {
+                    Tracing[name] = 0
                 }
 
-                if (trace === 7 || (trace && Boot_Tracing[name])) {
+                if (trace === 7 || (trace && Tracing[name])) {
                     function_call(f)
 
                     var result = f()
@@ -734,70 +871,90 @@ Gem.Boot.Core.execute(
             }
 
 
-            //
-            //  cocoon
-            //      Wrap a function around itself for tracing (i.e.: create a self cocoon).
-            //
-            //      Creates attributes `.$trace` and `.$who` for self traced functions.
-            //
             /*cocoon*/ {
-                if ( ! ('cocoon' in Boot_Tracing)) {
-                    Boot_Tracing.cocoon = 0
-                }
+                var cocoon__$who = 'Gem.Trace.cocoon'
 
+                //
+                //  cocoon
+                //      Wrap a function around itself for tracing (i.e.: create a self cocoon).
+                //
+                //      Creates attributes `.$trace` and `.$who` for self traced functions.
+                //
+                /*cocoon*/ {
+                    var cocoon = function Gem__Trace__cocoon(f, /*optional*/ who) {
+                        //  Wrap a function around itself for tracing (i.e.: create a self cocoon).
+                        //
+                        //  Creates attributes `.$trace` and `.$who` for self traced functions.
 
-                var cocoon = function cocoon(f, $who) {
-                    //  Wrap a function around itself for tracing (i.e.: create a self cocoon).
-                    //
-                    //  Creates attributes `.$trace` and `.$who` for self traced functions.
+                        if (arguments.length === 1) {
+                            var function_name = f.name
+                        } else {
+                            var function_name = who
+                        }
 
-                    var trace = Configuration.trace             //  Get newest value of 'trace'
+                        if ( ! (function_name in Tracing)) {
+                            //
+                            //  Do this first before `Tracing.cocoon` below, to make sure to define `Tracing.cocoon`
+                            //  if not already defined.
+                            //
+                            Tracing[function_name] = 0
+                        }
 
-                    var tracing_self = (trace === 7 || (trace && Boot_Tracing.cocoon))
+                        var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    if (tracing_self) {
-                        function_call(cocoon, arguments)
-                    }
+                        var tracing_self = (trace === 7 || (trace && Tracing[cocoon__$who]))
 
-                    /*=*/ {
-                        //  constant f.$trace = f
-                        //  constant f.$who   = $who
+                        if (tracing_self) {
+                            function_call(cocoon, arguments)
+                        }
 
-                        property_$trace.value = f
-                        property_$who  .value = $who
+                        /*=*/ {
+                            //  constant f.$trace = f
+                            //  constant f.$who   = function_name
 
-                        define_properties(f, self_trace_properties)
+                            property_$trace.value = f
+                            property_$who  .value = function_name
 
-                        property_$trace  .value =
-                            property_$who.value = undefined
+                            define_properties(f, self_trace_properties)
 
-                        /*trace*/ {
-                            if (tracing_self) {
-                                trace_attribute('constant', f, '$trace', f)
-                                trace_attribute('constant', f, '$who',   $who)
+                            property_$trace  .value =
+                                property_$who.value = undefined
+
+                            /*trace*/ {
+                                if (tracing_self) {
+                                    trace_attribute('constant', f, '$trace', f)
+                                    trace_attribute('constant', f, '$who',   function_name)
+                                }
                             }
                         }
+
+                        if (tracing_self) {
+                            function_result(f)
+                        }
+
+                        return f
                     }
 
-                    if (tracing_self) {
-                        function_result(f)
-                    }
 
-                    return f
+                    //  Cocoon myself
+                    {
+                        //
+                        //  Must set `cocoon.$who` temporarly before calling `function_call` inside `cocoon`
+                        //      (Reset inside cocooning myself to a permenant constant)
+                        //
+                        /*=*/ {
+                            //  interim mutable cocoon.$who = cocoon__$who
+                            cocoon.$who = cocoon__$who
+                        }
+
+                        cocoon(cocoon, cocoon__$who)
+                    }
                 }
-
-
-                //  Cocoon myself
-                cocoon(cocoon, 'cocoon')
             }
 
 
             /*wrap_function*/ {
                 var wrap_function__$who = 'Gem.Boot.Trace.wrap_function'
-
-                if ( ! (wrap_function__$who in Boot_Tracing)) {
-                    Boot_Tracing[wrap_function__$who] = 0
-                }
 
 
                 //
@@ -808,10 +965,10 @@ Gem.Boot.Core.execute(
                 //      but that gets too confusing, especially when using F10/F11 in developer tools).
                 //
                 var wrap_function = cocoon(
-                    function interim$Gem__Boot__Trace__wrap_function(f, /*optional*/ function_name) {
+                    function interim$Gem__Boot__Trace__wrap_function(f, /*optional*/ who) {
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                        var trace_self = (trace === 7 || (trace && Boot_Tracing[wrap_function__$who]))
+                        var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
 
                         if (trace_self) {
                             function_call(wrap_function, arguments)
@@ -819,40 +976,40 @@ Gem.Boot.Core.execute(
 
                         if (arguments.length === 1) {
                             if ('$who' in f) {
-                                var name = f.$who
+                                var function_name = f.$who
                             } else {
-                                var name = f.name
+                                var function_name = f.name
                             }
                         } else {
-                            var name = function_name
+                            var function_name = who
 
                             /*=*/ {
-                                //  constant f.$who = name
-                                property_$who.value = name
+                                //  constant f.$who = function_name
+                                property_$who.value = function_name
                                 define_property(f, '$who', property_$who)
                                 property_$who.value = undefined
 
                                 if (trace_self) {
-                                    trace_attribute('constant', f, '$who', name)
+                                    trace_attribute('constant', f, '$who', function_name)
                                 }
                             }
                         }
 
-                        if ( ! (name in Boot_Tracing)) {
-                            Boot_Tracing[name] = 0
+                        if ( ! (function_name in Tracing)) {
+                            Tracing[function_name] = 0
                         }
 
 
                         if ('$trace' in f) {
-                            throw new Error("TraceError: function `" + name + "` already being traced")
+                            throw new Error("TraceError: function `" + function_name + "` already being traced")
                         }
 
 
                         var interim$wrap = function interim$wrap(/*...*/) {
                             var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                            if (trace === 7 || (trace && Boot_Tracing[name])) {
-                                function_call(f, arguments, name)
+                            if (trace === 7 || (trace && Tracing[function_name])) {
+                                function_call(f, arguments, function_name)
 
                                 var r = f.apply(this, arguments)
 
@@ -876,7 +1033,7 @@ Gem.Boot.Core.execute(
                             property_$trace.value = undefined
 
                             if (trace_self) {
-                                trace_attribute('constant', interim$wrap, '$who', f)
+                                trace_attribute('constant', interim$wrap, '$trace', f)
                             }
                         }
 
@@ -894,25 +1051,28 @@ Gem.Boot.Core.execute(
             //
             //  Private
             //
-            _Boot_Trace.function_call         = function_call
-            _Boot_Trace.function_result       = function_result
-            _Boot_Trace.group_stop            = group_stop
-            _Boot_Trace.procedure_done        = procedure_done
-            _Boot_Trace.push_color_green      = push_color_green
-            _Boot_Trace.push_color_blue       = push_color_blue
-            _Boot_Trace.push_color_none       = push_color_none
-            _Boot_Trace.trace_attribute       = trace_attribute
-            _Boot_Trace.trace_value           = trace_value
-            _Boot_Trace.zap_pending__1_to_end = zap_pending__1_to_end
+            _Trace.function_call         = function_call
+            _Trace.function_result       = function_result
+            _Trace.group_stop            = group_stop
+            _Trace.procedure_done        = procedure_done
+            _Trace.push_color_green      = push_color_green
+            _Trace.push_color_blue       = push_color_blue
+            _Trace.push_color_none       = push_color_none
+            _Trace.trace_attribute       = trace_attribute
+            _Trace.trace_value           = trace_value
+            _Trace.zap_pending__1_to_end = zap_pending__1_to_end
 
 
             //
             //  Export
             //
-            Boot_Trace.cocoon        = cocoon
-            Boot_Trace.trace_call    = trace_call
-            Boot_Trace.tracing       = tracing
-            Boot_Trace.wrap_function = wrap_function
+            Attribute.property_$who   = property_$who
+            Attribute.property_$trace = property_$trace
+
+            Trace.cocoon        = cocoon
+            Trace.trace_call    = trace_call
+            Trace.tracing       = tracing
+            Trace.wrap_function = wrap_function
 
             //
             //  Finish tracing execute & myself
@@ -925,24 +1085,26 @@ Gem.Boot.Core.execute(
             //
             //  Implementation: non trace version
             //
-            Boot_Trace.cocoon = function interim$Gem__Trace__cocoon(f) {
+            Trace.cocoon = function interim$Gem__Trace__cocoon(f, /*optional*/ who) {
                 return f
             }
 
-            Boot_Trace.trace_call = function interim$Gem__Trace__trace_call(f) {
+            Trace.trace_call = function interim$Gem__Trace__trace_call(f) {
                 return f()
             }
 
 
-            Boot_Trace.tracing = function interim$Gem__Trace__tracing(name) {
+            Trace.tracing = function interim$Gem__Trace__tracing(name) {
                 return 0
             }
 
 
-            Boot_Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ function_name) {
+            Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ who) {
                 return f
             }
         }
+
+        delete Gem.Tracing
     }//,
 )
 
@@ -965,18 +1127,19 @@ if (Gem.Configuration.trace) {
             //
             var Gem = window.Gem
 
-            var Boot          = Gem.Boot
-            var _Boot_Trace   = Boot._Trace
-            var Boot_Core     = Boot.Core
-            var Boot_Trace    = Boot.Trace
-            var Boot_Tracing  = Boot.Tracing
-            var Configuration = Gem.Configuration
+            var Node = Gem.Boot
 
-            var cocoon             = Boot_Trace.cocoon
-            var execute            = Boot_Core.execute
-            var function_call      = _Boot_Trace.function_call
-            var procedure_done     = _Boot_Trace.procedure_done
-            var tracing            = Boot_Trace.tracing
+            var _Trace        = Node._.Trace
+            var Configuration = Gem.Configuration
+            var Core          = Node.Core
+            var Trace         = Node.Trace
+            var Tracing       = Node.Tracing
+
+            var cocoon         = Trace.cocoon
+            var execute        = Core.execute
+            var function_call  = _Trace.function_call
+            var procedure_done = _Trace.procedure_done
+            var tracing        = Trace.tracing
 
 
             //
@@ -1008,19 +1171,19 @@ if (Gem.Configuration.trace) {
 
             /*execute*/ {
                 var trace$execute = cocoon(
-                    function trace$Gem__Boot__Core__execute(code) {
+                    function trace$Gem__Core__execute(code) {
                         //  Self-tracing version of:
                         //      Execute code defined in a function.  This allows the use of local variables.
 
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                        var tracing_execute = (trace === 7 || (trace && Boot_Tracing[trace$execute__$who]))
+                        var tracing_execute = (trace === 7 || (trace && Tracing[trace$execute__$who]))
 
-                        if ( ! (code.name in Boot_Tracing)) {
-                            Boot_Tracing[name] = 0
+                        if ( ! (code.name in Tracing)) {
+                            Tracing[name] = 0
                         }
 
-                        var tracing_code = (trace === 7 || (trace && Boot_Tracing[code.name]))
+                        var tracing_code = (trace === 7 || (trace && Tracing[code.name]))
 
                         if (tracing_execute) { function_call(trace$execute, arguments) }
                         if (tracing_code)    { function_call(code)                     }
@@ -1033,7 +1196,7 @@ if (Gem.Configuration.trace) {
                     trace$execute__$who//,
                 )
 
-                Boot_Core.execute = trace$execute       //  TEMPORARY as "iterim mutable": Changed below to "constant"
+                Core.execute = trace$execute       //  TEMPORARY as "iterim mutable": Changed below to "constant"
             }
 
 
@@ -1055,31 +1218,42 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var Boot          = Gem.Boot
-        var _Boot_Core    = Boot._.Core
-        var Boot_Core     = Boot.Core
-        var Boot_Script   = Boot.Script
-        var Boot_Trace    = Boot.Trace
+        var Node = Gem.Boot
+
+        var _             = Node._
+        var _Core         = _.Core
+        var Attribute     = Node.Attribute
+        var Core          = Node.Core
+        var Script        = Node.Script
+        var Trace         = Node.Trace
         var Configuration = Gem.Configuration
 
-        var clarity            = Configuration.clarity
-        var cocoon             = Boot_Trace.cocoon
-        var create_Object      = Object.create
-        var define_properties  = Object.defineProperties
-        var define_property    = Object.defineProperty
-        var trace              = Configuration.trace
-        var trace_call         = Boot_Trace.trace_call
-        var wrap_function      = Boot_Trace.wrap_function
+        var box_of_properties__enumerable_true = Attribute.box_of_properties__enumerable_true
+        var clarity                            = Configuration.clarity
+        var cocoon                             = Trace.cocoon
+        var create_Object                      = Object.create
+        var define_properties                  = Object.defineProperties
+        var define_property                    = Object.defineProperty
+        var property__constant__value_true     = Attribute.property__constant__value_true
+        var property__mutable__value_undefined = Attribute.property__mutable__value_undefined
+        var seal                               = Object.seal
+        var trace                              = Configuration.trace
+        var trace_call                         = Trace.trace_call
+        var wrap_function                      = Trace.wrap_function
+
+        if (clarity) {
+            var property_$who = Attribute.property_$who
+        }
 
         if (trace) {
-            var _Boot_Trace  = Boot._.Trace
-            var Boot_Tracing = Boot.Tracing
+            var _Trace  = _.Trace
+            var Tracing = Node.Tracing
 
-            var function_call   = _Boot_Trace.function_call
-            var procedure_done  = _Boot_Trace.procedure_done
-            var trace_attribute = _Boot_Trace.trace_attribute
-            var trace_value     = _Boot_Trace.trace_value
-            var tracing         = Boot_Trace.tracing
+            var function_call   = _Trace.function_call
+            var procedure_done  = _Trace.procedure_done
+            var trace_attribute = _Trace.trace_attribute
+            var trace_value     = _Trace.trace_value
+            var tracing         = Trace.tracing
         }
 
 
@@ -1093,70 +1267,106 @@ Gem.Boot.Core.execute(
         //
         //
         if (clarity) {
-            if (trace) {
-                var constant_$tracing_property = create_Object(null, { enumerable : { value : true } })
-            }
+            var property_$what = seal(create_Object(null, box_of_properties__enumerable_true))
 
-            var constant_$who_property     = create_Object(null, { enumerable : { value : true } })
-            var constant_$what_property    = create_Object(null, { enumerable : { value : true } })
-            var constant___prefix_property = create_Object(null)                                    //  3 underscores
+            var property___prefix = seal(                                               //  3 underscores
+                create_Object(
+                    null,
+                    {
+                        value : property__mutable__value_undefined//,
+                    }//,
+                )//,
+            )
 
             var module_properties = create_Object(
                 null,
                 {
-                    '$who'    : { enumerable : true, value : constant_$who_property     },
-                    '$what'   : { enumerable : true, value : constant_$what_property    },
-                    '_prefix' : { enumerable : true, value : constant___prefix_property },
+                    '$who'    : { enumerable : true, value : property_$who     },
+                    '$what'   : { enumerable : true, value : property_$what    },
+                    '_prefix' : { enumerable : true, value : property___prefix },
                 }//,
             )
 
             var $who_$what_properties = create_Object(
                 null,
                 {
-                    '$who'  : { enumerable : true, value : constant_$who_property  },
-                    '$what' : { enumerable : true, value : constant_$what_property },
+                    '$who'  : { enumerable : true, value : property_$who  },
+                    '$what' : { enumerable : true, value : property_$what },
                 }//,
             )
 
 
-            var constant_$who_$what_attributes = wrap_function(
+            var constant_$who_$what_attributes = cocoon(
                 function constant_$who_$what_attributes(instance, $who, $what) {
+                    var trace        = Configuration.trace             //  Get newest value of 'trace'
+                    var tracing_self = (trace === 7 || (trace && Tracing.constant_$who_$what_attributes))
+
+                    if (tracing_self) {
+                        function_call(constant_$who_$what_attributes, arguments)
+                    }
+
                     /*=*/ {
                         //  constant module.$who  = $who
                         //  constant module.$what = $what
-                        constant_$who_property .value = $who
-                        constant_$what_property.value = $what
+                        property_$who .value = $who
+                        property_$what.value = $what
 
                         define_properties(instance, $who_$what_properties)
 
-                        constant_$who_property     .value =
-                            constant_$what_property.value = undefined
+                        property_$who     .value =
+                            property_$what.value = undefined
 
                         /*trace*/ {
-                            var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                            if (trace && ! ('constant_$who_$what_attributes' in Boot_Tracing)) {
-                                Boot_Tracing.constant_$who_$what_attributes = 0
-                            }
-
-                            if (trace === 7 || (trace && Boot_Tracing.constant_$who_$what_attributes)) {
+                            if (tracing_self) {
                                 trace_attribute('constant', instance, '$who',  $who)
                                 trace_attribute('constant', instance, '$what', $what)
                             }
                         }
                     }
+
+                    if (tracing_self) {
+                        procedure_done()
+                    }
                 }//,
             )
         }
 
-        var constant_property = create_Object(null, { enumerable : { value : true } })
+        //
+        //  constant_property = Box{
+        //      constant enumerable   : true,
+        //  }
+        //      
+        //      This is used to create a property:
+        //
+        //          1.  "permenant" (i.e.: not reconfigurable);
+        //          2.  "visible" (i.e.: enumerable);
+        //          3.  "constant" (i.e.: not writable)
+        //          4.  with a value to be determined later
+        //
+        var constant_property = seal(create_Object(null, box_of_properties__enumerable_true))
 
-        var interim_constant_property = create_Object(
-            null,
-            {
-                configurable : { value : true  },       //  Can be reconfigured (the constant can be changed!).
-                enumerable   : { value : true  },       //  Visible (i.e.: enumerable)
-            }//,
+        //
+        //  interim_constant_property = Box{
+        //      constant configurable : true,
+        //      constant enumerable   : true,
+        //  }
+        //      
+        //      This is used to create a property:
+        //
+        //          1.  "interim" (i.e.: reconfigurable);
+        //          2.  "visible" (i.e.: enumerable);
+        //          3.  "constant" (i.e.: not writable)
+        //          4.  with a value to be determined later
+        //
+        var interim_constant_property = seal(
+            create_Object(
+                null,
+                {
+                    configurable : property__constant__value_true,
+                    enumerable   : property__constant__value_true,
+                    value        : property__mutable__value_undefined//,
+                }//,
+            )//,
         )
 
 
@@ -1166,10 +1376,6 @@ Gem.Boot.Core.execute(
         /*constant_attribute*/ {
             var constant_attribute__$who = 'Gem.Boot._.Core.constant_attribute'
 
-            if (trace && ! (constant_attribute__$who in Boot_Tracing)) {
-                Boot_Tracing[constant_attribute__$who] = 0
-            }
-
 
             var constant_attribute = cocoon(
                 function Gem__private__Core__constant_attribute(instance, name, value) {
@@ -1177,15 +1383,15 @@ Gem.Boot.Core.execute(
 
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var tracing_self = (trace === 7 || (trace && Boot_Tracing[constant_attribute__$who]))
+                    var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
 
                     if (tracing_self) {
                         function_call(constant_attribute, arguments)
                     }
 
-                    if (typeof instance !== 'object' && typeof instance !== 'function') {
-                        debugger
-                    }
+//                  if (typeof instance !== 'object' && typeof instance !== 'function') {
+//                      debugger
+//                  }
 
                     /*=*/ {
                         //  constant instance.*name = value
@@ -1209,134 +1415,106 @@ Gem.Boot.Core.execute(
         }
 
 
-        /*interim_constant_attribute*/ {
-            if (trace && ! ('interim_constant_attribute' in Boot_Tracing)) {
-                Boot_Tracing.interim_constant_attribute = 0
-            }
+        var interim_constant_attribute = wrap_function(
+            function interim_constant_attribute(instance, name, value) {
+                //  Create an interim (reconfigurable) constant attribute.
 
+                /*=*/ {
+                    //  interim constant instance.*name = value
+                    interim_constant_property.value = value
+                    define_property(instance, name, interim_constant_property)
+                    interim_constant_property.value = undefined
 
-            var interim_constant_attribute = wrap_function(
-                function interim_constant_attribute(instance, name, value) {
-                    //  Create an interim (reconfigurable) constant attribute.
+                    /*trace*/ {
+                        var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    /*=*/ {
-                        //  interim constant instance.*name = value
-                        interim_constant_property.value = value
-                        define_property(instance, name, interim_constant_property)
-                        interim_constant_property.value = undefined
-
-                        /*trace*/ {
-                            var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                            if (trace === 7 || (trace && Boot_Tracing.interim_constant_attribute)) {
-                                trace_attribute('interim constant', instance, name, value)
-                            }
+                        if (trace === 7 || (trace && Tracing.interim_constant_attribute)) {
+                            trace_attribute('interim constant', instance, name, value)
                         }
                     }
-                }//,
-            )
-        }
+                }
+            }//,
+        )
 
 
         if (clarity || trace) {
-            var who_what__who = 'Gem.Boot._.Core.who_what'
+            var who_what__who = 'Gem._.Core.who_what'
 
             //
             //  NOTE:
             //      This interim implementation of `who_what` only replaces a single "." since it does not use
             //      regular expressions with the "g" flag.
             //
-            if (clarity) {
-                if (trace && ! (who_what__who in Boot_Tracing)) {
-                    Boot_Tracing[who_what__who] = 0
-                }
+            var who_what = cocoon(
+                function Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                var who_what = function Gem__Boot__private__Core__who_what(module, $who, $what, create_prefix) {
-                    if (create_prefix) {
-                        if ($who.startsWith('Gem.Boot._.')) {
-                            var _prefix = $who.replace('Gem.Boot._.', 'Gem__Boot__private__')
-                        } else {
-                            var _prefix = $who.replace('.', '__')
+                    var tracing_self = (trace === 7 || (trace && Tracing[who_what__who]))
+
+                    if (tracing_self) {
+                        //
+                        //  Must set `module.$who` temporarly before calling `function_call`
+                        //      (Reset below to a permenant constant)
+                        //
+                        /*=*/ {
+                            //  interim mutable module.$who = $who
+                            module.$who = $who
                         }
 
-                        /*=*/ {
-                            //  constant           module.$who    = $who
-                            //  constant           module.$what   = $what
-                            //  invisible constant module._prefix = _prefix
-                            constant_$who_property    .value = $who
-                            constant_$what_property   .value = $what
-                            constant___prefix_property.value = _prefix
+                        function_call(who_what, arguments)
+                    }
 
-                            try{
-                            define_properties(module, module_properties)
-                            } catch(e){debugger}
+                    if (clarity) {
+                        if (create_prefix) {
+                            if ($who.startsWith('Gem.Boot._.')) {
+                                var _prefix = $who.replace('Gem.Boot._.', 'Gem__private__')
+                            } else {
+                                var _prefix = $who.replace('.', '__')
+                            }
 
-                            constant_$who_property        .value =
-                                constant_$what_property   .value =
-                                constant___prefix_property.value = undefined
+                            /*=*/ {
+                                //  constant           module.$who    = $who
+                                //  constant           module.$what   = $what
+                                //  invisible constant module._prefix = _prefix
+                                property_$who    .value = $who
+                                property_$what   .value = $what
+                                property___prefix.value = _prefix
 
-                            /*trace*/ {
-                                var trace = Configuration.trace             //  Get newest value of 'trace'
+                                define_properties(module, module_properties)
 
-                                if (trace === 7 || (trace && Boot_Tracing[who_what__who])) {
+                                property_$who        .value =
+                                    property_$what   .value =
+                                    property___prefix.value = undefined
+
+                                if (tracing_self) {
                                     trace_attribute('constant',           module, '$who',    $who)
                                     trace_attribute('constant',           module, '$what',   $what)
                                     trace_attribute('invisible constant', module, '_prefix', _prefix)
                                 }
                             }
+                        } else {
+                            /*=*/ {
+                                //  constant module.$who  = $who
+                                //  constant module.$what = $what
+                                constant_$who_$what_attributes(module, $who, $what)
+                            }
+                        }
+                    } else {
+                        //
+                        //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
+                        //
+                        /*=*/ {
+                            //  constant module.$who = $who
+                            constant_attribute(module, '$who', $who)
                         }
                     }
 
-                    /*=*/ {
-                        //  constant module.$who  = $who
-                        //  constant module.$what = $what
-                        constant_$who_$what_attributes(module, $who, $what)
+                    if (tracing_self) {
+                        procedure_done()
                     }
-                }
-            } else {
-                var who_what = function Gem__Boot__private__Core__who_what(module, $who, $what, create_prefix) {
-                    //
-                    //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                    //
-                    /*=*/ {
-                        //  constant module.$who = $who
-                        constant_attribute(module, '$who', $who)
-                    }
-                }
-            }
-
-
-            if (trace) {
-                var original_who_what = who_what
-
-
-                //
-                //  trace$Gem__Boot__private__Core__who_what
-                //      This special version of tracing has to set `module.$who` before calling `function_call`,
-                //      so that `function_call` can properly identify `module`.
-                //
-                var who_what = function trace$Gem__Boot__private__Core__who_what(module, $who, $what, create_prefix) {
-                    if ( ! tracing(who_what__who)) {
-                        original_who_what(module, $who, $what, create_prefix)
-                        return
-                    }
-
-                    //
-                    //  ... Must do this first before calling `function_call` ...
-                    //
-                    /*first*/ {
-                        //  constant module.$who = $who
-                        constant_attribute(module, '$who', $who)
-                    }
-
-                    function_call(original_who_what, arguments)
-                    original_who_what(module, $who, $what, create_prefix)
-                    procedure_done()
-                }
-
-                constant_attribute(original_who_what, '$who',   who_what__who)
-                constant_attribute(who_what,          '$trace', original_who_what)
-            }
+                },
+                who_what__who//,
+            )
 
 
             who_what(Gem,      'Gem',      'The only global variable used by Gem.',       false)
@@ -1391,15 +1569,15 @@ Gem.Boot.Core.execute(
         //      Common code to define a method with no tracing.
         //
         //  NOTE:
-        //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
+        //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
         //      (in clarity mode), after which this method is invalid.
         //
         var method__no_trace = wrap_function(
-            function Gem__Boot__private__Core__method__no_trace(instance, interim, who, $what, method) {
+            function Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
                 //  Common code to define a method with no tracing.
                 //
                 //  NOTE:
-                //      Due to the call of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                //      Due to the call of `Script.dynamic` this method is only valid *UNTIL* `Gem` is
                 //      rewritten, after which this method is invalid.
 
                 if ('$trace' in method) {
@@ -1420,7 +1598,7 @@ Gem.Boot.Core.execute(
                     }
                 }
 
-                if (interim || Boot_Script.dynamic) {                       //  See NOTE above
+                if (interim || Script.dynamic) {                       //  See NOTE above
                     //  interim constant instance.*who = method
                     interim_constant_attribute(instance, who, method)
                 } else {
@@ -1438,17 +1616,17 @@ Gem.Boot.Core.execute(
             //      Common code to define a traced method
             //
             //  NOTE:
-            //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
+            //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten
             //      (in clarity mode), after which this method is invalid.
             //
             var traced_method__common = wrap_function(
-                function Gem__Boot__private__Trace__traced_method__common(
+                function Gem__private__Trace__traced_method__common(
                         instance, interim, who, $what, wrapped_method//,
                 ) {
                     //  Common code to define a traced method
                     //
                     //  NOTE:
-                    //      Due to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is
+                    //      Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is
                     //      rewritten (in clarity mode), after which this method is invalid.
 
                     if (clarity) {
@@ -1482,7 +1660,7 @@ Gem.Boot.Core.execute(
                         }
                     }
 
-                    if (interim || Boot_Script.dynamic) {                            //  See NOTE above
+                    if (interim || Script.dynamic) {                            //  See NOTE above
                         //  interim constant instance.*who = wrapped_method
                         interim_constant_attribute(instance, who, wrapped_method)
                     } else {
@@ -1495,7 +1673,7 @@ Gem.Boot.Core.execute(
 
 
             var interim_method = wrap_function(
-                function Gem__Boot__Core__interim_method(instance, who, $what, method) {
+                function Gem__Core__interim_method(instance, who, $what, method) {
                     //  Store a method.
                     //
                     //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
@@ -1516,7 +1694,7 @@ Gem.Boot.Core.execute(
             )
 
             var method = wrap_function(
-                function Gem__Boot__Core__method(instance, who, $what, method) {
+                function Gem__Core__method(instance, who, $what, method) {
                     //  Store an iterim method.
                     //
                     //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
@@ -1537,7 +1715,7 @@ Gem.Boot.Core.execute(
             )
 
             var traced_method = wrap_function(
-                function Gem__Boot__Trace__traced_method(instance, who, $what, wrapped_method) {
+                function Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
                     //  Store a traced method.
                     //
                     //  In trace mode the method must either be self-tracing and wrapped with `cocoon`, or already
@@ -1559,7 +1737,7 @@ Gem.Boot.Core.execute(
                 'Gem.Boot.Trace.traced_method'//,
             )
         } else {
-            var interim_method = function Gem__Boot__Core__interim_method(instance, who, $what, method) {
+            var interim_method = function Gem__Core__interim_method(instance, who, $what, method) {
                 //  Store an iterim method.
                 //
                 //  Ignores parameter `$what` since not in clarity mode.
@@ -1570,7 +1748,7 @@ Gem.Boot.Core.execute(
                 method__no_trace(instance, true, who, $what, method)
             }
 
-            var method = function Gem__Boot__Core__method(instance, who, $what, method) {
+            var method = function Gem__Core__method(instance, who, $what, method) {
                 //  Store a method.
                 //
                 //  Ignores parameter `$what` since not in clarity mode.
@@ -1589,7 +1767,7 @@ Gem.Boot.Core.execute(
             //      (However, different functions are used, so then can each acquire their unique `.$who` and
             //      `.$what` attributes in clarity mode).
             //
-            var traced_method = function Gem__Boot__Trace__traced_method(instance, who, $what, wrapped_method) {
+            var traced_method = function Gem__Trace__traced_method(instance, who, $what, wrapped_method) {
                 //  Store a traced method.
                 //
                 //  In trace mode the method must either be self-tracing and wrapped with `cocoon`, or already wrapped
@@ -1609,15 +1787,15 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Core.clarity_note
         //
         method(
-            Boot_Core,
+            Core,
             'clarity_note',
             (
-                  'Add a note to a variable or set of variables (clarity mode only).',
+                  'Add a note to a variable or set of variables (clarity mode only).'
                 + '\n'
                 + 'NOTE:\n'
                 + "    This is the interim boot version of `clarity_note`."
             ),
-            function Gem__Boot__Core__clarity_note(instance, who, $what) {
+            function Gem__Core__clarity_note(instance, who, $what) {
                 //  Add a note to a variable or set of variables (clarity mode only).
                 //
                 //  NOTE:
@@ -1637,7 +1815,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Core.codify_method
         //
         method(
-            Boot_Core,
+            Core,
             'codify_method',
             (
                   'Create the code for a method as a closure to avoid the use of any global variables.\n'
@@ -1647,7 +1825,7 @@ Gem.Boot.Core.execute(
                 + 'NOTE:\n'
                 + "    This is the interim boot version of `codify_method`."
             ),
-            function Gem__Boot__Core__codify_method(instance, who, $what, codifier) {
+            function Gem__Core__codify_method(instance, who, $what, codifier) {
                 //  Create the code for a method as a closure to avoid the use of any global variables.
                 //
                 //  Also in clarity mode adds a `.$who` and `.$what` attributes to the function.
@@ -1675,7 +1853,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Core.constant
         //
         method(
-            Boot_Core,
+            Core,
             'constant',
             (
                   'Store a global Gem constant.\n'
@@ -1688,7 +1866,7 @@ Gem.Boot.Core.execute(
             (
                 clarity
                     // FIX TO USE PROPERTIES
-                    ? function Gem__Boot__Core__constant(instance, who, $what, value) {
+                    ? function Gem__Core__constant(instance, who, $what, value) {
                           //  Store a global Gem constant.
                           //
                           //  Also in clarity mode adds an explanation of what the constant does.
@@ -1706,7 +1884,7 @@ Gem.Boot.Core.execute(
                               constant_attribute(instance, who + '$', $what)
                           }
                       }
-                    : function Gem__Boot__Core__constant(instance, who, $what, value) {
+                    : function Gem__Core__constant(instance, who, $what, value) {
                           //  Store a global Gem constant.
                           //
                           //  Ignores parameter `$what` since not in clarity mode.
@@ -1727,7 +1905,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Core.interim_method
         //
         traced_method(
-            Boot_Core,
+            Core,
             'interim_method',
             'Interim method for Gem.Boot.Core.interim_method',
             interim_method//,
@@ -1738,7 +1916,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Core.method
         //
         traced_method(
-            Boot_Core,
+            Core,
             'method',
             (
                   'Store a method.\n'
@@ -1756,7 +1934,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Core.qualify_constant
         //
         method(
-            Boot_Core,
+            Core,
             'qualify_constant',
             (
                   'Qualify a global Gem constant.\n'
@@ -1768,7 +1946,7 @@ Gem.Boot.Core.execute(
                 + 'NOTE:\n'
                 + "    This is the interim boot version of `qualify_method`."
             ),
-            function Gem__Boot__Core__qualify_constant(who, $what, qualifier) {
+            function Gem__Core__qualify_constant(who, $what, qualifier) {
                 //  Qualify a global Gem constant.
                 //
                 //  The `qualifier` argument is a function that returns the value of the constant.
@@ -1798,7 +1976,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot.Trace.traced_method
         //
         traced_method(
-            Boot_Trace,
+            Trace,
             'traced_method',
             (
                   'Store a traced method.\n'
@@ -1822,7 +2000,7 @@ Gem.Boot.Core.execute(
         //      This was set above as a "visible_mutable", change it now to a "constant".
         //
         traced_method(
-            _Boot_Core,
+            _Core,
             'constant_attribute',
             'Create a [non reconfigurable] visible constant attribute.',
             constant_attribute//,
@@ -1833,7 +2011,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot._.Core.interim_constant_attribute
         //
         traced_method(
-            _Boot_Core,
+            _Core,
             'interim_constant_attribute',
             'Create an iterim (i.e.: reconfigurable) visible constant attribute.',
             interim_constant_attribute//,
@@ -1844,7 +2022,7 @@ Gem.Boot.Core.execute(
         //  Gem.Boot._.Core.method__no_trace
         //
         traced_method(
-            _Boot_Core,
+            _Core,
             'method__no_trace',
             'Common helper code to create a method with no tracing.',
             method__no_trace//,
@@ -1856,7 +2034,7 @@ Gem.Boot.Core.execute(
         //
         if (trace || clarity) {
             traced_method(
-                _Boot_Core,
+                _Core,
                 'who_what',
                 (
                     clarity
@@ -1873,13 +2051,13 @@ Gem.Boot.Core.execute(
         //
         if (trace) {
             traced_method(
-                _Boot_Trace,
+                _Trace,
                 'traced_method__common',
                 (
                       'Common code to define a traced method.\n'
                     + '\n'
                     + 'NOTE:\n'
-                    + "    to the use of `Boot_Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten"
+                    + "    Due to the use of `Script.dynamic` this method is only valid *UNTIL* `Gem` is rewritten"
                     + ' (in clarity mode), after which this method is invalid.'
                 ),
                 traced_method__common//,
@@ -1890,26 +2068,14 @@ Gem.Boot.Core.execute(
 
         if (clarity) {
             //
-            //  constant_$what_property
+            //  property_$what
             //      A property used to create a visible (i.e.: enumerable) constant `.$what` attribute.
             //
-            Gem.Boot.Core.constant(
-                _Boot_Core,
-                'constant_$what_property',
+            Core.constant(
+                _Core,
+                'property_$what',
                 "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
-                constant_$what_property//,
-            )
-
-
-            //
-            //  constant_$who_property
-            //      A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.
-            //
-            Gem.Boot.Core.constant(
-                _Boot_Core,
-                'constant_$who_property',
-                "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
-                constant_$who_property//,
+                property_$what//,
             )
         }
     }

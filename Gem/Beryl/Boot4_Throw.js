@@ -54,12 +54,12 @@ Gem.Boot.Core.execute(
         //
         //  Implementation
         //
-        var throw_must_be_number = function Gem__Throw__throw_must_be_number(name, v) {
+        var throw_must_be_a_number = function Gem__Throw__throw_must_be_a_number(name, v) {
             //  Throw a type error when a parameter is not a number.
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Throw.throw_must_be_number', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Throw.throw_must_be_a_number', 2, arguments.length)
                 }
 
                 if (typeof name !== 'string') { throw_must_be_a_string('name', name) }
@@ -127,8 +127,8 @@ Gem.Boot.Core.execute(
                 }
 
                 if (typeof name     !== 'string') { throw_must_be_a_string('name',     name)     }
-                if (typeof actual   !== 'number') { throw_must_be_number('actual',   actual)   }
-                if (typeof expected !== 'number') { throw_must_be_number('expected', expected) }
+                if (typeof actual   !== 'number') { throw_must_be_a_number('actual',   actual)   }
+                if (typeof expected !== 'number') { throw_must_be_a_number('expected', expected) }
             }
 
             if (expected === 0) {
@@ -146,14 +146,14 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Throw.throw_must_be_number
+        //  Gem.Throw.throw_must_be_a_number
         //      Throw a type error when a parameter is not a number.
         //
         interim_method(
             Throw,
-            'throw_must_be_number',
+            'throw_must_be_a_number',
             'Throw a type error when a parameter is not a number.',
-            throw_must_be_number//,
+            throw_must_be_a_number//,
         )
 
 

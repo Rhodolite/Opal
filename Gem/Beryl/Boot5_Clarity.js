@@ -59,8 +59,8 @@ Gem.Boot.Core.codify_method(
         if (clarity) {
             var _Core = Gem._.Core
 
-            var constant_$what_property = _Core.constant_$what_property
-            var constant_$who_property  = _Core.constant_$who_property
+            var property_$what = _Core.property_$what
+            var property_$who  = _Core.property_$who
         }
 
 
@@ -73,8 +73,8 @@ Gem.Boot.Core.codify_method(
             var $who_$what_$which_attributes = create_Object(
                     null,
                     {
-                        '$who'   : { enumerable : true, value : constant_$who_property   },
-                        '$what'  : { enumerable : true, value : constant_$what_property  },
+                        '$who'   : { enumerable : true, value : property_$who   },
+                        '$what'  : { enumerable : true, value : property_$what  },
                         '$which' : { enumerable : true, value : attribute_$which },
                     }//,
                 )
@@ -86,9 +86,9 @@ Gem.Boot.Core.codify_method(
                     null,
                     {
                         '_trace' : { enumerable : true, value : attribute___trace  },
-                        '$who'   : { enumerable : true, value : constant_$who_property     },
-                        '$what'  : { enumerable : true, value : constant_$what_property    },
-                        '$which' : { enumerable : true, value : constant_$what_property    },
+                        '$who'   : { enumerable : true, value : property_$who     },
+                        '$what'  : { enumerable : true, value : property_$what    },
+                        '$which' : { enumerable : true, value : property_$what    },
                     }//,
                 )
             }
@@ -115,14 +115,14 @@ Gem.Boot.Core.codify_method(
                     //  constant bound_method.$who   = full_name
                     //  constant bound_method.$what  = $what
                     //  constant bound_method.$which = $which
-                    constant_$who_property  .value = full_name
-                    constant_$what_property .value = $what
+                    property_$who  .value = full_name
+                    property_$what .value = $what
                     attribute_$which.value = $which
 
                     define_properties(bound_method, $who_$what_$which_attributes)
 
-                    delete constant_$who_property  .value
-                    delete constant_$what_property .value
+                    delete property_$who  .value
+                    delete property_$what .value
                     delete attribute_$which.value
                 }
             }
@@ -138,14 +138,14 @@ Gem.Boot.Core.codify_method(
                         //  constant traced_bound_method.$who   = full_name
                         //  constant traced_bound_method.$what  = 'TRACING: ' + $what
                         //  constant traced_bound_method.$which = 'TRACING: ' + $which
-                        constant_$who_property  .value = full_name
-                        constant_$what_property .value = 'TRACING: ' + $what
+                        property_$who  .value = full_name
+                        property_$what .value = 'TRACING: ' + $what
                         attribute_$which.value = 'TRACING: ' + $which
 
                         define_properties(traced_bound_method, $who_$what_$which_attributes)
 
-                        delete constant_$who_property  .value
-                        delete constant_$what_property .value
+                        delete property_$who  .value
+                        delete property_$what .value
                         delete attribute_$which.value
                     } else {
                         define_property(traced_bound_method, '_trace', attribute___trace.value)
