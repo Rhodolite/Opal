@@ -32,17 +32,18 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var _Boot_Core = Gem.Boot._.Core
+        var Node = Gem.Boot
 
-        var who_what = _Boot_Core.who_what
+        var Configuration = Gem.Configuration
+        var _Core         = Node._.Core
+
+        var trace    = Configuration.trace
+        var who_what = _Core.who_what
 
 
         //
         //  Implementation
         //
-        who_what(Gem.Boot,        'Gem.Boot',        'Temporary support code during boot process.', false)
-//      who_what(Gem.Boot.Script, 'Gem.Boot.Script', "`<script>` handling during boot process.",    false)
-
         who_what(
             Gem.Boot.Script.script_map,
             'Gem.Boot.Script.script_map',
@@ -61,12 +62,14 @@ Gem.Boot.Core.execute(
             false//,
         )
 
-        who_what(
-            Gem.Boot.Tracing,
-            'Gem.Boot.Tracing',
-            'Map of functions, methods & bound_methods being traced.',
-            false//,
-        )
+        if (trace) {
+            who_what(
+                Gem.Boot.Tracing,
+                'Gem.Boot.Tracing',
+                'Map of functions, methods & bound_methods being traced.',
+                false//,
+            )
+        }
 
         who_what(Gem.Configuration, 'Gem.Configuration', 'Gem Configuration values.', false)
 

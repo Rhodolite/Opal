@@ -25,14 +25,15 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'constant_$who_$what_attributes', 1,
-        'Gem._.Core.who_what',            1,
-        'Gem.Trace.cocoon',               1,
+        'constant_$who_$what_attributes',   1,
+        'execute$setup_Tracing',            1,
+        'Gem._.Core.who_what',              1,
+        'Gem.Core.execute',                 1,
+        'Gem.Trace.cocoon',                 1,
     ],
 
     Boot : {                                                //  Temporary support code during boot process.
-        Attribute : {                                       //      Boot support code for attributes
-        //  box_of_properties__enumerable_true : Box        //          Box to create `{ enumerable : true }`
+        Box : {                                             //      Boot support code for boxes
         //  constant_property                  : Box        //          Property to create a constant attribute
         //  property_$trace                    : Box        //          Create `.$trace` property (trace mode only)
         //  property_$who                      : Box        //          Create `.$who` property (clarity or trace ...)
@@ -121,141 +122,89 @@ Gem.Boot.Core.execute(
 
         var Node = Gem.Boot
 
-        var Attribute     = Node.Attribute
+        var Box           = Node.Box
         var Trace         = Node.Trace
         var Configuration = Gem.Configuration
 
-        var clarity       = Configuration.clarity
-        var create_Object = Object.create
-        var freeze        = Object.freeze
-        var seal          = Object.seal
-        var trace         = Configuration.trace
+        var clarity = Configuration.clarity
+        var trace   = Configuration.trace
 
-
-        //
-        //  Implementation: Attribute
-        //
-
-        //
-        //  property__constant__value_true = Box{
-        //      constant enumerable : true,
-        //      constant value      : true,
-        //  }
-        //
-        //      This is used to create a property:
-        //
-        //          1.  "permenant" (i.e.: not reconfigurable);
-        //          2.  "visible" (i.e.: enumerable);
-        //          3.  "constant" (i.e.: not writable);
-        //          4.  with a "value" of `true`
-        //
-        var property__constant__value_true = freeze(
-            create_Object(
-                null,
-                {
-                    enumerable : { enumerable: true, value : true },
-                    value      : { enumerable: true, value : true }//,
-                }//,
-            )//,
-        )
-
-
-        //
-        //  property__mutable__value_undefined = Box{
-        //      constant enumerable : true,
-        //      constant mutable    : true,
-        //      constant value      : undefined,
-        //  }
-        //
-        //      This is used to create a property:
-        //
-        //          1.  "permenant" (i.e.: not reconfigurable);
-        //          2.  "visible" (i.e.: enumerable);
-        //          3.  "mutable" (i.e.: writable);
-        //          4.  with a "value" of `undefined`
-        //
-        //      The `undefined` value is changed later (which is why it is mutable).
-        //
-        var property__mutable__value_undefined = freeze(
-            create_Object(
-                null,
-                {
-                    enumerable : { enumerable: true, value : true      },
-                    writable   : { enumerable: true, value : true      },
-                    value      : { enumerable: true, value : undefined }//,
-                }//,
-            )//,
-        )
-            
-
-        //
-        //  box_of_properties__enumerable_true = Box{
-        //      constant enumerable : Box{
-        //          constant enumerable : true,
-        //          constant value      : true,
-        //      },
-        //  }
-        //      
-        //      This box of properties is used to create two properties:
-        //
-        //          A. property "enumerable" as follows:
-        //
-        //              1.  "permenant" (i.e.: not reconfigurable);
-        //              2.  "visible" (i.e.: enumerable);
-        //              3.  "constant" (i.e.: not writable)
-        //              4.  With a value of `true`.
-        //
-        //          B. property "value" as follows:
-        //
-        //              1.  "permenant" (i.e.: not reconfigurable);
-        //              2.  "visible" (i.e.: enumerable);
-        //              3.  "mutable" (i.e.: writable)
-        //              4.  With a value of `undefined`.
-        //
-        //              The `undefined` value is changed later (which is why it is mutable).
-        //
-        var box_of_properties__enumerable_true = freeze(
-            create_Object(
-                null,
-                {
-                    enumerable : {
-                        enumerable : true,
-                        value      : property__constant__value_true//,
-                    },
-
-                    value : {
-                        enumerable : true,
-                        writable   : true,
-                        value      : property__mutable__value_undefined//,
-                    }//,
-                }//,
-            )//,
-        )
-
-        if (clarity || trace) {
-            //
-            //  property_$who = Box{ constant enumerable : true }
-            //
-            //      This is used to create a property:
-            //
-            //          1.  "permenant" (i.e.: not reconfigurable);
-            //          2.  "visible" (i.e.: enumerable);
-            //          3.  "constant" (i.e.: not writable);
-            //          4.  with a "value" to be determined later.
-            //
-            var property_$who = seal(create_Object(null, box_of_properties__enumerable_true))
+        if (trace) {
+            var define_properties = Object.defineProperties
         }
 
 
         //
-        //  Export: Attribute
+        //  Implementation: Box
         //
-        Attribute.box_of_properties__enumerable_true = box_of_properties__enumerable_true
-        Attribute.property__constant__value_true     = property__constant__value_true
-        Attribute.property__mutable__value_undefined = property__mutable__value_undefined
-
         if (clarity || trace) {
-            Attribute.property_$who = property_$who
+            var property_$who = {
+                $who         : 'Gem.Box.property_$who',
+                $what        : "`Gem.Box.property_$who` is used to create a `.$who` attribute",
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : undefined//,
+            }
+        }
+
+        if (trace) {
+            var property_$trace = {
+                $who         : 'Gem.Box.property_$trace',
+                $what        : "`Gem.Box.property_$trace` is used to create a `.$trace` attribute",
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : undefined//,
+            }
+        }
+
+        if (clarity) {
+            var property_$what = {
+                $who         : 'Gem.Box.property_$what',
+                $what        : "`Gem.Box.property_$what` is used to create a `.$what` attribute",
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : undefined//,
+            }
+        }
+
+
+        if (trace) {
+            var self_trace_properties = {
+                $trace : property_$trace,
+                $who   : property_$who//,
+            }
+
+
+            if (clarity) {
+                //
+                //  NOTE:
+                //      `.$$who` & `.$$what` have to be defined to be invisible (not enumerable), so they don't create
+                //      attributes when used.
+                //
+                define_properties(
+                    self_trace_properties,
+                    {
+                        '$$who' : {
+                            configurable : false,                               //  Default value, shown for clarity
+                            enumerable   : false,                               //  Default value, shown for clarity
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : 'Gem.Box.self_trace_properties'//,
+                        },
+
+                        '$$what' : {
+                            configurable : false,                               //  Default value, shown for clarity
+                            enumerable   : false,                               //  Default value, shown for clarity
+                            writable     : false,                               //  Default value, shown for clarity
+
+                            value : "`Gem.Box.self_trace_properties` is used to create"
+                                  + " `.$trace` & `.$who` attributes."
+                        }//,
+                    }//,
+                )
+            }
         }
 
 
@@ -272,7 +221,6 @@ Gem.Boot.Core.execute(
             var _Trace = Node._.Trace
             var Core   = Node.Core
 
-            var define_properties           = Object.defineProperties
             var define_property             = Object.defineProperty
             var pending                     = _Trace.pending
 //          var unbound__group_start_closed = console.groupCollapsed
@@ -294,18 +242,6 @@ Gem.Boot.Core.execute(
                 var group_stop = function OLD_WAY$group_stop(/*...*/) {
                     console.groupEnd()
                 }
-            }
-
-            /*property_$trace & self_trace_properties*/ {
-                var property_$trace = create_Object(null, box_of_properties__enumerable_true)
-
-                var self_trace_properties = create_Object(
-                        null,
-                        {
-                            '$trace' : { enumerable: true, value : property_$trace },
-                            '$who'   : { enumerable: true, value : property_$who   }//,
-                        }//,
-                    )
             }
 
             if ('bind' in unbound__push) {
@@ -366,7 +302,7 @@ Gem.Boot.Core.execute(
             //      This is done so this code can work in JavaScript 5.0, which does not allow the following syntax:
             //
             //          Tracing : {
-            //              ['Gem.Boot.Core.execute'] : 7,
+            //              ['Gem.Core.execute'] : 7,
             //          }
             //
             var tracing_list  = Gem.Tracing
@@ -389,25 +325,26 @@ Gem.Boot.Core.execute(
             //      Return the trace value for function `name`.
             //
             //  Algorithm:
+            //      If `Gem.Tracing[name] does not exist, set it to 0`
+            //      (this is done first, before testing for `trace === 7` to help catch all possible tracable names)
+            //
             //      If `Gem.Configuration.trace` is either 0 (off) or 7 (on always):
             //              Then return `Gem.Configuration.trace`;
             //
-            //      Otherwise, return the value of `Gem.Boot.Tracing[name]` (if it exists);
-            //
-            //      Otherwise, return 0 (tracing off).
+            //      Otherwise, return the value of `Gem.Tracing[name]`
             //
             var tracing = function Gem__Boot__Trace__tracing(name) {
                 var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                if ( ! (name in Tracing)) {
+                    Tracing[name] = 0
+                }
 
                 if (trace === 0 || trace === 7) {
                     return trace
                 }
 
-                if (name in Tracing) {
-                    return Tracing[name]
-                }
-
-                return 0
+                return Tracing[name]
             }
 
 
@@ -774,7 +711,7 @@ Gem.Boot.Core.execute(
 
 
             /*self-trace*/ {
-                var trace$execute__$who = 'Gem.Boot.Core.execute'
+                var trace$execute__$who = 'Gem.Core.execute'
 
                 var tracing_execute = tracing(trace$execute__$who)
                 var tracing_myself  = tracing('execute$setup_Tracing')
@@ -847,7 +784,6 @@ Gem.Boot.Core.execute(
 
                 _Trace.depth -= 1
             }
-
 
             var trace_call = function interim$Gem__Trace__trace_call(f) {
                 var trace = Configuration.trace             //  Get newest value of 'trace'
@@ -1061,50 +997,68 @@ Gem.Boot.Core.execute(
             _Trace.trace_attribute       = trace_attribute
             _Trace.trace_value           = trace_value
             _Trace.zap_pending__1_to_end = zap_pending__1_to_end
-
-
-            //
-            //  Export
-            //
-            Attribute.property_$who   = property_$who
-            Attribute.property_$trace = property_$trace
-
-            Trace.cocoon        = cocoon
-            Trace.trace_call    = trace_call
-            Trace.tracing       = tracing
-            Trace.wrap_function = wrap_function
-
-            //
-            //  Finish tracing execute & myself
-            //
-            /*self-trace*/ {
-                if (tracing_execute) { procedure_done() }
-                if (tracing_myself)  { procedure_done() }
-            }
         } else {
             //
             //  Implementation: non trace version
             //
-            Trace.cocoon = function interim$Gem__Trace__cocoon(f, /*optional*/ who) {
+            var cocoon = function interim$Gem__Trace__cocoon(f, /*optional*/ who) {
                 return f
             }
 
-            Trace.trace_call = function interim$Gem__Trace__trace_call(f) {
+            var trace_call = function interim$Gem__Trace__trace_call(f) {
                 return f()
             }
 
 
-            Trace.tracing = function interim$Gem__Trace__tracing(name) {
+            var tracing = function interim$Gem__Trace__tracing(name) {
                 return 0
             }
 
 
-            Trace.wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ who) {
+            var wrap_function = function interim$Gem__Trace__wrap_function(f, /*optional*/ who) {
                 return f
             }
         }
 
+
+        //
+        //  Cleanup
+        //
         delete Gem.Tracing
+
+
+        //
+        //  Export: Box
+        //
+        if (trace) {
+            Box.property_$trace = property_$trace
+        }
+
+
+        if (clarity) {
+            Box.property_$what = property_$what
+        }
+
+        if (clarity || trace) {
+            Box.property_$who  = property_$who
+        }
+
+        //
+        //  Export: Trace
+        //
+        Trace.cocoon        = cocoon
+        Trace.trace_call    = trace_call
+        Trace.tracing       = tracing
+        Trace.wrap_function = wrap_function
+
+
+        //
+        //  Finish tracing execute & myself
+        //
+        /*self-trace*/ {
+            if (tracing_execute) { procedure_done() }
+            if (tracing_myself)  { procedure_done() }
+        }
     }//,
 )
 
@@ -1222,27 +1176,25 @@ Gem.Boot.Core.execute(
 
         var _             = Node._
         var _Core         = _.Core
-        var Attribute     = Node.Attribute
+        var Box           = Node.Box
         var Core          = Node.Core
         var Script        = Node.Script
         var Trace         = Node.Trace
         var Configuration = Gem.Configuration
 
-        var box_of_properties__enumerable_true = Attribute.box_of_properties__enumerable_true
-        var clarity                            = Configuration.clarity
-        var cocoon                             = Trace.cocoon
-        var create_Object                      = Object.create
-        var define_properties                  = Object.defineProperties
-        var define_property                    = Object.defineProperty
-        var property__constant__value_true     = Attribute.property__constant__value_true
-        var property__mutable__value_undefined = Attribute.property__mutable__value_undefined
-        var seal                               = Object.seal
-        var trace                              = Configuration.trace
-        var trace_call                         = Trace.trace_call
-        var wrap_function                      = Trace.wrap_function
+        var clarity           = Configuration.clarity
+        var cocoon            = Trace.cocoon
+        var create_Object     = Object.create
+        var define_properties = Object.defineProperties
+        var define_property   = Object.defineProperty
+        var seal              = Object.seal
+        var trace             = Configuration.trace
+        var trace_call        = Trace.trace_call
+        var wrap_function     = Trace.wrap_function
 
         if (clarity) {
-            var property_$who = Attribute.property_$who
+            var property_$who  = Box.property_$who
+            var property_$what = Box.property_$what 
         }
 
         if (trace) {
@@ -1267,16 +1219,14 @@ Gem.Boot.Core.execute(
         //
         //
         if (clarity) {
-            var property_$what = seal(create_Object(null, box_of_properties__enumerable_true))
-
-            var property___prefix = seal(                                               //  3 underscores
-                create_Object(
-                    null,
-                    {
-                        value : property__mutable__value_undefined//,
-                    }//,
-                )//,
-            )
+            var property___prefix = {
+                $who         : 'Gem.Box.property___prefix',
+                $what        : "`Gem.Box.property___prefix` is used to create a `._prefix` attribute",
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : undefined//,
+            }
 
             var module_properties = create_Object(
                 null,
@@ -1311,6 +1261,9 @@ Gem.Boot.Core.execute(
                         property_$who .value = $who
                         property_$what.value = $what
 
+                    if (typeof instance !== 'object' && typeof instance !== 'function') {
+                        debugger
+                    }
                         define_properties(instance, $who_$what_properties)
 
                         property_$who     .value =
@@ -1333,24 +1286,28 @@ Gem.Boot.Core.execute(
 
         //
         //  constant_property = Box{
-        //      constant enumerable   : true,
-        //  }
-        //      
-        //      This is used to create a property:
+        //
+        //      This is used to create an attribute:
         //
         //          1.  "permenant" (i.e.: not reconfigurable);
         //          2.  "visible" (i.e.: enumerable);
         //          3.  "constant" (i.e.: not writable)
         //          4.  with a value to be determined later
         //
-        var constant_property = seal(create_Object(null, box_of_properties__enumerable_true))
+        var constant_property = {
+            $who         : 'Gem.Box.constant_property',
+            $what        : "`Gem.Box.constant_property` is used to create constant attributes",
+            configurable : false,                               //  Default value, shown for clarity
+            enumerable   : true,
+            writable     : false,                               //  Default value, shown for clarity
+            value        : undefined//,
+        }
 
         //
         //  interim_constant_property = Box{
-        //      constant configurable : true,
-        //      constant enumerable   : true,
-        //  }
-        //      
+        //
+        //      This is used to create an attribute:
+        //
         //      This is used to create a property:
         //
         //          1.  "interim" (i.e.: reconfigurable);
@@ -1358,16 +1315,14 @@ Gem.Boot.Core.execute(
         //          3.  "constant" (i.e.: not writable)
         //          4.  with a value to be determined later
         //
-        var interim_constant_property = seal(
-            create_Object(
-                null,
-                {
-                    configurable : property__constant__value_true,
-                    enumerable   : property__constant__value_true,
-                    value        : property__mutable__value_undefined//,
-                }//,
-            )//,
-        )
+        var interim_constant_property =  {
+            $who         : 'Gem.Box.interim_constant_property',
+            $what        : "`Gem.Box.interi_constant_property` is used to create interim constant attributes",
+            configurable : true,
+            enumerable   : true,
+            writable     : false,                               //  Default value, shown for clarity
+            value        : undefined//,
+        }
 
 
         //
@@ -2794,7 +2749,7 @@ Gem.Boot.Core.execute(
             if (clarity) {
                 //  Clarity mode will call `codify_handle_error` and `codify_load` again later.
             } else {
-                delete Boot_Script.codify_load                  //  Not clarity mode -- don't need to keep this around
+//              delete Boot_Script.codify_load                  //  Not clarity mode -- don't need to keep this around
 
                 if (handle_errors) {
                     delete Boot_Script.codify_handle_error      //  Not clarity mode -- don't need to keep this around

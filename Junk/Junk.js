@@ -623,3 +623,344 @@ Gem.Boot.Core.codify_method(
                 "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
                 property_$who//,
             )
+        if (clarity || trace) {
+            //
+            //  property_$who = Box{ constant enumerable : true }
+            //
+            //      This is used to create a property:
+            //
+            //          1.  "permenant" (i.e.: not reconfigurable);
+            //          2.  "visible" (i.e.: enumerable);
+            //          3.  "constant" (i.e.: not writable);
+            //          4.  with a "value" to be determined later.
+            //
+            var property_$who = forge_Crate(box_of_properties__enumerable_true)
+        }
+
+
+        //
+        //  property__constant__value_true = Box{
+        //      constant enumerable : true,
+        //      constant value      : true,
+        //  }
+        //
+        //      This is used to create a property:
+        //
+        //          1.  "permenant" (i.e.: not reconfigurable);
+        //          2.  "visible" (i.e.: enumerable);
+        //          3.  "constant" (i.e.: not writable);
+        //          4.  with a "value" of `true`
+        //
+        if (clarity) {
+debugger
+            //
+            //  Remake `property__constant__value_true` using itself.
+            //
+            property__constant__value_true = freeze(
+                create_Object(
+                    null,
+                    {
+                        $who : {
+                            configurable : false,                               //  Default value, shown for clarity
+                            enumerable   : true,
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : property__constant__value_true.$who//,
+                        },
+
+                        $what : {
+                            configurable : false,                               //  Default value, shown for clarity
+                            enumerable   : true,
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : property__constant__value_true.$what//,
+                        },
+
+                        configurable : property__constant__value_false,         //  Default value, shown for clarity
+                        enumerable   : property__constant__value_true,
+                        writable     : property__constant__value_false,         //  Default value, shown for clarity
+                        value        : property__constant__value_false,
+                    }//,
+                )//,
+            )
+        } else {
+            var property__constant__value_true = freeze(
+                create_Object(
+                    null,
+                    {
+                        enumerable : { enumerable: true, value : true },
+                        value      : { enumerable: true, value : true }//,
+                    }//,
+                )//,
+            )
+        }
+
+
+            var property_$what = forge_Crate(
+                {
+                    $who : {
+                        configurable : false,
+                        enumerable   : true,
+                        writable     : false,
+                        value        : 'Gem.Box.property_$what',
+                    },
+
+                    $what : {
+                        configurable : false,
+                        enumerable   : true,
+                        writable     : false,
+                        value        : "`Gem.Box.property_$what` is used to create a `.$what` attribute",
+                    },
+
+                    configurable : property__constant__value_false,     //  Default value, shown for clarity
+                    enumerable   : property__constant__value_true,
+                    writable     : property__constant__value_false,     //  Default value, shown for clarity
+                    value        : property__mutable__value_undefined//,
+                }//,
+            )
+
+            /*property_$who*/ {
+                property_$what.value = "`Gem.Box.property_$who` is used to create a `.$who` attribute"
+
+                var property_$who = forge_Crate(
+                    {
+                        $who : {
+                            configurable : false,
+                            enumerable   : true,
+                            writable     : false,
+                            value        : 'Gem.Box.property_$who',
+                        },
+
+                        $what        : property_$what,
+                        configurable : property__constant__value_false,     //  Default value, shown for clarity
+                        enumerable   : property__constant__value_true,
+                        writable     : property__constant__value_false,     //  Default value, shown for clarity
+                        value        : property__mutable__value_undefined//,
+                    }//,
+                )
+
+                property_$what.value = undefined
+            }
+
+
+            //
+            //  NOTE:
+            //      `.$$who` and `.$what` are invisible:
+            //
+            //          They are used to document `box_of_properties__enumerable_true`:
+            //
+            //          They are *NOT USED TO CREATE* attributes when `box_of_properties__enumerable_true` is used to
+            //          create attributes.
+            //
+            //      `.$who` and `.$what` are visible:
+            //
+            //          They are used to CREATE `.$who` and `.$what` when `box_of_properties__enumerable_true` is used
+            //          to create attributes.
+            //
+            var box_of_properties__enumerable_true = freeze(
+                create_Object(
+                    null,
+                    {
+                        $$who : {
+                            configurable : false,                               //  Default value, shown for clarity
+                            enumerable   : false,   //  Must be *INVISIBLE*     //  Default value, shown for clarity
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : 'Gem.Box.box_of_properties__enumerable_true'//,
+                        },
+
+                        $$what : {
+                            configurable : false,                               //  Default value, shown for clarity
+                            enumerable   : false,   //  Must be *INVISIBLE*     //  Default value, shown for clarity
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : 'A box of properties to create an enumerable attribute.'
+                        },
+
+                        $who : {
+                            configurable : false,                               //  Default value, shown for clarity 
+                            enumerable   : true,
+                            writable     : true,
+                            value        : property_$who//,
+                        },
+
+                        $what : {
+                            configurable : false,                               //  Default value, shown for clarity 
+                            enumerable   : true,
+                            writable     : true,
+                            value        : property_$what//,
+                        },
+
+                        configurable : {
+                            configurable : false,                               //  Default value, shown for clarity 
+                            enumerable   : true,
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : property__constant__value_false//,
+                        },
+
+                        enumerable : {
+                            configurable : false,                               //  Default value, shown for clarity 
+                            enumerable   : true,
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : property__constant__value_true//,
+                        },
+
+                        writable : {
+                            configurable : false,                               //  Default value, shown for clarity 
+                            enumerable   : true,
+                            writable     : false,                               //  Default value, shown for clarity
+                            value        : property__constant__value_false//,
+                        },
+
+                        value : {
+                            configurable : false,                               //  Default value, shown for clarity 
+                            enumerable   : true,
+                            writable     : true,
+                            value        : property__mutable__value_undefined//,
+                        }//,
+                    }//,
+                )//,
+            )
+        //
+        //  This is named `forge_Crate` instead of the `create_Crate` since `create_Crate` is too confusing:
+        //
+        //      So in this unique case we use the "forge" verb instead of the "create" verb for clarity.
+        //
+
+        /*forge_Crate*/ {
+            var forge_Crate__$who = 'Gem.Box.forge_Crate'
+
+
+            if (trace) {
+                if ( ! (forge_Crate__$who in Tracing)) {
+                    Tracing[forge_Crate__$who] = 0
+                }
+
+                var forge_Crate = function forge_Crate(properties) {
+                    var trace        = Configuration.trace             //  Get newest value of 'trace'
+                    var tracing_self = (trace === 7 || (trace && Tracing[forge_Crate__$who]))
+
+                    if (tracing_self) {
+                        function_call(forge_Crate, properties)
+
+                        var result = seal(create_Object(null, properties))
+
+                        function_result(result)
+
+                        return result
+                    }
+
+                    return seal(create_Object(null, properties))
+                }
+
+                /*=*/ {
+                    //  TEMPORARY as "iterim mutable": Changed below to "constant" when `cocoon` is called
+
+                    //  interim mutable forge_Crate.$trace = forge_Crate
+                    //  interim mutable forge_Crate.$who   = forge_Crate__$who
+                    forge_Crate.$trace = forge_Crate
+                    forge_Crate.$who   = forge_Crate__$who
+                }
+            } else {
+                var forge_Crate = function forge_Crate(properties) {
+                    return seal(create_Object(null, properties))
+                }
+            }
+        }
+
+
+        //
+        //  box_of_properties__enumerable_true = Box{
+        //
+        //      This box of properties is used to create two properties:
+        //
+        //          A. property "enumerable" as follows:
+        //
+        //              1.  "permenant" (i.e.: not reconfigurable);
+        //              2.  "visible" (i.e.: enumerable);
+        //              3.  "constant" (i.e.: not writable)
+        //              4.  With a value of `true`.
+        //
+        //          B. property "value" as follows:
+        //
+        //              1.  "permenant" (i.e.: not reconfigurable);
+        //              2.  "visible" (i.e.: enumerable);
+        //              3.  "mutable" (i.e.: writable)
+        //              4.  With a value of `undefined`.
+        //
+        //              The `undefined` value is changed later (which is why it is mutable).
+        //
+        //
+        //  NOTE:
+        //      `.$$who` and `.$what` are invisible:
+        //
+        //          They are used to document `box_of_properties__enumerable_true`:
+        //
+        //          They are *NOT USED TO CREATE* attributes when `box_of_properties__enumerable_true` is used to
+        //          create attributes.
+        //
+        //      `.$who` and `.$what` are visible:
+        //
+        //          They are used to CREATE `.$who` and `.$what` when `box_of_properties__enumerable_true` is used
+        //          to create attributes.
+        //
+        var box_of_properties__enumerable_true = {
+            $who         : property_$who,
+            $who         : property_$what,
+            configurable : property__constant__value_false,                 //  Default value, shown for clarity 
+            enumerable   : property__constant__value_true,
+            writable     : property__constant__value_false,                 //  Default value, shown for clarity 
+            value        : property__mutable__value_undefined//,
+        }
+
+
+            //
+            //  *INITIAL* values of:
+            //
+            //      1.  `property__constant__value_false`
+            //      2.  `property__constant__value_false`
+            //      3.  `property_$who`
+            //      3.  `property_$what`
+            //
+            //  Changed later to be Boxes, Crates & IceCubes.
+            //
+            var property__constant__value_false = {
+                $who         : 'Gem.Box.property__constant__value_false',
+                $what        : "A property to create a \"permenant visible constant\" attribute with value `false`.",
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : false,
+            }
+
+            var property__constant__value_true = {
+                $who         : 'Gem.Box.property__constant__value_true',
+                $what        : "A property to create a \"permenant visible constant\" attribute with value `true`.",
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : true,
+            }
+
+            //
+            //  property__mutable__value_undefined
+            //
+            //      This is used to create a property:
+            //
+            //          1.  "permenant" (i.e.: not reconfigurable);
+            //          2.  "visible" (i.e.: enumerable);
+            //          3.  "mutable" (i.e.: writable);
+            //          4.  with a "value" of `undefined`
+            //
+            //      The `undefined` value is changed later (which is why it is mutable).
+            //
+            var property__mutable__value_undefined = {
+                $who : 'Gem.Box.property__mutable__value_undefined',
+
+                $what : (
+                       "`Gem.Box.property__mutable__value_undefined`"
+                    + "is used to create a mutable property with an initial `undefined` value."
+                ),
+
+                configurable : false,                               //  Default value, shown for clarity
+                enumerable   : true,
+                writable     : false,                               //  Default value, shown for clarity
+                value        : undefined//,
+            }
+
