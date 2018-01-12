@@ -17,6 +17,7 @@
 //      for this reason `$what`, `$which`, `$who`, and '*$' are all shown as visibile instead of invisible.
 //
 Gem.Boot.qualify_constant(
+    Gem.Boot.Core,
     'visible_mutable_attribute',
     (
           'A visible mutable attribute (i.e.: a normal member).\n'

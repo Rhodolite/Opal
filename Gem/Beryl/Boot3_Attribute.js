@@ -163,6 +163,7 @@ Gem.Core.codify_method(
 
 
 Gem.Boot.qualify_constant(
+    Gem.Boot.Core,
     'attribute_constructor',
     'A property to create an invisible constant `.constructor` attribute',
     function qualifier$Gem__Core__attribute_constructor() {
