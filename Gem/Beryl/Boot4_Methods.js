@@ -12,9 +12,9 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var Boot = Gem.Boot
+        var Node = Gem.Boot
 
-        var _Core = Boot._.Core
+        var _Core = Node._.Core
 
         var who_what = _Core.who_what
 
@@ -23,9 +23,9 @@ Gem.Boot.Core.execute(
         //  Implementation
         //
         if ( ! ('Throw' in Boot)) {
-            Boot.Throw = {}
+            Node.Throw = {}
 
-            who_what(Gem.Boot.Throw, 'Gem.Boot.Throw', 'Exports of the Boot.Throw module.', true)
+            who_what(Node.Throw, 'Gem.Throw', 'Exports of the Throw module.', true)
         }
     }//,
 )
@@ -39,33 +39,50 @@ Gem.Boot.Core.method(
         //
         //  Imports
         //
+        var Gem = window.Gem
+
+        var Node = Gem.Node
+
         var Configuration = Gem.Configuration
+        var Box           = Node.Box
         var Core          = Node.Core
+        var Exception     = Node.Exception              //MISSING
         var Trace         = Node.Trace
         var _Trace        = Node._.Trace
         var Throw         = Node.throw
 
         var clarity                   = Configuration.clarity
+        var interim_constant_property = Box.interim_constant_property
         var throw_AttributeError      = Throw.throw_AttributeError
+        var throw_call_error          = Throw.throw_call_error
         var throw_must_be_a_string    = Throw.throw_must_be_a_string
         var throw_must_be_an_object   = Throw.throw_must_be_an_object
         var throw_must_be_identifier  = Throw.throw_must_be_identifier
-        var throw_type_error          = Throw.throw_type_error
         var throw_wrong_arguments     = Throw.throw_wrong_arguments
         var trace                     = Configuration.trace
-        var interim_constant_property = Core._.interim_constant_property
+
 
         if ( ! interim) {
-            var constant_property = Core._.constant_property
+            var constant_property = Box.constant_property
         }
 
 
         if (clarity) {
-            var create_AttributeError = Node.Exception.create_AttributeError
+            var create_AttributeError = Exception.create_AttributeError        //MISSING
+            var property_$who         = Box.property_$who
+            var property_$what        = Box.property_$what
+            var $who_$what_properties = Box.$who_$what_properties
+        }
+
+        if (clarity || trace) {
+            var property_$what = Box.property_$what
         }
 
         if (trace) {
+            var Tracing = Node.Tracing
+
             var function_call = _Trace.function_call
+            var wrap_function = _Trace.wrap_function
         }
 
 
@@ -122,7 +139,7 @@ Gem.Boot.Core.method(
                         var method_name = instance._prefix + '__' + who
 
                         if (typeof method !== 'function' || method_name !== method.name) {
-                            throw_type_error(
+                            throw_call_error(
                                     (
                                           'parameter `method` must be a function named `' + method_name + '`'
                                         + '; was instead'
@@ -225,7 +242,7 @@ Gem.Boot.Core.method(
 //      Gem.Throw.throw_must_be_a_number   - Throw a type error when a parameter is not a number.
 //      Gem.Throw.throw_must_be_a_string   - Throw a type error when a parameter is not a string.
 //      Gem.Throw.throw_must_be_an_object  - Throw a type error when a parameter is not an object.
-//      Gem.Throw.throw_type_error         - Throw a type error (usually ... received invalid parameters).
+//      Gem.Throw.throw_call_error         - Throw a type error (usually ... received invalid parameters).
 //      Gem.Throw.throw_wrong_arguments    - Throw a type error when a method receives wrong number of arguments.
 //
 Gem.Boot.Core.execute(
@@ -341,7 +358,7 @@ Gem.Boot.Core.execute(
                 //  `v` can by any type (though obviously it is not a string)
             }
 
-            throw_type_error("parameter `" + name + "` must be a number; was instead", v)
+            throw_call_error("parameter `" + name + "` must be a number; was instead", v)
         }
 
 
@@ -357,7 +374,7 @@ Gem.Boot.Core.execute(
                 //  `v` can by any type (though obviously it is not a string)
             }
 
-            throw_type_error("parameter `" + name + "` must be a string; was instead", v)
+            throw_call_error("parameter `" + name + "` must be a string; was instead", v)
         }
 
 
@@ -373,16 +390,16 @@ Gem.Boot.Core.execute(
                 //  `v` can by any type (though obviously it is not an object)
             }
 
-            throw_type_error("parameter `" + name + "` must be a string; was instead", v)
+            throw_call_error("parameter `" + name + "` must be a string; was instead", v)
         }
 
 
-        var throw_type_error = function Gem__Throw__throw_type_error(prefix, v) {
+        var throw_call_error = function Gem__Throw__throw_call_error(prefix, v) {
             //  Throw a type error (usually used when a method received invalid parameters).
 
             /*arguments*/ {
                 if (arguments.length !== 2) {
-                    throw_wrong_arguments('Gem.Throw.throw_type_error', 2, arguments.length)
+                    throw_wrong_arguments('Gem.Throw.throw_call_error', 2, arguments.length)
                 }
 
                 if (typeof prefix !== 'string') { throw_must_be_a_string(prefix, 'prefix') }
@@ -461,14 +478,14 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Throw.throw_type_error
+        //  Gem.Throw.throw_call_error
         //      Throw a type error (usually used when a method received invalid parameters).
         //
         interim_method(
             Throw,
-            'throw_type_error',
+            'throw_call_error',
             'Throw a type error (usually used when a method received invalid parameters).',
-            throw_type_error//,
+            throw_call_error//,
         )
 
 

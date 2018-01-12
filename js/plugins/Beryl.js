@@ -25,18 +25,20 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'constant_$who_$what_attributes',   1,
-        'execute$setup_Tracing',            1,
-        'Gem._.Core.who_what',              1,
-        'Gem.Core.execute',                 1,
-        'Gem.Trace.cocoon',                 1,
+        'constant_$who_$what_attributes',   0,
+        'execute$setup_Tracing',            0,
+        'Gem._.Core.who_what',              0,
+        'Gem.Core.constant',                1,
+        'Gem.Core.execute',                 0,
+        'Gem.Trace.cocoon',                 0,
     ],
 
     Boot : {                                                //  Temporary support code during boot process.
-        Box : {                                             //      Boot support code for boxes
-        //  constant_property                  : Box        //          Property to create a constant attribute
-        //  property_$trace                    : Box        //          Create `.$trace` property (trace mode only)
-        //  property_$who                      : Box        //          Create `.$who` property (clarity or trace ...)
+        Box : {                                             //      Boot support code for boxes.
+        //  constant_property         : Box                 //          Create a constant attribute.
+        //  interim_constant_property : Box                 //          Create an interim constant attribute.
+        //  property_$what            : Box                 //          Create `.$what` property (clarity mode only)
+        //  property_$who             : Box                 //          Create `.$who` property (clarity or trace ...).
         },
 
         Core : {                                            //      Boot support code for the Core Gem module.
@@ -114,7 +116,7 @@ window.Gem = {
 
 
 Gem.Boot.Core.execute(
-    function execute$setup_Attribute_and_Tracing() {
+    function execute$setup_Box_and_Tracing() {
         //
         //  Imports
         //
@@ -785,6 +787,7 @@ Gem.Boot.Core.execute(
                 _Trace.depth -= 1
             }
 
+
             var trace_call = function interim$Gem__Trace__trace_call(f) {
                 var trace = Configuration.trace             //  Get newest value of 'trace'
                 var name  = f.name
@@ -901,7 +904,7 @@ Gem.Boot.Core.execute(
                 //      but that gets too confusing, especially when using F10/F11 in developer tools).
                 //
                 var wrap_function = cocoon(
-                    function interim$Gem__Boot__Trace__wrap_function(f, /*optional*/ who) {
+                    function Gem__Boot__Trace__wrap_function(f, /*optional*/ who) {
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
                         var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
@@ -1030,11 +1033,6 @@ Gem.Boot.Core.execute(
         //
         //  Export: Box
         //
-        if (trace) {
-            Box.property_$trace = property_$trace
-        }
-
-
         if (clarity) {
             Box.property_$what = property_$what
         }
@@ -1042,6 +1040,7 @@ Gem.Boot.Core.execute(
         if (clarity || trace) {
             Box.property_$who  = property_$who
         }
+
 
         //
         //  Export: Trace
@@ -1284,6 +1283,7 @@ Gem.Boot.Core.execute(
             )
         }
 
+
         //
         //  constant_property = Box{
         //
@@ -1302,6 +1302,14 @@ Gem.Boot.Core.execute(
             writable     : false,                               //  Default value, shown for clarity
             value        : undefined//,
         }
+
+        if (clarity) {
+            var constant_constant$_attributes = {
+            //  [name]       : constant_property
+            //  [name + '$'] : property_$what
+            }
+        }
+
 
         //
         //  interim_constant_property = Box{
@@ -1343,10 +1351,6 @@ Gem.Boot.Core.execute(
                     if (tracing_self) {
                         function_call(constant_attribute, arguments)
                     }
-
-//                  if (typeof instance !== 'object' && typeof instance !== 'function') {
-//                      debugger
-//                  }
 
                     /*=*/ {
                         //  constant instance.*name = value
@@ -1475,10 +1479,11 @@ Gem.Boot.Core.execute(
             who_what(Gem,      'Gem',      'The only global variable used by Gem.',       false)
             who_what(Gem.Boot, 'Gem.Boot', 'Temporary support code during boot process.', true)
 
-            who_what(Gem.Boot.Core,       'Gem.Boot.Core',       'Basic support code for the Core Gem module.', true)
-            who_what(Gem.Boot.NodeWebKit, 'Gem.Boot.NodeWebKit', 'Node WebKit members & methods.',              true)
-            who_what(Gem.Boot.Script,     'Gem.Boot.Script',     "`<script>` handling during boot process.",    false)
-            who_what(Gem.Boot.Trace,      'Gem.Boot.Trace',      'Exports the Trace module.',                   true)
+            who_what(Gem.Boot.Box,        'Gem.Boot.Box',        'Exports of the Boot.Box module.',          true)
+            who_what(Gem.Boot.Core,       'Gem.Boot.Core',       'Exports of the Boot.Core module.',         true)
+            who_what(Gem.Boot.NodeWebKit, 'Gem.Boot.NodeWebKit', 'Exports of the Boot.NodeWebKit module.',   true)
+            who_what(Gem.Boot.Script,     'Gem.Boot.Script',     "`<script>` handling during boot process.", false)
+            who_what(Gem.Boot.Trace,      'Gem.Boot.Trace',      'Exports of the Boot.Trace module.',        true)
 
             who_what(
                 Gem.Boot._.Core,
@@ -1807,68 +1812,119 @@ Gem.Boot.Core.execute(
         //
         //  Gem.Boot.Core.constant
         //
-        method(
-            Core,
-            'constant',
-            (
-                  'Store a global Gem constant.\n'
-                + '\n'
-                + 'Also in clarity mode adds an explanation of what the constant does.\n'
-                + '\n'
-                + 'NOTE:\n'
-                + "    This is the interim boot version of `constant`."
-            ),
-            (
-                clarity
-                    // FIX TO USE PROPERTIES
-                    ? function Gem__Core__constant(instance, who, $what, value) {
-                          //  Store a global Gem constant.
-                          //
-                          //  Also in clarity mode adds an explanation of what the constant does.
-                          //
-                          //  NOTE:
-                          //      This is the interim boot version of `constant`.
+        if (clarity) {
+            var constant__$who = 'Gem.Core.constant'
 
-                          /*=*/ {
-                              //  constant instance.*who = value
-                              constant_attribute(instance, who, value)
-                          }
+            var constant = cocoon(
+                function Gem__Core__constant(instance, who, $what, value) {
+                    //  Store a global Gem constant.
+                    //
+                    //  Also in clarity mode adds an explanation of what the constant does.
+                    //
+                    //  NOTE:
+                    //      This is the interim boot version of `constant`.
+                    //
+                    var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                          /*=*/ {
-                              //  constant instance[who + '$'] = $what
-                              constant_attribute(instance, who + '$', $what)
-                          }
-                      }
-                    : function Gem__Core__constant(instance, who, $what, value) {
-                          //  Store a global Gem constant.
-                          //
-                          //  Ignores parameter `$what` since not in clarity mode.
-                          //
-                          //  NOTE:
-                          //      This is the interim boot version of `constant`.
+                    var trace_self = (trace === 7 || (trace && Tracing[constant__$who]))
 
-                          /*=*/ {
-                              //  constant instance.*who = value
-                              constant_attribute(instance, who, value)
-                          }
-                      }
-            )//,
-        )
+                    if (trace_self) {
+                        function_call(constant, arguments)
+                    }
+
+                    var who$ = who + '$'
+
+                    /*=*/ {
+                        constant_property.value = value
+                        property_$what   .value = $what
+
+                        constant_constant$_attributes[who ] = constant_property
+                        constant_constant$_attributes[who$] = property_$what
+
+                        define_properties(instance, constant_constant$_attributes)
+
+                        delete constant_constant$_attributes[who ]
+                        delete constant_constant$_attributes[who$]
+
+                        constant_property .value =
+                            property_$what.value = undefined
+
+                        if (trace_self) {
+                            trace_attribute('constant', instance, who,  value)
+                            trace_attribute('constant', instance, who$, $what)
+                        }
+                    }
+
+                    if (trace_self) {
+                        procedure_done()
+                    }
+                },
+                constant__$who//,
+            )
+
+
+            traced_method(
+                Core,
+                'constant',
+                (
+                      'Store a global Gem constant.\n'
+                    + '\n'
+                    + 'Also in clarity mode adds an explanation of what the constant does.\n'
+                    + '\n'
+                    + 'NOTE:\n'
+                    + "    This is the interim boot version of `constant`."
+                ),
+                constant//,
+            )
+        } else {
+            method(
+                Core,
+                'constant',
+                (
+                      'Store a global Gem constant.\n'
+                    + '\n'
+                    + 'Ignores parameter `$what` since not in clarity mode.',
+                    + '\n'
+                    + 'NOTE:\n'
+                    + "    This is the interim boot version of `constant`."
+                ),
+                function Gem__Core__constant(instance, who, $what, value) {
+                    //  Store a global Gem constant.
+                    //
+                    //  Ignores parameter `$what` since not in clarity mode.
+                    //
+                    //  NOTE:
+                    //      This is the interim boot version of `constant`.
+
+                    /*=*/ {
+                        //  constant instance.*who = value
+                        constant_attribute(instance, who, value)
+                    }
+                }//,
+            )
+        }
 
 
         //
-        //  Gem.Boot.Core.interim_method
+        //  Gem.Core.interim_method
         //
         traced_method(
             Core,
             'interim_method',
-            'Interim method for Gem.Boot.Core.interim_method',
+            (
+                  'Store an interim method (i.e.: the method can be replace later).\n'
+                + '\n'
+                + 'Also in clarity mode adds a `.$who` and `.$what` attributes to the function.'
+                + '\n'
+                + 'NOTE:\n'
+                + "    This is the interim boot version of `interim_method`."
+            ),
             interim_method//,
         )
 
 
         //
-        //  Gem.Boot.Core.method
+        //  Gem.Core.method
         //
         traced_method(
             Core,
@@ -1886,7 +1942,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Boot.Core.qualify_constant
+        //  Gem.Core.qualify_constant
         //
         method(
             Core,
@@ -1928,7 +1984,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Boot.Trace.traced_method
+        //  Gem.Trace.traced_method
         //
         traced_method(
             Trace,
@@ -1948,33 +2004,9 @@ Gem.Boot.Core.execute(
         )
 
 
-        //
-        //  Gem.Boot._.Core.constant_attribute
-        //
-        //  NOTE:
-        //      This was set above as a "visible_mutable", change it now to a "constant".
-        //
-        traced_method(
-            _Core,
-            'constant_attribute',
-            'Create a [non reconfigurable] visible constant attribute.',
-            constant_attribute//,
-        )
-
 
         //
-        //  Gem.Boot._.Core.interim_constant_attribute
-        //
-        traced_method(
-            _Core,
-            'interim_constant_attribute',
-            'Create an iterim (i.e.: reconfigurable) visible constant attribute.',
-            interim_constant_attribute//,
-        )
-
-
-        //
-        //  Gem.Boot._.Core.method__no_trace
+        //  Gem._.Core.method__no_trace
         //
         traced_method(
             _Core,
@@ -1985,7 +2017,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Boot._.Core.who_what
+        //  Gem._.Core.who_what
         //
         if (trace || clarity) {
             traced_method(
@@ -2002,7 +2034,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Boot._.Trace.traced_method__common
+        //  Gem._.Trace.traced_method__common
         //
         if (trace) {
             traced_method(
@@ -2021,18 +2053,66 @@ Gem.Boot.Core.execute(
 //  </stubs>                                                //   End of stubs
 
 
-        if (clarity) {
-            //
-            //  property_$what
-            //      A property used to create a visible (i.e.: enumerable) constant `.$what` attribute.
-            //
-            Core.constant(
-                _Core,
-                'property_$what',
-                "A property used to create a visible (i.e.: enumerable) constant `.$who` attribute.",
-                property_$what//,
-            )
-        }
+        //
+        //  Gem.Box.constant_attribute
+        //
+        //  NOTE:
+        //      This was set above as a "visible_mutable", change it now to a "constant".
+        //
+        traced_method(
+            Box,
+            'constant_attribute',
+            'Create a [non reconfigurable] visible constant attribute.',
+            constant_attribute//,
+        )
+
+
+        //
+        //  constant_property
+        //      A property used to create a constant attribute.
+        //
+        Core.constant(
+            Box,
+            'constant_property',
+            "A property used to create a constant attribute.",
+            constant_property//,
+        )
+
+        //
+        //  Gem.Box.interim_constant_attribute
+        //
+        traced_method(
+            Box,
+            'interim_constant_attribute',
+            'Create an iterim (i.e.: reconfigurable) visible constant attribute.',
+            interim_constant_attribute//,
+        )
+
+
+        //
+        //  interim_constant_property
+        //      A property used to create an iterim constant attribute.
+        //
+        Core.constant(
+            Box,
+            'interim_constant_property',
+            "A property used to create an interim constant attribute.",
+            interim_constant_property//,
+        )
+
+
+        //
+        //  Gem.Box.$who_$what_properties
+        //      A box of properties to create a `.$who` and `.$what` attriutes.
+        //
+        Core.constant(
+            Box,
+            '$who_$what_properties',
+            "A box of properties to create a `.$who` and `.$what` attriutes.",
+            $who_$what_properties//,
+        )
+
+
     }
 )
 
@@ -2762,7 +2842,6 @@ Gem.Boot.Core.execute(
         //  Cleanup unused attributes
         //
         /*section*/ {
-            delete _Boot_Core   .constant_property
             delete Configuration.show_alert
             delete Boot_Script  .event_list
         }

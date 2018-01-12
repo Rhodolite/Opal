@@ -45,9 +45,12 @@ Gem.Boot.Core.codify_method(
         //
         var Gem = window.Gem
 
+        var Node = Gem.Boot
+
         var _Core         = Gem._.Core
         var Configuration = Gem.Configuration
 
+        var Box                = Node.Box
         var clarity            = Configuration.clarity
         var constant_attribute = _Core.constant_attribute
         var create_Object      = Object.create
@@ -59,8 +62,8 @@ Gem.Boot.Core.codify_method(
         if (clarity) {
             var _Core = Gem._.Core
 
-            var property_$what = _Core.property_$what
-            var property_$who  = _Core.property_$who
+            var property_$what = Box.property_$what
+            var property_$who  = Box.property_$who
         }
 
 
