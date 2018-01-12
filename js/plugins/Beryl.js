@@ -25,12 +25,13 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'constant_$who_$what_attributes',   0,
-        'execute$setup_Tracing',            0,
-        'Gem.Boot._.Core.who_what',         0,
-        'Gem.Boot.Core.constant',           0,
-        'Gem.Boot.Core.execute',            0,
-        'Gem.Boot.Trace.cocoon',            0,
+        'constant_$who_$what_attributes',       0,
+        'execute$setup_Tracing',                0,
+        'Gem.Boot._.Core.constant_attribute',   0,
+        'Gem.Boot._.Core.who_what',             0,
+        'Gem.Boot.Core.constant',               0,
+        'Gem.Boot.Core.execute',                0,
+        'Gem.Boot.Trace.cocoon',                0,
     ],
 
     Boot : {                                                //  Temporary support code during boot process.
@@ -916,9 +917,9 @@ Gem.Boot.Core.execute(
                     function Gem__Boot__Trace__wrap_function(f, /*optional*/ who) {
                         var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                        var trace_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
+                        var tracing_self = (trace === 7 || (trace && Tracing[wrap_function__$who]))
 
-                        if (trace_self) {
+                        if (tracing_self) {
                             if (tracing_self === 2) {
                                 Configuration.trace = 7                     //  Nested trace
                             }
@@ -941,7 +942,7 @@ Gem.Boot.Core.execute(
                                 define_property(f, '$who', property_$who)
                                 property_$who.value = undefined
 
-                                if (trace_self) {
+                                if (tracing_self) {
                                     trace_attribute('constant', f, '$who', function_name)
                                 }
                             }
@@ -950,7 +951,6 @@ Gem.Boot.Core.execute(
                         if ( ! (function_name in Tracing)) {
                             Tracing[function_name] = 0
                         }
-
 
                         if ('$trace' in f) {
                             throw new Error("TraceError: function `" + function_name + "` already being traced")
@@ -999,12 +999,12 @@ Gem.Boot.Core.execute(
                             define_property(interim$wrap, '$trace', property_$trace)
                             property_$trace.value = undefined
 
-                            if (trace_self) {
+                            if (tracing_self) {
                                 trace_attribute('constant', interim$wrap, '$trace', f)
                             }
                         }
 
-                        if (trace_self) {
+                        if (tracing_self) {
                             function_result(interim$wrap)
 
                             if (tracing_self === 2) {
@@ -1303,46 +1303,22 @@ Gem.Boot.Core.execute(
             )
 
 
-            var constant_$who_$what_attributes = cocoon(
+            var constant_$who_$what_attributes = wrap_function(
                 function constant_$who_$what_attributes(instance, $who, $what) {
-                    var trace        = Configuration.trace             //  Get newest value of 'trace'
-                    var tracing_self = (trace === 7 || (trace && Tracing.constant_$who_$what_attributes))
-
-                    if (tracing_self) {
-                        if (tracing_self === 2) {
-                            Configuration.trace = 7                     //  Nested trace
-                        }
-
-                        function_call(constant_$who_$what_attributes, arguments)
-                    }
-
                     /*=*/ {
                         //  constant module.$who  = $who
                         //  constant module.$what = $what
                         property_$who .value = $who
                         property_$what.value = $what
 
-                    if (typeof instance !== 'object' && typeof instance !== 'function') {
-                        debugger
-                    }
                         define_properties(instance, $who_$what_properties)
 
                         property_$who     .value =
                             property_$what.value = undefined
 
-                        /*trace*/ {
-                            if (tracing_self) {
-                                trace_attribute('constant', instance, '$who',  $who)
-                                trace_attribute('constant', instance, '$what', $what)
-                            }
-                        }
-                    }
-
-                    if (tracing_self) {
-                        procedure_done()
-
-                        if (tracing_self === 2) {
-                            Configuration.trace = trace                 //  Restore trace
+                        if (tracing('constant_$who_$what_attributes')) {
+                            trace_attribute('constant', instance, '$who',  $who)
+                            trace_attribute('constant', instance, '$what', $what)
                         }
                     }
                 }//,
@@ -1406,21 +1382,9 @@ Gem.Boot.Core.execute(
             var constant_attribute__$who = 'Gem.Boot._.Core.constant_attribute'
 
 
-            var constant_attribute = cocoon(
+            var constant_attribute = wrap_function(
                 function Gem__private__Core__constant_attribute(instance, name, value) {
                     //  Create a (non reconfigurable) constant attribute.
-
-                    var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                    var tracing_self = (trace === 7 || (trace && Tracing[constant_attribute__$who]))
-
-                    if (tracing_self) {
-                        if (tracing_self === 2) {
-                            Configuration.trace = 7                     //  Nested trace
-                        }
-
-                        function_call(constant_attribute, arguments)
-                    }
 
                     /*=*/ {
                         //  constant instance.*name = value
@@ -1428,18 +1392,8 @@ Gem.Boot.Core.execute(
                         define_property(instance, name, constant_property)
                         constant_property.value = undefined
 
-                        /*trace*/ {
-                            if (tracing_self) {
-                                trace_attribute('constant', instance, name, value)
-                            }
-                        }
-                    }
-
-                    if (tracing_self) {
-                        procedure_done()
-
-                        if (tracing_self === 2) {
-                            Configuration.trace = trace                 //  Restore trace
+                        if (tracing(constant_attribute__$who)) {
+                            trace_attribute('constant', instance, name, value)
                         }
                     }
                 },
@@ -1458,12 +1412,8 @@ Gem.Boot.Core.execute(
                     define_property(instance, name, interim_constant_property)
                     interim_constant_property.value = undefined
 
-                    /*trace*/ {
-                        var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                        if (trace === 7 || (trace && Tracing.interim_constant_attribute)) {
-                            trace_attribute('interim constant', instance, name, value)
-                        }
+                    if (tracing('interim_constant_attribute')) {
+                        trace_attribute('interim constant', instance, name, value)
                     }
                 }
             }//,
@@ -1972,8 +1922,12 @@ Gem.Boot.Core.execute(
 
 
 //  <stubs: constant, qualify_constant>                     //  Start of stubs #2
-
-
+        //
+        //  Gem.Core.constant
+        //      Store a global Gem constant.
+        //
+        //      Also in clarity mode adds an explanation of what the constant does.
+        //
         var constant = wrap_function(
             function Gem__Core__constant(instance, who, $what, value) {
                 //  Store a global Gem constant.
@@ -1987,6 +1941,8 @@ Gem.Boot.Core.execute(
                     var who$ = who + '$'
 
                     /*=*/ {
+                        //  constant instance.*who       = value
+                        //  constant instance[who + '$'] = $what
                         constant_property.value = value
                         property_$what   .value = $what
 
