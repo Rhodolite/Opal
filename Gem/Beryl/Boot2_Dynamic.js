@@ -68,15 +68,15 @@ Gem.Boot.Core.interim_method(
 
                 if (interim || Gem_Script.dynamic) {
                     /*=*/ {
-                        //  interim constant instance.*who = wrapped_method
-                        interim_constant_property.value = wrapped_method
+                        //  interim constant instance.*who = method
+                        interim_constant_property.value = method
                         define_property(instance, who, interim_constant_property)
                         interim_constant_property.value = undefined
                     }
                 } else {
                     /*=*/ {
-                        //  constant instance.*who = wrapped_method
-                        constant_property.value = wrapped_method
+                        //  constant instance.*who = method
+                        constant_property.value = method
                         define_property(instance, who, constant_property)
                         constant_property.value = undefined
                     }

@@ -34,8 +34,9 @@ Gem.Boot.Core.execute(
 //          'Gem/Beryl/Boot2_Dynamic.js',                   0,      //  Already loaded -- Allows scripts to be dynamic.
 //          'Gem/Beryl/Boot3_Manifest.js',                  0,      //  Already loaded -- This Script
 
+            'Gem/Beryl/Boot4_WhoWhat.js',                   clarity || trace,
+
             // Renumber
-            'Gem/Beryl/Boot3_Clarity.js',                   0,//clarity || trace,
             'Gem/Beryl/Boot4_Methods.js',                   0,
             'Gem/Beryl/Boot4_Throw.js',                     0,//clarity,
             'Gem/Beryl/Boot4_StubCodifyTracedMethod.js',    0,//trace,

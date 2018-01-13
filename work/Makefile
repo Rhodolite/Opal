@@ -3,9 +3,10 @@
 #
 BERYL_FILES = \
     ../Gem/Beryl/Boot2_Dynamic.js \
-	../Gem/Beryl/Boot3_Attribute.js \
-	../Gem/Beryl/Boot3_Clarity.js \
 	../Gem/Beryl/Boot3_Manifest.js \
+	../Gem/Beryl/Boot4_WhoWhat.js \
+    \
+	../Gem/Beryl/Boot3_Attribute.js \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
 	../Gem/Beryl/Boot3_StubBox.js \
 	../Gem/Beryl/Boot3_TraceConstructor.js \
@@ -56,18 +57,19 @@ FILES = \
 all: clean files links
 
 clean:
-	rm -f b.js b1.js b3.js b3a.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
+	rm -f b.js b1.js b3a.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
 	rm -f c.js cd.js
 	rm -f d.js
 	rm -f files files.new
 	rm -f g.js
 	rm -f i.html
 	rm -f j.js j0.js jk.js
-	rm -f m me.js m3.js
+	rm -f m me.js mf.js
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
 	rm -f s.js sax.js sc.js scum.js sr.js sx.js
 	rm -f tc.js tw.js
+	rm -f ww.js
 
 files:
 	echo $(FILES) >files.tmp1
@@ -78,7 +80,6 @@ files:
 links:
 	ln -s ../js/plugins/Beryl.js     	                    b.js
 	ln -s ../js/plugins/Beryl1.js     	                    b1.js
-	ln -s ../Gem/Beryl/Boot3_Clarity.js      	            b3.js
 	ln -s ../Gem/Beryl/Boot3_Attribute.js  	                b3a.js
 	ln -s ../Junk/Boot3_Attribute.js  	                    b3j.js
 	ln -s ../Gem/Beryl/Boot4_StubAttribute.js     	        b4a.js
@@ -113,6 +114,7 @@ links:
 	ln -s ../Gem/Beryl/Boot3_StubBox.js           	        sx.js
 	ln -s ../Gem/Beryl/Boot3_TraceConstructor.js            tc.js
 	ln -s ../Gem/Beryl/Boot4_Throw.js                       tw.js
+	ln -s ../Gem/Beryl/Boot4_WhoWhat.js      	            ww.js
 
 wc:
 	#

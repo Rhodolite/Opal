@@ -1,5 +1,4 @@
-//
-//  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
+// //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
 //  Beryl: Boot Engine, Reliable Yet Limber
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
@@ -25,13 +24,12 @@ window.Gem = {
     },
 
     Tracing : [                                             //  Functions, methods, & bound_methods being traced.
-        'constant_$who_$what_attributes',       0,
         'execute$setup_Tracing',                0,
         'Gem.Boot._.Core.constant_attribute',   0,
-        'Gem.Boot._.Core.who_what',             0,
         'Gem.Boot.Core.constant',               0,
         'Gem.Boot.Core.execute',                0,
         'Gem.Boot.Trace.cocoon',                0,
+        'who_what',                             0,
     ],
 
     Boot : {                                                //  Temporary support code during boot process.
@@ -1439,8 +1437,8 @@ Gem.Boot.Core.execute(
         var seal                = Object.seal
         var trace               = Configuration.trace
         var trace_call          = Trace.trace_call
+        var tracing             = Trace.tracing
         var wrap_function       = Trace.wrap_function
-
 
         if (clarity) {
             var property_$who  = Box.property_$who
@@ -1455,8 +1453,8 @@ Gem.Boot.Core.execute(
             var procedure_done  = _Trace.procedure_done
             var trace_attribute = _Trace.trace_attribute
             var trace_value     = _Trace.trace_value
-            var tracing         = Trace.tracing
         }
+
 
 
         //
@@ -1492,28 +1490,6 @@ Gem.Boot.Core.execute(
                 {
                     '$who'  : { enumerable : true, value : property_$who  },
                     '$what' : { enumerable : true, value : property_$what },
-                }//,
-            )
-
-
-            var constant_$who_$what_attributes = wrap_function(
-                function constant_$who_$what_attributes(instance, $who, $what) {
-                    /*=*/ {
-                        //  constant module.$who  = $who
-                        //  constant module.$what = $what
-                        property_$who .value = $who
-                        property_$what.value = $what
-
-                        define_properties(instance, $who_$what_properties)
-
-                        property_$who     .value =
-                            property_$what.value = undefined
-
-                        if (tracing('constant_$who_$what_attributes')) {
-                            trace_attribute('constant', instance, '$who',  $who)
-                            trace_attribute('constant', instance, '$what', $what)
-                        }
-                    }
                 }//,
             )
         }
@@ -1614,18 +1590,33 @@ Gem.Boot.Core.execute(
 
 
         if (clarity || trace) {
-            var who_what__who = 'Gem.Boot._.Core.who_what'
-
+            //
+            //  who_what
+            //      Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
             //
             //  NOTE:
             //      This interim implementation of `who_what` only replaces a single "." since it does not use
             //      regular expressions with the "g" flag.
             //
+            //      Also it does not pay attention to `Gem.Script.dynamic`.
+            //
+            //      See updated version in "Gem/Boot/Boot4_WhoWhat.js".
+            //
             var who_what = cocoon(
-                function Gem__private__Core__who_what(module, $who, $what, create_prefix) {
+                function who_what(module, $who, $what, create_prefix) {
+                    //  who_what
+                    //      Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
+                    //
+                    //  NOTE:
+                    //      This interim implementation of `who_what` only replaces a single "." since it does not use
+                    //      regular expressions with the "g" flag.
+                    //
+                    //      Also it does not pay attention to `Gem.Script.dynamic`
+                    //
+                    //      See updated version in "Gem/Boot/Boot4_WhoWhat.js"
                     var trace = Configuration.trace             //  Get newest value of 'trace'
 
-                    var tracing_self = (trace === 7 || (trace && Tracing[who_what__who]))
+                    var tracing_self = (trace === 7 || (trace && Tracing.who_what))
 
                     if (tracing_self) {
                         if (tracing_self === 2) {
@@ -1653,32 +1644,35 @@ Gem.Boot.Core.execute(
                             } else {
                                 var _prefix = $who.replace('.', '__')
                             }
+                        }
 
-                            /*=*/ {
-                                //  constant           module.$who    = $who
-                                //  constant           module.$what   = $what
-                                //  invisible constant module._prefix = _prefix
-                                property_$who    .value = $who
-                                property_$what   .value = $what
+                        /*=*/ {
+                            //  constant            module.$who    = $who
+                            //  constant            module.$what   = $what
+                            //  [invisible constant module._prefix = _prefix]       //  Optional
+                            property_$who .value = $who
+                            property_$what.value = $what
+
+                            if (create_prefix) {
                                 property___prefix.value = _prefix
+                            }
 
-                                define_properties(module, module_properties)
+                            define_properties(module, module_properties)
 
-                                property_$who        .value =
-                                    property_$what   .value =
-                                    property___prefix.value = undefined
+                            property_$who     .value =
+                                property_$what.value = undefined
 
-                                if (tracing_self) {
-                                    trace_attribute('constant',           module, '$who',    $who)
-                                    trace_attribute('constant',           module, '$what',   $what)
+                            if (create_prefix) {
+                                property___prefix.value = undefined
+                            }
+
+                            if (tracing_self) {
+                                trace_attribute('constant', module, '$who',    $who)
+                                trace_attribute('constant', module, '$what',   $what)
+
+                                if (create_prefix) {
                                     trace_attribute('invisible constant', module, '_prefix', _prefix)
                                 }
-                            }
-                        } else {
-                            /*=*/ {
-                                //  constant module.$who  = $who
-                                //  constant module.$what = $what
-                                constant_$who_$what_attributes(module, $who, $what)
                             }
                         }
                     } else {
@@ -1698,8 +1692,7 @@ Gem.Boot.Core.execute(
                             Configuration.trace = trace                 //  Restore trace
                         }
                     }
-                },
-                who_what__who//,
+                }//,
             )
 
 
@@ -1851,23 +1844,6 @@ Gem.Boot.Core.execute(
         //  Import: Recently created `method`
         //
         var method = Core.method
-
-
-        //
-        //  Gem.Boot._.Core.who_what
-        //
-        if (trace || clarity) {
-            method(
-                _Core,
-                'who_what',
-                (
-                    clarity
-                        ? "Method to set `.$who`, `.$what`, & `prefix` on a module."
-                        : "Method to set `.$who` on a module (`$what` is ignored in non clarity mode)."
-                ),
-                who_what//,
-            )
-        }
 
 
 //  <stubs: constant, qualify_constant>                     //  Start of stubs #2
@@ -2022,13 +1998,25 @@ Gem.Boot.Core.execute(
 
 
         //
+        //  Gem.Boot.Box.module_properties
+        //      A box of properties to create a `.$who` and `.$what` attributes.
+        //
+        constant(
+            Box,
+            'module_properties',
+            "A box of properties to create a `.$who` and `.$what` attriutes.",
+            $who_$what_properties//,
+        )
+
+
+        //
         //  Gem.Boot.Box.$who_$what_properties
-        //      A box of properties to create a `.$who` and `.$what` attriutes.
+        //      A box of properties to create a `.$who`, `.$what`, and `._prefix` attributes.
         //
         constant(
             Box,
             '$who_$what_properties',
-            "A box of properties to create a `.$who` and `.$what` attriutes.",
+            "A box of properties to create a `.$who`, `.$what`, and `._prefix` attriutes.",
             $who_$what_properties//,
         )
 
