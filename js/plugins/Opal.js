@@ -8,10 +8,10 @@
     var module_name    = 'Opal'
     var module_version = '0.0.39'
 
-//  var watching       = 'Gem/Beryl/Boot2_Manifest.js'
+//  var watching       = 'Gem/Beryl/Boot2_Dynamic.js'
 //  var watching       = 'Gem/Beryl/Boot3_Attribute.js'
 //  var watching       = 'Gem/Beryl/Boot3_Clarity.js'
-//  var watching       = 'Gem/Beryl/Boot2_Dynamic.js'
+//  var watching       = 'Gem/Beryl/Boot3_Manifest.js'
 //  var watching       = 'Gem/Beryl/Boot3_StubAnonymousBox.js'
 //  var watching       = 'Gem/Beryl/Boot3_StubBox.js'
 //  var watching       = 'Gem/Beryl/Boot3_TraceConstructor.js'

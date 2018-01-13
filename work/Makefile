@@ -2,10 +2,10 @@
 #  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
 #
 BERYL_FILES = \
-	../Gem/Beryl/Boot2_Manifest.js \
-	../Gem/Beryl/Boot3_Attribute.js \
     ../Gem/Beryl/Boot2_Dynamic.js \
+	../Gem/Beryl/Boot3_Attribute.js \
 	../Gem/Beryl/Boot3_Clarity.js \
+	../Gem/Beryl/Boot3_Manifest.js \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
 	../Gem/Beryl/Boot3_StubBox.js \
 	../Gem/Beryl/Boot3_TraceConstructor.js \
@@ -56,14 +56,14 @@ FILES = \
 all: clean files links
 
 clean:
-	rm -f b.js b1.js b2.js b3.js b3a.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
+	rm -f b.js b1.js b3.js b3a.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
 	rm -f c.js cd.js
 	rm -f d.js
 	rm -f files files.new
 	rm -f g.js
 	rm -f i.html
 	rm -f j.js j0.js jk.js
-	rm -f m m.js
+	rm -f m me.js m3.js
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
 	rm -f s.js sax.js sc.js scum.js sr.js sx.js
@@ -78,7 +78,6 @@ files:
 links:
 	ln -s ../js/plugins/Beryl.js     	                    b.js
 	ln -s ../js/plugins/Beryl1.js     	                    b1.js
-	ln -s ../Gem/Beryl/Boot2_Manifest.js     	            b2.js
 	ln -s ../Gem/Beryl/Boot3_Clarity.js      	            b3.js
 	ln -s ../Gem/Beryl/Boot3_Attribute.js  	                b3a.js
 	ln -s ../Junk/Boot3_Attribute.js  	                    b3j.js
@@ -99,7 +98,8 @@ links:
 	ln -s ../Junk/Junk0.js         		                    j0.js
 	ln -s ../Junk/Junk.js         		                    jk.js
 	ln -s Makefile						                    m
-	ln -s ../Gem/Beryl/Boot4_Methods.js      	            m.js
+	ln -s ../Gem/Beryl/Boot4_Methods.js      	            me.js
+	ln -s ../Gem/Beryl/Boot3_Manifest.js     	            mf.js
 	ln -s ../js/rpg_core.js         	                    rc.js
 	ln -s ../js/rpg_managers.js			                    rm.js
 	ln -s ../js/plugins/Opal.js	    	                    o.js

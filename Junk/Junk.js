@@ -967,3 +967,40 @@ debugger
 //                  if (typeof instance !== 'object' && typeof instance !== 'function') {
 //                      debugger
 //                  }
+
+        //
+        //  method__no_trace
+        //      Common code to define a method with no tracing.
+        //
+        var method__no_trace = wrap_function(
+            function Gem__private__Core__method__no_trace(instance, interim, who, $what, method) {
+                //  Common code to define a method with no tracing.
+
+                if ('$trace' in method) {
+                    throw new Error('method_no_trace: function "' + method.name + '" has a `.$trace` attribute')
+                }
+
+                if (clarity) {
+                    if ( ! ('$who' in instance)) {
+                        throw new Error('method_no_trace: missing $who in object')
+                    }
+
+                    var function_name = instance.$who + '.' + who
+
+                    /*=*/ {
+                        //  constant method.$who  = function_name
+                        //  constant method.$what = $what
+                        constant_$who_$what_attributes(method, function_name, $what)
+                    }
+                }
+
+                if (interim) {
+                    //  interim constant instance.*who = method
+                    interim_constant_attribute(instance, who, method)
+                } else {
+                    //  constant instance.*who = method
+                    constant_attribute(instance, who, method)
+                }
+            },
+            'Gem.Boot._.Core.method__no_trace'//,
+        )

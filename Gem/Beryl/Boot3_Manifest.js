@@ -1,6 +1,6 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot2_Manifest: Boot - Phase 2 - Load rest of Boot files
+//  Boot3_Manifest: Boot - Phase 3 - Load rest of Boot files
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
 
@@ -15,12 +15,14 @@ Gem.Boot.Core.execute(
         //
         var Gem = window.Gem
 
-        var Boot_Script   = Gem.Boot.Script
+        var Node = Gem.Boot
+
         var Configuration = Gem.Configuration
+        var Script        = Node.Script
 
         var box_name = Configuration.Box.box_name
         var clarity  = Configuration.clarity
-        var load     = Boot_Script.load
+        var load     = Script.load
         var trace    = Configuration.trace
 
 
