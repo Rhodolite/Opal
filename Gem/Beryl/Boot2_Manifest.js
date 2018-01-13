@@ -28,11 +28,9 @@ Gem.Boot.Core.execute(
         //  Rest of immediate boot code
         //
         var manifest_list = [
-            'Gem/Beryl/Boot3_Clarity.js',                   clarity || trace,
-            'Gem/Beryl/Boot4_Methods.js',                   0,
-
-
             // Renumber
+            'Gem/Beryl/Boot3_Clarity.js',                   0,//clarity || trace,
+            'Gem/Beryl/Boot4_Methods.js',                   0,
             'Gem/Beryl/Boot4_Throw.js',                     0,//clarity,
             'Gem/Beryl/Boot4_StubCodifyTracedMethod.js',    0,//trace,
             'Gem/Beryl/Boot4_StubConstructor.js',           0,//box_name,

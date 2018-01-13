@@ -4,6 +4,7 @@
 BERYL_FILES = \
 	../Gem/Beryl/Boot2_Manifest.js \
 	../Gem/Beryl/Boot3_Attribute.js \
+    ../Gem/Beryl/Boot2_Dynamic.js \
 	../Gem/Beryl/Boot3_Clarity.js \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
 	../Gem/Beryl/Boot3_StubBox.js \
@@ -57,6 +58,7 @@ all: clean files links
 clean:
 	rm -f b.js b1.js b2.js b3.js b3a.js b3j.js b4.js b4a.js b5.js b6.js b7.js b8.js b9.js bs.js
 	rm -f c.js cd.js
+	rm -f d.js
 	rm -f files files.new
 	rm -f g.js
 	rm -f i.html
@@ -90,6 +92,7 @@ links:
 	ln -s ../js/plugins/Bloodstone.js	                    bs.js
 	ln -s ../Junk/Crystal.js	    	                    c.js
 	ln -s ../Gem/Clarity/DomainObjectModel.js               cd.js
+	ln -s ../Gem/Beryl/Boot2_Dynamic.js                     d.js
 	ln -s ../js/plugins/Gem.js    		                    g.js
 	ln -s ../index.html           		                    i.html
 	ln -s ../js/plugins/Jasper.js 		                    j.js

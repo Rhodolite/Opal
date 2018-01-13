@@ -41,7 +41,7 @@ Gem.Boot.Core.method(
         //
         var Gem = window.Gem
 
-        var Node = Gem.Node
+        var Node = Gem.Boot
 
         var Configuration = Gem.Configuration
         var Box           = Node.Box
