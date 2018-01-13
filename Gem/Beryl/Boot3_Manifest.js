@@ -30,6 +30,10 @@ Gem.Boot.Core.execute(
         //  Rest of immediate boot code
         //
         var manifest_list = [
+//          'js/plugins/Beryl.js',                          0,      //  Already loaded -- Initial script
+//          'Gem/Beryl/Boot2_Dynamic.js',                   0,      //  Already loaded -- Allows scripts to be dynamic.
+//          'Gem/Beryl/Boot3_Manifest.js',                  0,      //  Already loaded -- This Script
+
             // Renumber
             'Gem/Beryl/Boot3_Clarity.js',                   0,//clarity || trace,
             'Gem/Beryl/Boot4_Methods.js',                   0,

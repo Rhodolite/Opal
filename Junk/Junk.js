@@ -1004,3 +1004,40 @@ debugger
             },
             'Gem.Boot._.Core.method__no_trace'//,
         )
+        //
+        //  Stubs:
+        //      See "Gem/Beryl/Boot6_Methods.js" for full implementation
+        //
+        //  NOTE:
+        //      These stubs are ~100 lines long ...
+        //
+        //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~200 lines
+        //          of extra error handling code) in "Gem/Beryl/Boot6_Methods.js ...
+        //
+        //      ... Thus, the full implementation, was moved to a separate file, for readability ...
+        //
+        //      ... Even though unforunatly this:
+        //
+        //              1.  *BAD*   Violates the DRY principle ("Do not Repeat Yourself); AND
+        //
+        //              2.  *BAD*   This is the WET coding pratice ("Write Everything Twice") ...
+        //
+        //      ... In this special case, as boot code, it was decided to do this both for initial readability and
+        //          to shorten the boot code in thie file ...
+        //
+        //      The reason the code split up is "initially more readabile" is the other way (all the code here) is
+        //      a lot of contortions have to be done to define the procedures in the "proper order", and it's hard
+        //      to follow so much contorted code ...
+        //
+        //      (Was not an easy choice to create the stubs, hopefully was the right one).
+        //
+//
+//  At this point, as part of the boot process, `Gem` is now defined as in the original comment above:
+//
+//      With the exception of:
+//
+//          `Gem.Configuration.show_alert`  (which has been deleted); and
+//          `Gem.Script.event_list`         (which has been deleted).
+//
+
+

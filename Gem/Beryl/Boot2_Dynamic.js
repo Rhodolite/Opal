@@ -1,8 +1,11 @@
 //
 //  Copyright (c) 2017 Joy Diamond.  Licensed under the MIT License.
-//  Boot3_Script: Boot - Phase 3 - Add Script
+//  Boot3_Dynamic: Boot - Phase 3 - Add & use `Gem.Script.dynamic`.
 //
 'use strict'                                                //  Strict mode helps catch JavaScript errors, very useful!
+
+
+//Gem.Configuration.trace = 7
 
 
 Gem.Boot.Core.execute(
@@ -15,6 +18,20 @@ Gem.Boot.Core.execute(
 
 
 
+//
+//  Gem.Boot._.Core.produce_method_common
+//      Produce the code for `Gem._.Core.method_common`
+//
+//  NOTE:
+//      The first version of `method_common` is in "js/plugins/Beryl.js".
+//
+//      This produced version of `method_common` adds the following:
+//
+//          1.  Can do argument checking;
+//          2.  Looks at `Gem.Script.dyanmic`
+//          3.  Is produced (i.e.: can be created multiple times, as the boot environment improves).
+//          4.  Simplified version of `method_common` in no clarity & no trace mode.
+//
 Gem.Boot.Core.interim_method(
     Gem.Boot._.Core,
     'produce_method_common',
@@ -58,7 +75,7 @@ Gem.Boot.Core.interim_method(
                     }
                 } else {
                     /*=*/ {
-                        //  [interim] constant instance.*who = wrapped_method
+                        //  constant instance.*who = wrapped_method
                         constant_property.value = wrapped_method
                         define_property(instance, who, constant_property)
                         constant_property.value = undefined
@@ -98,9 +115,10 @@ Gem.Boot.Core.interim_method(
             var _Trace  = Node._.Trace
             var Tracing = Node.Tracing
 
-            var function_call  = _Trace.function_call
-            var procedure_done = _Trace.procedure_done
-            var wrap_function  = Trace.wrap_function
+            var function_call   = _Trace.function_call
+            var procedure_done  = _Trace.procedure_done
+            var trace_attribute = _Trace.trace_attribute
+            var wrap_function   = Trace.wrap_function
         }
 
 
@@ -255,7 +273,7 @@ Gem.Boot.Core.interim_method(
                     }
                 } else {
                     /*=*/ {
-                        //  [interim] constant instance.*who = wrapped_method
+                        //  constant instance.*who = wrapped_method
                         constant_property.value = wrapped_method
                         define_property(instance, who, constant_property)
                         constant_property.value = undefined
@@ -404,7 +422,7 @@ if (Gem.Boot.Script.handle_errors) {
             var handle_event = function Gem__Script__handle_event(e) {
                 //  Handle events of `<script>` tags.
 
-                Gem_Script.dynamic = false                                 //  Script done, reset `.dynamic`
+                Gem_Script.dynamic = false                                 //  Script done, reset `Gem.Script.dynamic`.
 
                 var tag = e.target
 
@@ -486,3 +504,13 @@ Gem.Boot.Core.execute(
         load('Gem/Beryl/Boot3_Manifest.js')
     }//,
 )
+
+
+//--------------------------------------------------------+
+//  This code is formatted for clarity.                   |
+//  Hence this code does not use unnecessary semicolons.  |
+//  Reasoning: https://mislav.net/2010/05/semicolons/     |
+//--------------------------------------------------------+
+
+
+//  The full MIT License is available here: https://github.com/Rhodolite/Opal/blob/master/LICENSE

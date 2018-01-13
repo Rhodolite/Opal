@@ -1442,7 +1442,6 @@ Gem.Boot.Core.execute(
         var wrap_function       = Trace.wrap_function
 
 
-
         if (clarity) {
             var property_$who  = Box.property_$who
             var property_$what = Box.property_$what 
@@ -1521,7 +1520,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  constant_property = Box{
+        //  constant_property
         //
         //      This is used to create an attribute:
         //
@@ -1722,150 +1721,130 @@ Gem.Boot.Core.execute(
         }
 
 
-//  <stubs: codify_interim_method,codify_method,interim_method, method>     //  Start of stubs #1
         //
         //  Stubs:
-        //      See "Gem/Beryl/Boot6_Methods.js" for full implementation
+        //      See "Gem/Beryl/Boot2_Dyanmic.js" for full implementation of `method_common`
         //
-        //  NOTE:
-        //      These stubs are ~100 lines long ...
-        //
-        //      ... With full error handling, in clarity mode, they are ~600 lines long (plus another ~200 lines
-        //          of extra error handling code) in "Gem/Beryl/Boot6_Methods.js ...
-        //
-        //      ... Thus, the full implementation, was moved to a separate file, for readability ...
-        //
-        //      ... Even though unforunatly this:
-        //
-        //              1.  *BAD*   Violates the DRY principle ("Do not Repeat Yourself); AND
-        //
-        //              2.  *BAD*   This is the WET coding pratice ("Write Everything Twice") ...
-        //
-        //      ... In this special case, as boot code, it was decided to do this both for initial readability and
-        //          to shorten the boot code in thie file ...
-        //
-        //      The reason the code split up is "initially more readabile" is the other way (all the code here) is
-        //      a lot of contortions have to be done to define the procedures in the "proper order", and it's hard
-        //      to follow so much contorted code ...
-        //
-        //      (Was not an easy choice to create the stubs, hopefully was the right one).
-        //
-        if (trace && ! ('method_common' in Tracing)) {
-            Tracing.method_common = 0
-        }
+        /*method_common*/ {
+            if (trace && ! ('method_common' in Tracing)) {
+                Tracing.method_common = 0
+            }
 
-        //
-        //  variable `method_common` is needed as the method refers to itself when tracing.
-        //
-        var method_common = cocoon(
-            function method_common(instance, interim, who, $what, method) {
-                //  Support code to store a [possibly interim] Gem Method.
-                //
-                //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
+            //
+            //  variable `method_common` is needed as the method refers to itself when tracing.
+            //
+            var method_common = cocoon(
+                function method_common(instance, interim, who, $what, method) {
+                    //  Support code to store a [possibly interim] Gem Method.
+                    //
+                    //  Also in clarity mode adds a `.$who` and `.$what` attributes to the method.
 
-                var trace        = Configuration.trace             //  Get newest value of 'trace'
-                var tracing_self = (trace === 7 || (trace && Tracing.method_common))
+                    var trace        = Configuration.trace             //  Get newest value of 'trace'
+                    var tracing_self = (trace === 7 || (trace && Tracing.method_common))
 
-                if (tracing_self) {
-                    if (tracing_self === 2) {
-                        Configuration.trace = 7                     //  Nested trace
+                    if (tracing_self) {
+                        if (tracing_self === 2) {
+                            Configuration.trace = 7                     //  Nested trace
+                        }
+
+                        function_call(method_common, arguments)
                     }
 
-                    function_call(method_common, arguments)
-                }
+                    var function_name = null
 
-                var function_name = null
+                    if (trace) {
+                        if ('$trace' in method) {
+                            var wrapped_method = method
+                        } else {
+                            var function_name  = instance.$who + '.' + who
+                            var wrapped_method = wrap_function(method, function_name)
 
-                if (trace) {
-                    if ('$trace' in method) {
-                        var wrapped_method = method
-                    } else {
-                        var function_name  = instance.$who + '.' + who
-                        var wrapped_method = wrap_function(method, function_name)
+                            if (clarity) {
+                                /*=*/ {
+                                    //  constant method.$who  = function_name
+                                    //  constant method.$what = $what
+                                    property_$who .value = 'TRACE: ' + function_name
+                                    property_$what.value = 'TRACE: ' + $what
 
-                        if (clarity) {
-                            /*=*/ {
-                                //  constant method.$who  = function_name
-                                //  constant method.$what = $what
-                                property_$who .value = 'TRACE: ' + function_name
-                                property_$what.value = 'TRACE: ' + $what
+                                    define_properties(wrapped_method, $who_$what_properties)
 
-                                define_properties(wrapped_method, $who_$what_properties)
+                                    property_$who     .value =
+                                        property_$what.value = undefined
 
-                                property_$who     .value =
-                                    property_$what.value = undefined
-
-                                if (tracing_self) {
-                                    trace_attribute('constant', wrapped_method, '$who',  'TRACE: ' + function_name)
-                                    trace_attribute('constant', wrapped_method, '$what', 'TRACE: ' + $what)
+                                    if (tracing_self) {
+                                        trace_attribute('constant', wrapped_method, '$who',  'TRACE: ' + function_name)
+                                        trace_attribute('constant', wrapped_method, '$what', 'TRACE: ' + $what)
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
-                    var wrapped_method = method
-                }
-
-                if (clarity) {
-                    if (function_name === null) {
-                        function_name = instance.$who + '.' + who
+                    } else {
+                        var wrapped_method = method
                     }
 
-                    /*=*/ {
-                        //  constant method.$who  = function_name
-                        //  constant method.$what = $what
-                        property_$who .value = function_name
-                        property_$what.value = $what
+                    if (clarity) {
+                        if (function_name === null) {
+                            function_name = instance.$who + '.' + who
+                        }
 
-                        define_properties(method, $who_$what_properties)
+                        /*=*/ {
+                            //  constant method.$who  = function_name
+                            //  constant method.$what = $what
+                            property_$who .value = function_name
+                            property_$what.value = $what
 
-                        property_$who     .value =
-                            property_$what.value = undefined
+                            define_properties(method, $who_$what_properties)
 
-                        if (tracing_self) {
-                            trace_attribute('constant', method, '$who',  function_name)
-                            trace_attribute('constant', method, '$what', $what)
+                            property_$who     .value =
+                                property_$what.value = undefined
+
+                            if (tracing_self) {
+                                trace_attribute('constant', method, '$who',  function_name)
+                                trace_attribute('constant', method, '$what', $what)
+                            }
                         }
                     }
-                }
 
-                if (interim) {
-                    /*=*/ {
-                        //  interim constant instance.*who = wrapped_method
-                        interim_constant_property.value = wrapped_method
-                        define_property(instance, who, interim_constant_property)
-                        interim_constant_property.value = undefined
+                    if (interim) {
+                        /*=*/ {
+                            //  interim constant instance.*who = wrapped_method
+                            interim_constant_property.value = wrapped_method
+                            define_property(instance, who, interim_constant_property)
+                            interim_constant_property.value = undefined
 
-                        if (tracing_self) {
-                            trace_attribute('interim constant', instance, who, wrapped_method)
+                            if (tracing_self) {
+                                trace_attribute('interim constant', instance, who, wrapped_method)
+                            }
+                        }
+                    } else {
+                        /*=*/ {
+                            //  [interim] constant instance.*who = wrapped_method
+                            constant_property.value = wrapped_method
+                            define_property(instance, who, constant_property)
+                            constant_property.value = undefined
+
+                            if (tracing_self) {
+                                trace_attribute('constant', instance, who, wrapped_method)
+                            }
                         }
                     }
-                } else {
-                    /*=*/ {
-                        //  [interim] constant instance.*who = wrapped_method
-                        constant_property.value = wrapped_method
-                        define_property(instance, who, constant_property)
-                        constant_property.value = undefined
 
-                        if (tracing_self) {
-                            trace_attribute('constant', instance, who, wrapped_method)
+                    if (tracing_self) {
+                        procedure_done()
+
+                        if (tracing_self === 2) {
+                            Configuration.trace = trace                 //  Restore trace
                         }
                     }
-                }
-
-                if (tracing_self) {
-                    procedure_done()
-
-                    if (tracing_self === 2) {
-                        Configuration.trace = trace                 //  Restore trace
-                    }
-                }
-            }//,
-        )
+                }//,
+            )
+        }
 
 
+        //
+        //  Gem.Boot.Core.{codify_interim_method,codify_method,interim_method,method}
+        //
         codify_core_methods(Node, true, method_common)
-//  </stubs>                                                //  End of stubs #1
 
 
         //
@@ -2780,16 +2759,6 @@ Gem.Boot.Core.execute(
         load('Gem/Beryl/Boot2_Dynamic.js')
     }//,
 )
-
-
-//
-//  At this point, as part of the boot process, `Gem` is now defined as in the original comment above:
-//
-//      With the exception of:
-//
-//          `Gem.Configuration.show_alert`  (which has been deleted); and
-//          `Gem.Script.event_list`         (which has been deleted).
-//
 
 
 //--------------------------------------------------------+
