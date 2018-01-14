@@ -39,43 +39,29 @@ Gem.Boot.Core.execute(
 
         var Node = Gem.Boot
 
+        var _             = Node._
+        var _Core         = _.Core
         var Box           = Node.Box
         var Configuration = Gem.Configuration
         var Gem_Script    = Gem.Script
         var Trace         = Node.Trace
 
-        var clarity = Configuration.clarity
-        var cocoon  = Trace.cocoon
-        var dynamic = Gem_Script.dynamic
-        var trace   = Configuration.trace
+        var clarity          = Configuration.clarity
+        var cocoon           = Trace.cocoon
+        var dynamic          = Gem_Script.dynamic
+        var trace            = Configuration.trace
+        var produce_who_what = _Core.produce_who_what
 
-
-        if (clarity) {
-            var define_properties = Object.defineProperties
-        }
-
-        if ( ! clarity || trace) {
-            var define_property = Object.defineProperty
-        }
-
-        if (trace) {
-            var _Trace  = Node._.Trace
-            var Tracing = Node.Tracing
-
-            var function_call  = _Trace.function_call
-            var procedure_done = _Trace.procedure_done
-        }
 
         if (clarity && trace) {
             var interim_constant_attribute = Box.interim_constant_attribute
-            var trace_attribute            = _Trace.trace_attribute
         }
 
 
         //
         //  Closures
         //
-        var dot__pattern = new Pattern('\\.', 'g')
+        var dot_pattern = new Pattern('\\.', 'g')
 
         if (dynamic || trace) {
             var interim_property_$who = {
@@ -150,95 +136,9 @@ Gem.Boot.Core.execute(
         //          1.  Allows replacing multiple '.' with '__'
         //          2.  Pays attention to `Gem.Script.dynamic` to create interim constants.
         //
-        var who_what = cocoon(
-            function who_what(module, $who, $what, create_prefix) {
-                //      Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
-                //
-                //      This second implementation of `who_what` has the following additional two features:
-                //
-                //          1.  Allows replacing multiple '.' with '__'
-                //          2.  Pays attention to `Gem.Script.dynamic` to create interim constants.
-                var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                var tracing_self = (trace === 7 || (trace && Tracing.who_what))
-
-                if (tracing_self) {
-                    if (tracing_self === 2) {
-                        Configuration.trace = 7                     //  Nested trace
-                    }
-
-                    //
-                    //  Must set `module.$who` temporarly before calling `function_call`
-                    //      (Reset below to an [interim or permenant] constant)
-                    //
-                    /*=*/ {
-                        //  interim constant module.$who = $who
-                        interim_property_$who.value = $who
-                        define_property(module, '$who', interim_property_$who)
-                        interim_property_$who.value = undefined
-                    }
-
-                    function_call(who_what, arguments)
-                }
-
-                if (clarity && create_prefix) {
-                    if ($who.startsWith('Gem.Boot._.')) {
-                        var _prefix = $who.replace('Gem.Boot._.', 'Gem__private__').replace(dot__pattern, '__')
-                    } else if ($who.startsWith('Gem.Boot.')) {
-                        var _prefix = $who.replace('Gem.Boot.', 'Gem__').replace(dot__pattern, '__')
-                    } else {
-                        var _prefix = $who.replace(dot__pattern, '__')
-                    }
-                }
-
-                /*=*/ {
-                    //  [interim]  constant           module.$who    = $who
-                    //  [[interim] constant           module.$what   = $what]          //  Optional
-                    //  [invisible [interim] constant module._prefix = _prefix]         //  Optional
-                    duration_property_$who.value = $who
-
-                    if (clarity) {
-                        duration_property_$what.value = $what
-
-                        if (create_prefix) {
-                            duration_property___prefix.value = _prefix
-                            define_properties(module, duration_module_properties)
-                            duration_property___prefix.value = undefined
-                        } else {
-                            define_properties(module, duration_$who_$what_properties)
-                        }
-
-                        duration_property_$what.value = undefined
-                    } else {
-                        //
-                        //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                        //
-                        define_property(module, '$who', duration_property_$who)
-                    }
-
-                    duration_property_$who.value = undefined
-
-                    if (tracing_self) {
-                        trace_attribute(keyword_constant, module, '$who', $who)
-
-                        if (clarity) {
-                            trace_attribute(keyword_constant, module, '$what', $what)
-
-                            if (create_prefix) {
-                                trace_attribute(keyword_invisible_constant, module, '_prefix', _prefix)
-                            }
-                        }
-                    }
-                }
-
-                if (tracing_self) {
-                    procedure_done()
-
-                    if (tracing_self === 2) {
-                        Configuration.trace = trace                 //  Restore trace
-                    }
-                }
-            }//,
+        var who_what = produce_who_what(
+            dot_pattern, duration_property_$who, duration_property_$what, duration_property___prefix,
+            duration_module_properties, duration_$who_$what_properties//,
         )
 
         who_what(Gem.Script, 'Gem.Script', "`<script>` handling.", false)
@@ -274,6 +174,11 @@ Gem.Boot.Core.execute(
 
         who_what(Gem.Boot._,       'Gem.Boot._',       'Private members & methods of all Boot Gem modules.',  false)
         who_what(Gem.Boot._.Trace, 'Gem.Boot._.Trace', 'Private members & methods of the Boot.Trace module.', true)
+
+
+        if ( ! Gem_Script.dynamic) {
+            delete _Core.produce_who_what
+        }
     }
 )
 

@@ -29,6 +29,7 @@ window.Gem = {
         'Gem.Boot.Core.constant',               0,
         'Gem.Boot.Core.execute',                0,
         'Gem.Boot.Trace.cocoon',                0,
+        'Gem.Boot.Trace.wrap_function',         1,
         'who_what',                             0,
     ],
 
@@ -235,7 +236,8 @@ Gem.Boot.Core.execute(
             //
             //  Closures
             //
-            var carriage_return__pattern = new Pattern('\n', 'g')
+            var carriage_return__pattern        = new Pattern('\n', 'g')
+            var carriage_return__space__pattern = new Pattern('\n *', 'g')
 
             if ('bind' in unbound__group_stop) {
                 var group_stop = unbound__group_stop.bind(console)
@@ -409,8 +411,11 @@ Gem.Boot.Core.execute(
 
                     s = s.substr(1, s.length - 2).trim()
 
-                    if (s.endsWith('//,') && s.indexOf('\n') === -1) {
-                        result__trailer = '(' + s.substr(0, s.length - 3) + ')'
+                    if (s.endsWith('//,')) {
+                        result__trailer = '('
+                                        + s.substr(0, s.length - 3).replace(carriage_return__space__pattern, ' ')
+                                        + ')'
+
                         return
                     }
                 }
@@ -1594,6 +1599,108 @@ Gem.Boot.Core.execute(
 
         if (clarity || trace) {
             //
+            //  produce_who_what
+            //      Produce a `who_what` function that:
+            //          Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
+            //
+            var produce_who_what = wrap_function(
+                function Gem__private__Core__produce_who_what(
+                    dot_pattern, duration_property_$who, duration_property_$what, duration_property___prefix,
+                    duration_module_properties, duration_$who_$what_properties//,
+                ) {
+                    return cocoon(
+                        function who_what(module, $who, $what, create_prefix) {
+                            //  who_what
+                            //      Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
+                            var trace = Configuration.trace             //  Get newest value of 'trace'
+
+                            var tracing_self = (trace === 7 || (trace && Tracing.who_what))
+
+                            if (tracing_self) {
+                                if (tracing_self === 2) {
+                                    Configuration.trace = 7                     //  Nested trace
+                                }
+
+                                //
+                                //  Must set `module.$who` temporarly before calling `function_call`
+                                //      (Reset below to a [possibly] permenant constant)
+                                //
+                                /*=*/ {
+                                     //  interim constant module.$who = $who
+                                     interim_constant_property.value = $who
+                                     define_property(module, '$who', interim_constant_property)
+                                     interim_constant_property.value = undefined
+                                }
+
+                                function_call(who_what, arguments)
+                            }
+
+                            if (clarity && create_prefix) {
+                                if ($who.startsWith('Gem.Boot._.')) {
+                                    var _prefix = $who.replace('Gem.Boot._.', 'Gem__private__')
+                                } else if ($who.startsWith('Gem.Boot.')) {
+                                    var _prefix = $who.replace('Gem.Boot.', 'Gem__')
+                                } else {
+                                    var _prefix = $who
+                                }
+
+                                var _prefix = _prefix.replace(dot_pattern, '__')
+                            }
+
+                            /*=*/ {
+                                //  constant            module.$who    = $who
+                                //  [constant           module.$what   = $what]         //  Optional
+                                //  [invisible constant module._prefix = _prefix]       //  Optional
+                                property_$who.value = $who
+
+                                if (clarity) {
+                                    property_$what.value = $what
+
+                                    if (create_prefix) {
+                                        property___prefix.value = _prefix
+                                        define_properties(module, module_properties)
+                                        property___prefix.value = undefined
+                                    } else {
+                                        define_properties(module, $who_$what_properties)
+                                    }
+
+                                    property_$what.value = undefined
+                                } else {
+                                    //
+                                    //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` &
+                                    //  `__prefix`.
+                                    //
+                                    define_property(module, '$who', property_$who)
+                                }
+
+                                property_$who.value = undefined
+
+                                if (tracing_self) {
+                                    trace_attribute('constant', module, '$who', $who)
+
+                                    if (clarity) {
+                                        trace_attribute('constant', module, '$what', $what)
+
+                                        if (create_prefix) {
+                                            trace_attribute('invisible constant', module, '_prefix', _prefix)
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (tracing_self) {
+                                procedure_done()
+
+                                if (tracing_self === 2) {
+                                    Configuration.trace = trace                 //  Restore trace
+                                }
+                            }
+                        }//,
+                    )
+                }//,
+            )
+
+            //
             //  who_what
             //      Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
             //
@@ -1605,99 +1712,9 @@ Gem.Boot.Core.execute(
             //
             //      See updated version in "Gem/Boot/Boot4_WhoWhat.js".
             //
-            var who_what = cocoon(
-                function who_what(module, $who, $what, create_prefix) {
-                    //  who_what
-                    //      Set the `.$who`, `.$what`, & `._prefix' of a Gem Modules.
-                    //
-                    //  NOTE:
-                    //      This interim implementation of `who_what` only replaces a single "." since it does not use
-                    //      regular expressions with the "g" flag.
-                    //
-                    //      Also it does not pay attention to `Gem.Script.dynamic`
-                    //
-                    //      See updated version in "Gem/Boot/Boot4_WhoWhat.js"
-                    var trace = Configuration.trace             //  Get newest value of 'trace'
-
-                    var tracing_self = (trace === 7 || (trace && Tracing.who_what))
-
-                    if (tracing_self) {
-                        if (tracing_self === 2) {
-                            Configuration.trace = 7                     //  Nested trace
-                        }
-
-                        //
-                        //  Must set `module.$who` temporarly before calling `function_call`
-                        //      (Reset below to a permenant constant)
-                        //
-                        /*=*/ {
-                            //  interim mutable module.$who = $who
-                            module.$who = $who
-                        }
-
-                        function_call(who_what, arguments)
-                    }
-
-                    if (clarity && create_prefix) {
-                        if ($who.startsWith('Gem.Boot._.')) {
-                            var _prefix = $who.replace('Gem.Boot._.', 'Gem__private__')
-                        } else if ($who.startsWith('Gem.Boot.')) {
-                            var _prefix = $who.replace('Gem.Boot.', 'Gem__')
-                        } else {
-                            var _prefix = $who.replace('.', '__')
-                        }
-                    }
-
-                    /*=*/ {
-                        //  constant            module.$who    = $who
-                        //  [constant           module.$what   = $what]         //  Optional
-                        //  [invisible constant module._prefix = _prefix]       //  Optional
-                        property_$who.value = $who
-
-                        if (clarity) {
-                            property_$what.value = $what
-
-                            if (create_prefix) {
-                                property___prefix.value = _prefix
-                                define_properties(module, module_properties)
-                                property___prefix.value = undefined
-                            } else {
-                                define_properties(module, $who_$what_properties)
-                            }
-
-                            property_$what.value = undefined
-                        } else {
-                            //
-                            //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                            //
-                            define_property(module, '$who', property_$who)
-                        }
-
-                        property_$who.value = undefined
-
-                        if (tracing_self) {
-                            trace_attribute('constant', module, '$who', $who)
-
-                            if (clarity) {
-                                trace_attribute('constant', module, '$what', $what)
-
-                                if (create_prefix) {
-                                    trace_attribute('invisible constant', module, '_prefix', _prefix)
-                                }
-                            }
-                        }
-                    }
-
-                    if (tracing_self) {
-                        procedure_done()
-
-                        if (tracing_self === 2) {
-                            Configuration.trace = trace                 //  Restore trace
-                        }
-                    }
-                }//,
+            var who_what = produce_who_what(
+                '.', property_$who, property_$what, property___prefix, module_properties, $who_$what_properties//,
             )
-
 
             who_what(Gem,      'Gem',      'The only global variable used by Gem.',       false)
             who_what(Gem.Boot, 'Gem.Boot', 'Temporary support code during boot process.', true)
@@ -1714,6 +1731,8 @@ Gem.Boot.Core.execute(
                 'Private members & methods of the Boot.Core Gem module.',
                 true//,
             )
+
+            Gem.Boot._.Core.produce_who_what = produce_who_what
         }
 
 
