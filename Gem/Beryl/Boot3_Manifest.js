@@ -35,6 +35,7 @@ Gem.Boot.Core.execute(
 //          'Gem/Beryl/Boot3_Manifest.js',                  0,      //  Already loaded -- This Script
 
             'Gem/Beryl/Boot4_WhoWhat.js',                   clarity || trace,
+            'Gem/Beryl/Boot4_Trace_WhoWhat.js',             trace,
 
             // Renumber
             'Gem/Beryl/Boot4_Methods.js',                   0,

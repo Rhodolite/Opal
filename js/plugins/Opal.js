@@ -10,7 +10,6 @@
 
 //  var watching       = 'Gem/Beryl/Boot2_Dynamic.js'
 //  var watching       = 'Gem/Beryl/Boot3_Attribute.js'
-//  var watching       = 'Gem/Beryl/Boot4_WhoWhat.js'
 //  var watching       = 'Gem/Beryl/Boot3_Manifest.js'
 //  var watching       = 'Gem/Beryl/Boot3_StubAnonymousBox.js'
 //  var watching       = 'Gem/Beryl/Boot3_StubBox.js'
@@ -21,6 +20,8 @@
 //  var watching       = 'Gem/Beryl/Boot4_StubConstructor.js'
 //  var watching       = 'Gem/Beryl/Boot4_Throw.js'
 //  var watching       = 'Gem/Beryl/Boot4_Trace.js'
+//  var watching       = 'Gem/Beryl/Boot4_Trace_WhoWhat.js'
+//  var watching       = 'Gem/Beryl/Boot4_WhoWhat.js'
 //  var watching       = 'Gem/Beryl/Boot5_Clarity.js'
 //  var watching       = 'Gem/Beryl/Boot7_Module.js'
 //  var watching       = 'Gem/Beryl/Boot8_Bind.js'

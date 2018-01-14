@@ -1162,7 +1162,7 @@ if (Gem.Configuration.trace) {
                         var tracing_execute = (trace === 7 || (trace && Tracing[trace$execute__$who]))
 
                         if ( ! (code.name in Tracing)) {
-                            Tracing[name] = 0
+                            Tracing[code.name] = 0
                         }
 
                         var tracing_code = (trace === 7 || tracing_execute === 2 || (trace && Tracing[code.name]))
@@ -1441,8 +1441,11 @@ Gem.Boot.Core.execute(
         var wrap_function       = Trace.wrap_function
 
         if (clarity) {
-            var property_$who  = Box.property_$who
             var property_$what = Box.property_$what 
+        }
+
+        if (clarity || trace) {
+            var property_$who = Box.property_$who
         }
 
         if (trace) {
@@ -1523,7 +1526,7 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  interim_constant_property = Box{
+        //  interim_constant_property
         //
         //      This is used to create an attribute:
         //
@@ -1635,53 +1638,53 @@ Gem.Boot.Core.execute(
                         function_call(who_what, arguments)
                     }
 
-                    if (clarity) {
-                        if (create_prefix) {
-                            if ($who.startsWith('Gem.Boot._.')) {
-                                var _prefix = $who.replace('Gem.Boot._.', 'Gem__private__')
-                            } else if ($who.startsWith('Gem.Boot.')) {
-                                var _prefix = $who.replace('Gem.Boot.', 'Gem__')
-                            } else {
-                                var _prefix = $who.replace('.', '__')
-                            }
+                    if (clarity && create_prefix) {
+                        if ($who.startsWith('Gem.Boot._.')) {
+                            var _prefix = $who.replace('Gem.Boot._.', 'Gem__private__')
+                        } else if ($who.startsWith('Gem.Boot.')) {
+                            var _prefix = $who.replace('Gem.Boot.', 'Gem__')
+                        } else {
+                            var _prefix = $who.replace('.', '__')
                         }
+                    }
 
-                        /*=*/ {
-                            //  constant            module.$who    = $who
-                            //  constant            module.$what   = $what
-                            //  [invisible constant module._prefix = _prefix]       //  Optional
-                            property_$who .value = $who
+                    /*=*/ {
+                        //  constant            module.$who    = $who
+                        //  [constant           module.$what   = $what]         //  Optional
+                        //  [invisible constant module._prefix = _prefix]       //  Optional
+                        property_$who.value = $who
+
+                        if (clarity) {
                             property_$what.value = $what
 
                             if (create_prefix) {
                                 property___prefix.value = _prefix
-                            }
-
-                            define_properties(module, module_properties)
-
-                            property_$who     .value =
-                                property_$what.value = undefined
-
-                            if (create_prefix) {
+                                define_properties(module, module_properties)
                                 property___prefix.value = undefined
+                            } else {
+                                define_properties(module, $who_$what_properties)
                             }
 
-                            if (tracing_self) {
-                                trace_attribute('constant', module, '$who',    $who)
-                                trace_attribute('constant', module, '$what',   $what)
+                            property_$what.value = undefined
+                        } else {
+                            //
+                            //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
+                            //
+                            define_property(module, '$who', property_$who)
+                        }
+
+                        property_$who.value = undefined
+
+                        if (tracing_self) {
+                            trace_attribute('constant', module, '$who', $who)
+
+                            if (clarity) {
+                                trace_attribute('constant', module, '$what', $what)
 
                                 if (create_prefix) {
                                     trace_attribute('invisible constant', module, '_prefix', _prefix)
                                 }
                             }
-                        }
-                    } else {
-                        //
-                        //  trace mode without clarity mode: only need `$who`, do *NOT* need `$what` & `__prefix`.
-                        //
-                        /*=*/ {
-                            //  constant module.$who = $who
-                            constant_attribute(module, '$who', $who)
                         }
                     }
 
@@ -1950,6 +1953,18 @@ Gem.Boot.Core.execute(
 
 
         //
+        //  Gem.Boot.Box.$who_$what_properties
+        //      A box of properties to create a `.$who`, `.$what`, and `._prefix` attributes.
+        //
+        constant(
+            Box,
+            '$who_$what_properties',
+            "A box of properties to create a `.$who`, `.$what`, and `._prefix` attriutes.",
+            $who_$what_properties//,
+        )
+
+
+        //
         //  Gem.Boot.Box.constant_attribute
         //
         //  NOTE:
@@ -2010,14 +2025,14 @@ Gem.Boot.Core.execute(
 
 
         //
-        //  Gem.Boot.Box.$who_$what_properties
-        //      A box of properties to create a `.$who`, `.$what`, and `._prefix` attributes.
+        //  Gem.Boot.Box.property___prefix
+        //      A property used to create a `._prefix` attribute
         //
         constant(
             Box,
-            '$who_$what_properties',
-            "A box of properties to create a `.$who`, `.$what`, and `._prefix` attriutes.",
-            $who_$what_properties//,
+            'property___prefix',
+            "A property used to create a `._prefix` attribute.",
+            property___prefix//,
         )
 
 

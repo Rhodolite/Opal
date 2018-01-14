@@ -5,6 +5,7 @@ BERYL_FILES = \
     ../Gem/Beryl/Boot2_Dynamic.js \
 	../Gem/Beryl/Boot3_Manifest.js \
 	../Gem/Beryl/Boot4_WhoWhat.js \
+	../Gem/Beryl/Boot4_Trace_WhoWhat.js \
     \
 	../Gem/Beryl/Boot3_Attribute.js \
 	../Gem/Beryl/Boot3_StubAnonymousBox.js \
@@ -68,7 +69,7 @@ clean:
 	rm -f rc.js rm.js
 	rm -f o.js o1.js oj.js
 	rm -f s.js sax.js sc.js scum.js sr.js sx.js
-	rm -f tc.js tw.js
+	rm -f tc.js tw.js tww.js
 	rm -f ww.js
 
 files:
@@ -114,6 +115,7 @@ links:
 	ln -s ../Gem/Beryl/Boot3_StubBox.js           	        sx.js
 	ln -s ../Gem/Beryl/Boot3_TraceConstructor.js            tc.js
 	ln -s ../Gem/Beryl/Boot4_Throw.js                       tw.js
+	ln -s ../Gem/Beryl/Boot4_Trace_WhoWhat.js	            tww.js
 	ln -s ../Gem/Beryl/Boot4_WhoWhat.js      	            ww.js
 
 wc:
